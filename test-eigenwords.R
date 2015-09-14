@@ -34,12 +34,13 @@ n.train.words <- length(sentence)
 
 
 ########## Calculate Eigenwords ##########
+## 行列W, Cを構成する
+##  実行速度の観点から，1が立つインデックスをfor文で生成し，
+##  sparseMatrix関数を使ってまとめて行列を生成している．
 W <- Matrix(0, nrow = n.train.words, ncol = n.vocab, sparse = TRUE)
 
-cat("Make matrix W...")
 pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
 indices <- matrix(0, nrow = length(sentence), ncol = 2)
-
 for(i.sentence in seq(sentence)){    
     word <- sentence[i.sentence]
 
@@ -55,26 +56,32 @@ W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                   x = rep(1, times = nrow(indices)),
                   dims = c(n.train.words, n.vocab))
 
-C <- 0
-for(i.context in sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)){
-    c.temp <- Matrix(0, nrow = n.train.words, ncol = n.vocab, sparse = TRUE)
+indices <- matrix(0, nrow = 2*window.size*length(sentence), ncol = 2)
+offsets <- sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)
+for(i.sentence in seq(sentence)){
+    word <- sentence[i.sentence]
 
-    c.row.start <- max(i.context + 1, 1)
-    c.row.end <- min(n.train.words + i.context, n.train.words)
-    w.row.start <- max(1 - i.context, 1)
-    w.row.end <- min(n.train.words - i.context, n.train.words)
-  
-    c.temp[c.row.start:c.row.end, ] <- W[w.row.start:w.row.end, ]
+    if(word != 0){
+        for(i.context in seq(offsets)){
+            offset <- offsets[i.context]
 
-    if(is.null(dim(C))){
-        C <- c.temp
-    }else{
-        C <- cbind(C, c.temp)
+            i <- offset + i.sentence
+            j <- word + n.vocab*(i.context - 1)
+
+            if(i >= 1 && i <= n.train.words){
+                indices[(i.sentence - 1)*(2*window.size) + i.context, ] <- c(i, j)
+            }
+        }
     }
-
-    print(c(i.context, c.row.start, c.row.end, w.row.start, w.row.end))
+    setTxtProgressBar(pb, i.sentence)
 }
 
+indices <- indices[rowSums(indices) > 0, ]
+C <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
+                  x = rep(1, times = nrow(indices)),
+                  dims = c(n.train.words, 2*window.size*n.vocab))
+
+## CCAを実行
 Cww <- t(W) %*% W
 Cwc <- t(W) %*% C
 Ccc <- t(C) %*% C
