@@ -28,16 +28,15 @@ vocab.orig <- unique(sentence.orig)
 sentence <- match(sentence.orig, vocab.orig)
 n.train.words <- length(sentence)
 
-
+# 出現回数がmin.count回以下の単語は無視する
 if (min.count > 0){
     d.table <- table(sentence)
-    vocab <- names(d.table[d.table >= min.count])
+    vocab.words <- names(d.table[d.table >= min.count])
 } else {
-    vocab <- unique(sentence)
+    vocab.words <- unique(sentence)
 }
 
-vocab.words <- vocab
-vocab <- as.numeric(vocab)
+vocab <- as.numeric(vocab.words)
 n.vocab <- length(vocab)
 
 ## make hash table
@@ -67,7 +66,9 @@ for(i.sentence in seq(sentence)){
 }
 
 indices <- indices[rowSums(indices) > 0, ]
-W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2], x = rep(1, times = nrow(indices)))
+W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
+                  x = rep(1, times = nrow(indices)),
+                  dims = c(n.train.words, n.vocab))
 
 C <- 0
 for(i.context in sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)){
