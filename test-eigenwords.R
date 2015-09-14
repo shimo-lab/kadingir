@@ -1,9 +1,5 @@
 
-## ## Install RRedsvd
-## install.packages("devtools")
-## library(devtools)
-## install_github("xiangze/RRedsvd")
-
+## Eigenwords
 
 library(hash)
 library(Matrix)
@@ -28,7 +24,6 @@ vocab.orig <- unique(sentence.orig)
 sentence <- match(sentence.orig, vocab.orig)
 n.train.words <- length(sentence)
 
-# 出現回数がmin.count回以下の単語は無視する
 if (min.count > 0){
     d.table <- table(sentence)
     vocab.words <- names(d.table[d.table >= min.count])
