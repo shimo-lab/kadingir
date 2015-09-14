@@ -38,7 +38,7 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
     ##  sparseMatrix関数を使ってまとめて行列を生成している．
     
     ## W を構成
-    cat("Constructing W")
+    cat("\nConstructing W\n")
     pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
     indices <- matrix(0, nrow = length(sentence), ncol = 2)
     for(i.sentence in seq(sentence)){    
@@ -57,7 +57,7 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
                       dims = c(n.train.words, n.vocab))
     
     ## C を構成
-    cat("Constructing C")
+    cat("\nConstructing C\n")
     pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
     indices <- matrix(0, nrow = 2*window.size*length(sentence), ncol = 2)
     offsets <- sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)
