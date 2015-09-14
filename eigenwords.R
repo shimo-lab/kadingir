@@ -5,6 +5,21 @@ library(RRedsvd)
 library(tcltk)
 
 
+most.similar <- function(query, V, rep.vocab, topn = 10){
+    if (!query %in% V){
+        print(paste0("Error: `", query, "` is not in V."))
+        return(FALSE)
+    }
+
+    index.query <- which(V == query)
+    rep.query <- rep.vocab[index.query, ]
+    rep.query.matrix <- matrix(rep.query, nrow=length(V), ncol=length(rep.query), byrow=TRUE)
+    distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
+    names(distances) <- V
+    
+    return(sort(distances)[1:topn])
+}
+
 min.count <- 10       # 出現回数がmin.count回以下の単語はvocabに入れない
 dim.internal <- 200   # 共通空間の次元
 window.size <- 2      # 前後何個の単語をcontextとするか
@@ -92,19 +107,4 @@ redsvd.A <- redsvd(A, dim.internal)
 
 
 ########## Check vector representations ##########
-most.similar <- function(query, V, rep.vocab, topn = 10){
-    if (!query %in% V){
-        print(paste0("Error: `", query, "` is not in V."))
-        return(FALSE)
-    }
-
-    index.query <- which(V == query)
-    rep.query <- rep.vocab[index.query, ]
-    rep.query.matrix <- matrix(rep.query, nrow=length(V), ncol=length(rep.query), byrow=TRUE)
-    distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
-    names(distances) <- V
-    
-    return(sort(distances)[1:topn])
-}
-
 most.similar("安全", vocab.words, redsvd.A$U)
