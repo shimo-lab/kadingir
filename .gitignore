@@ -1,3 +1,6 @@
 *~
 .Rhistory
 train.txt
+train_all.txt
+.Rproj.user
+*.Rproj
