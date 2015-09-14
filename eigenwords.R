@@ -5,6 +5,17 @@ library(RRedsvd)
 library(tcltk)
 
 
+## CCA using randomized SVD
+cca.redsvd <- function(W, C, k){
+    Cww <- t(W) %*% W
+    Cwc <- t(W) %*% C
+    Ccc <- t(C) %*% C
+    
+    A <- Diagonal(nrow(Cww), diag(Cww)^(-1/2)) %*% Cwc %*% Diagonal(nrow(Ccc), diag(Ccc)^(-1/2))
+    
+    return redsvd(A, k)
+}
+
 most.similar <- function(query, V, rep.vocab, topn = 10){
     if (!query %in% V){
         print(paste0("Error: `", query, "` is not in V."))
@@ -97,13 +108,7 @@ C <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                   dims = c(n.train.words, 2*window.size*n.vocab))
 
 ## CCAを実行
-Cww <- t(W) %*% W
-Cwc <- t(W) %*% C
-Ccc <- t(C) %*% C
-
-A <- Diagonal(nrow(Cww), diag(Cww)^(-1/2)) %*% Cwc %*% Diagonal(nrow(Ccc), diag(Ccc)^(-1/2))
-redsvd.A <- redsvd(A, dim.internal)
-
+redsvd.A <- cca.redsvd(W, C, dim.internal)
 
 
 ########## Check vector representations ##########
