@@ -13,7 +13,7 @@ cca.redsvd <- function(W, C, k){
     
     A <- Diagonal(nrow(Cww), diag(Cww)^(-1/2)) %*% Cwc %*% Diagonal(nrow(Ccc), diag(Ccc)^(-1/2))
     
-    return redsvd(A, k)
+    return(redsvd(A, k))
 }
 
 
