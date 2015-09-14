@@ -7,18 +7,18 @@ library(RRedsvd)
 library(tcltk)
 
 
-min.count <- 10       # 出現回数が10回以下の単語はvocabに入れない
+min.count <- 10       # 出現回数がmin.count回以下の単語はvocabに入れない
 dim.internal <- 200   # 共通空間の次元
 window.size <- 2      # 前後何個の単語をcontextとするか
 
 
-## make dictionary
+########## Make train data ##########
 f <- file("train_all.txt", "r")
 line <- readLines(con = f, -1)
 close(f)
 
 sentence.orig.full <- unlist(strsplit(tolower(line), " "))
-sentence.orig <- sentence.orig.full
+sentence.orig <- sentence.orig.full#[1:100000]
 vocab.orig <- unique(sentence.orig)
 
 sentence <- match(sentence.orig, vocab.orig)
@@ -42,6 +42,7 @@ for(i in seq(n.vocab)){
     word2index[as.character(vocab[i])] <- i
 }
 
+########## Calculate Eigenwords ##########
 W <- Matrix(0, nrow = n.train.words, ncol = n.vocab, sparse = TRUE)
 
 cat("Making matrix W...")
@@ -94,7 +95,7 @@ redsvd.A <- redsvd(A, dim.internal)
 
 
 
-######### Check vector representations ##########
+########## Check vector representations ##########
 most.similar <- function(query, V, rep.vocab, topn = 10){
     if (!query %in% V){
         print(paste0("Error: `", query, "` is not in V."))
