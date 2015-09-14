@@ -21,41 +21,30 @@ sentence.orig.full <- unlist(strsplit(tolower(line), " "))
 sentence.orig <- sentence.orig.full#[1:100000]
 vocab.orig <- unique(sentence.orig)
 
-sentence <- match(sentence.orig, vocab.orig)
-n.train.words <- length(sentence)
-
 if (min.count > 0){
-    d.table <- table(sentence)
+    d.table <- table(sentence.orig)
     vocab.words <- names(d.table[d.table >= min.count])
 } else {
     vocab.words <- unique(sentence)
 }
 
-vocab <- as.numeric(vocab.words)
-n.vocab <- length(vocab)
+sentence <- match(sentence.orig, vocab.words, nomatch = 0)
+n.vocab <- length(vocab.words)
+n.train.words <- length(sentence)
 
-## make hash table
-##   word hash
-##     -> 対応するWの行のインデックス
-word2index <- hash()
-for(i in seq(n.vocab)){
-    word2index[as.character(vocab[i])] <- i
-}
 
 ########## Calculate Eigenwords ##########
 W <- Matrix(0, nrow = n.train.words, ncol = n.vocab, sparse = TRUE)
 
-cat("Making matrix W...")
-indices <- matrix(0, nrow = length(sentence), ncol = 2)
+cat("Make matrix W...")
 pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
-for(i.sentence in seq(sentence)){
-    
-    word <- sentence[i.sentence]
-    index <- as.character(word)
+indices <- matrix(0, nrow = length(sentence), ncol = 2)
 
-    if(has.key(index, word2index)){
-        i.vocab <- word2index[[index]]
-        indices[i.sentence, ] <- c(i.sentence, i.vocab)
+for(i.sentence in seq(sentence)){    
+    word <- sentence[i.sentence]
+
+    if(word != 0){
+        indices[i.sentence, ] <- c(i.sentence, word)
     }
 
     setTxtProgressBar(pb, i.sentence)
@@ -104,11 +93,11 @@ most.similar <- function(query, V, rep.vocab, topn = 10){
 
     index.query <- which(V == query)
     rep.query <- rep.vocab[index.query, ]
-    rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
+    rep.query.matrix <- matrix(rep.query, nrow=length(V), ncol=length(rep.query), byrow=TRUE)
     distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
     names(distances) <- V
     
     return(sort(distances)[1:topn])
 }
 
-most.similar("プログラミング", vocab.orig[vocab], redsvd.A$U)
+most.similar("安全", vocab.words, redsvd.A$U)
