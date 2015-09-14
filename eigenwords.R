@@ -40,6 +40,7 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
     ## W を構成
     cat("\nConstructing W\n")
     pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
+    
     indices <- matrix(0, nrow = length(sentence), ncol = 2)
     for(i.sentence in seq(sentence)){    
         word <- sentence[i.sentence]
@@ -59,6 +60,7 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
     ## C を構成
     cat("\nConstructing C\n")
     pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
+    
     indices <- matrix(0, nrow = 2*window.size*length(sentence), ncol = 2)
     offsets <- sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)
     for(i.sentence in seq(sentence)){
