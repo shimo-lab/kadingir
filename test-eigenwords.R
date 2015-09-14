@@ -36,7 +36,6 @@ n.train.words <- length(sentence)
 ########## Calculate Eigenwords ##########
 W <- Matrix(0, nrow = n.train.words, ncol = n.vocab, sparse = TRUE)
 
-cat("Make matrix W...")
 pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
 indices <- matrix(0, nrow = length(sentence), ncol = 2)
 
