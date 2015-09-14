@@ -6,6 +6,7 @@ library(tcltk)
 
 
 ## CCA using randomized SVD
+##  論文を参考にして，Aの計算中で，Cww,Cccの非対角成分を無視して計算をしている．
 cca.redsvd <- function(W, C, k){
     Cww <- t(W) %*% W
     Cwc <- t(W) %*% C
