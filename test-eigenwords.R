@@ -22,14 +22,11 @@ line <- readLines(con = f, -1)
 close(f)
 
 sentence.orig.full <- unlist(strsplit(tolower(line), " "))
-#sentence.orig <- sentence.orig.full[1:100000]
 sentence.orig <- sentence.orig.full
 vocab.orig <- unique(sentence.orig)
 
 sentence <- match(sentence.orig, vocab.orig)
 n.train.words <- length(sentence)
-
-#rm(sentence.orig, sentence.orig.full)
 
 
 if (min.count > 0){
