@@ -1,33 +1,35 @@
-install.packages("devtools")
 
-library(devtools)
-dev_mode(on=T)
-install_github("xiangze/RRedsvd")
+## ## Install RRedsvd
+## install.packages("devtools")
+## library(devtools)
+## install_github("xiangze/RRedsvd")
 
 
 library(hash)
 library(Matrix)
 library(RRedsvd)
+library(tcltk)
 
 
-min.count <- 2
-dim.internal <- 100
-window.size <- 2
+min.count <- 10       # 出現回数が10回以下の単語はvocabに入れない
+dim.internal <- 200   # 共通空間の次元
+window.size <- 2      # 前後何個の単語をcontextとするか
 
 
 ## make dictionary
-f <- file("train.txt", "r")
+f <- file("train_all.txt", "r")
 line <- readLines(con = f, -1)
 close(f)
 
 sentence.orig.full <- unlist(strsplit(tolower(line), " "))
-sentence.orig <- sentence.orig.full[1:100000]
+#sentence.orig <- sentence.orig.full[1:100000]
+sentence.orig <- sentence.orig.full
 vocab.orig <- unique(sentence.orig)
 
 sentence <- match(sentence.orig, vocab.orig)
 n.train.words <- length(sentence)
 
-rm(sentence.orig, sentence.orig.full)
+#rm(sentence.orig, sentence.orig.full)
 
 
 if (min.count > 0){
@@ -37,21 +39,24 @@ if (min.count > 0){
     vocab <- unique(sentence)
 }
 
+vocab.words <- vocab
 vocab <- as.numeric(vocab)
 n.vocab <- length(vocab)
 
 ## make hash table
 ##   word hash
-##     -> index that indicates row word vector of representation matrix
+##     -> 対応するWの行のインデックス
 word2index <- hash()
 for(i in seq(n.vocab)){
     word2index[as.character(vocab[i])] <- i
 }
 
 W <- Matrix(0, nrow = n.train.words, ncol = n.vocab, sparse = TRUE)
-#C <- Matrix(0, nrow = n.train.words, ncol = 2*window.size*n.vocab, sparse = TRUE)
 
+cat("Making matrix W...")
+pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
 for(i.sentence in seq(sentence)){
+    
     word <- sentence[i.sentence]
     index <- as.character(word)
 
@@ -59,9 +64,10 @@ for(i.sentence in seq(sentence)){
         i.vocab <- word2index[[index]]
         W[i.sentence, i.vocab] <- 1
     }
+
+    settxtprogressbar(pb, i.sentence) 
 }
 
-c.list <- c()
 C <- 0
 for(i.context in sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)){
     c.temp <- Matrix(0, nrow = n.train.words, ncol = n.vocab, sparse = TRUE)
@@ -70,22 +76,41 @@ for(i.context in sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)
     c.row.end <- min(n.train.words + i.context, n.train.words)
     w.row.start <- max(1 - i.context, 1)
     w.row.end <- min(n.train.words - i.context, n.train.words)
-
-    print(c(c.row.start, c.row.end, w.row.start, w.row.end))
-    
+  
     c.temp[c.row.start:c.row.end, ] <- W[w.row.start:w.row.end, ]
-    c.list <- c(c.list, c.temp)
 
     if(is.null(dim(C))){
         C <- c.temp
     }else{
         C <- cbind(C, c.temp)
     }
+
+    print(c(i.context, c.row.start, c.row.end, w.row.start, w.row.end))
 }
 
 Cww <- t(W) %*% W
 Cwc <- t(W) %*% C
 Ccc <- t(C) %*% C
 
-A <- Diagonal(ncol(W), diag(Cww)^(-1/2)) %*% Cwc %*% Diagonal(ncol(C), diag(Ccc)^(-1/2))
+A <- Diagonal(nrow(Cww), diag(Cww)^(-1/2)) %*% Cwc %*% Diagonal(nrow(Ccc), diag(Ccc)^(-1/2))
 redsvd.A <- redsvd(A, dim.internal)
+
+
+
+######### Check vector representations ##########
+most.similar <- function(query, V, rep.vocab, topn = 10){
+    if (!query %in% V){
+        print(paste0("Error: `", query, "` is not in V."))
+        return(FALSE)
+    }
+
+    index.query <- which(V == query)
+    rep.query <- rep.vocab[index.query, ]
+    rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
+    distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
+    names(distances) <- V
+    
+    return(sort(distances)[1:topn])
+}
+
+most.similar("プログラミング", vocab.orig[vocab], redsvd.A$U)
