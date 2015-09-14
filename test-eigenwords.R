@@ -54,6 +54,7 @@ for(i in seq(n.vocab)){
 W <- Matrix(0, nrow = n.train.words, ncol = n.vocab, sparse = TRUE)
 
 cat("Making matrix W...")
+indices <- matrix(0, nrow = length(sentence), ncol = 2)
 pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
 for(i.sentence in seq(sentence)){
     
@@ -62,11 +63,14 @@ for(i.sentence in seq(sentence)){
 
     if(has.key(index, word2index)){
         i.vocab <- word2index[[index]]
-        W[i.sentence, i.vocab] <- 1
+        indices[i.sentence, ] <- c(i.sentence, i.vocab)
     }
 
-    settxtprogressbar(pb, i.sentence) 
+    setTxtProgressBar(pb, i.sentence)
 }
+
+indices <- indices[rowSums(indices) > 0, ]
+W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2], x = rep(1, times = nrow(indices)))
 
 C <- 0
 for(i.context in sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)){
