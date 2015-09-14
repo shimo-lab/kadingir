@@ -16,9 +16,7 @@ cca.redsvd <- function(W, C, k){
     return redsvd(A, k)
 }
 
-most.similar <- function(query, V, rep.vocab, topn = 10){
-    if (!query %in% V){
-        print(paste0("Error: `", query, "` is not in V."))
+
 eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
                        dim.internal = 200, window.size = 2){
     if (min.count > 0){
@@ -94,14 +92,22 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
     
     return(return.list)
 }
+
+
+most.similar <- function(query, res.eigenwords, topn = 10){
+    vocab <- res.eigenwords$vocab.words
+    rep.vocab <- res.eigenwords$svd$U
+    
+    if (!query %in% vocab){
+        print(paste0("Error: `", query, "` is not in vocaburary."))
         return(FALSE)
     }
 
-    index.query <- which(V == query)
+    index.query <- which(vocab == query)
     rep.query <- rep.vocab[index.query, ]
-    rep.query.matrix <- matrix(rep.query, nrow=length(V), ncol=length(rep.query), byrow=TRUE)
+    rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
     distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
-    names(distances) <- V
+    names(distances) <- vocab
     
     return(sort(distances)[1:topn])
 }
