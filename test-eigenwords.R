@@ -34,11 +34,13 @@ n.train.words <- length(sentence)
 
 
 ########## Calculate Eigenwords ##########
+## 行列W, Cを構成する
+##  実行速度の観点から，1が立つインデックスをfor文で生成し，
+##  sparseMatrix関数を使ってまとめて行列を生成している．
 W <- Matrix(0, nrow = n.train.words, ncol = n.vocab, sparse = TRUE)
 
 pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
 indices <- matrix(0, nrow = length(sentence), ncol = 2)
-
 for(i.sentence in seq(sentence)){    
     word <- sentence[i.sentence]
 
@@ -79,7 +81,7 @@ C <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                   x = rep(1, times = nrow(indices)),
                   dims = c(n.train.words, 2*window.size*n.vocab))
 
-
+## CCAを実行
 Cww <- t(W) %*% W
 Cwc <- t(W) %*% C
 Ccc <- t(C) %*% C
