@@ -55,6 +55,7 @@ W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                   dims = c(n.train.words, n.vocab))
 
 ## C を構成
+pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
 indices <- matrix(0, nrow = 2*window.size*length(sentence), ncol = 2)
 offsets <- sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)
 for(i.sentence in seq(sentence)){
