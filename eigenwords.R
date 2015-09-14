@@ -1,7 +1,5 @@
 ## Implementation of Eigenwords
 
-
-library(hash)
 library(Matrix)
 library(RRedsvd)
 library(tcltk)
@@ -37,7 +35,6 @@ n.train.words <- length(sentence)
 ## 行列W, Cを構成する
 ##  実行速度の観点から，1が立つインデックスをfor文で生成し，
 ##  sparseMatrix関数を使ってまとめて行列を生成している．
-W <- Matrix(0, nrow = n.train.words, ncol = n.vocab, sparse = TRUE)
 
 ## W を構成
 pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
