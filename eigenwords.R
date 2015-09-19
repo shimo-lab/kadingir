@@ -97,17 +97,31 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
 }
 
 
-most.similar <- function(query, res.eigenwords, topn = 10){
+most.similar <- function(res.eigenwords, positive = NULL, negative = NULL, topn = 10){
     vocab <- res.eigenwords$vocab.words
     rep.vocab <- res.eigenwords$svd$U
-    
-    if (!query %in% vocab){
-        print(paste0("Error: `", query, "` is not in vocaburary."))
-        return(FALSE)
+
+    queries.info <- list(list(positive, 1), list(negative, -1))
+    rep.query <- rep(0, times=ncol(rep.vocab))
+
+    for (q in queries.info) {
+        queries <- q[[1]]
+        pm <- q[[2]]
+        
+        if (!is.null(queries)) {
+            for (query in queries) {
+                
+                if (!query %in% vocab) {
+                    print(paste0("Error: `", query, "` is not in vocaburary."))
+                    return(FALSE)
+                }
+                
+                index.query <- which(vocab == query)
+                rep.query <- rep.query + pm * rep.vocab[index.query, ]
+            }
+        }
     }
 
-    index.query <- which(vocab == query)
-    rep.query <- rep.vocab[index.query, ]
     rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
     distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
     names(distances) <- vocab

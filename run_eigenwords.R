@@ -19,4 +19,4 @@ vocab.orig <- unique(sentence.orig)
 res.eigenwords <- eigenwords(sentence.orig, vocab.orig, min.count, dim.internal, window.size)
 
 ## Check vector representations
-most.similar("安全", res.eigenwords)
+most.similar(res.eigenwords, positive=c("統計"), topn=10)
