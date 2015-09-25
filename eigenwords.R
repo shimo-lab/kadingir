@@ -3,18 +3,29 @@
 library(Matrix)
 library(RRedsvd)
 library(tcltk)
+library(svd)
 
 
 ## CCA using randomized SVD
 ##  論文を参考にして，Aの計算中で，Cww,Cccの非対角成分を無視して計算をしている．
-cca.redsvd <- function(W, C, k){
+cca.eigenwords <- function(W, C, k, sparse = TRUE){
     Cww <- t(W) %*% W
     Cwc <- t(W) %*% C
     Ccc <- t(C) %*% C
     
     A <- Diagonal(nrow(Cww), diag(Cww)^(-1/2)) %*% Cwc %*% Diagonal(nrow(Ccc), diag(Ccc)^(-1/2))
-    
-    return(redsvd(A, k))
+
+    if (sparse) {
+        results.svd <- redsvd(A, k)
+    } else {
+        results.propack.svd <- propack.svd(as.matrix(A), neig=k)
+        results.svd <- list()
+        results.svd$U <- results.propack.svd$u
+        results.svd$V <- results.propack.svd$v
+        results.svd$D <- results.propack.svd$d
+    }
+
+    return(results.svd)
 }
 
 
