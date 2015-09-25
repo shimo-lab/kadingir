@@ -7,13 +7,19 @@ library(svd)
 
 
 ## CCA using randomized SVD
-##  論文を参考にして，Aの計算中で，Cww,Cccの非対角成分を無視して計算をしている．
-cca.eigenwords <- function(W, C, k, sparse = TRUE){
-    Cww <- t(W) %*% W
-    Cwc <- t(W) %*% C
-    Ccc <- t(C) %*% C
+##  In the same way as [Dhillon+2015], ignore off-diagonal elements of Cxx & Cyy
+##
+##  Arguments :
+##    X : matrix
+##    Y : matrix
+##    k : number of desired singular values
+##    sparse : Use redsvd or propack.svd?
+cca.eigenwords <- function(X, Y, k, sparse = TRUE){
+    Cxx <- t(X) %*% X
+    Cxy <- t(X) %*% Y
+    Cyy <- t(Y) %*% Y
     
-    A <- Diagonal(nrow(Cww), diag(Cww)^(-1/2)) %*% Cwc %*% Diagonal(nrow(Ccc), diag(Ccc)^(-1/2))
+    A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
 
     if (sparse) {
         results.svd <- redsvd(A, k)
@@ -67,6 +73,7 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
 
         setTxtProgressBar(pb, i.sentence)
     }
+    cat("\n\n")
     
     indices <- indices[rowSums(indices) > 0, ]
     W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
