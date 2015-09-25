@@ -30,7 +30,12 @@ cca.eigenwords <- function(W, C, k, sparse = TRUE){
 
 
 eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
-                       dim.internal = 200, window.size = 2){
+                       dim.internal = 200, window.size = 2, mode = "oscca"){
+
+    if (!mode %in% c("oscca", "tscca")){
+        cat(paste0("mode is invalid: ", mode))
+    }
+    
     if (min.count > 0){
         d.table <- table(sentence.orig)
         vocab.words <- names(d.table[d.table >= min.count])
@@ -98,10 +103,21 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
                       dims = c(n.train.words, 2*window.size*n.vocab))
     
     ## CCAを実行
-    redsvd.A <- cca.redsvd(W, C, dim.internal)
+    if (mode == "oscca") { # One-step CCA
+        cat("Calculate OSCCA...")
+        results.redsvd <- cca.eigenwords(W, C, dim.internal)
+    } else if (mode == "tscca") { # Two-Step CCA
+        cat("Calculate TSCCA...")
+        L <- C[ , 1:(window.size*n.vocab)]
+        R <- C[ , (window.size*n.vocab+1):(2*window.size*n.vocab)]
+        redsvd.LR <- cca.eigenwords(L, R, dim.internal)
+
+        S <- cbind(L %*% redsvd.LR$U, R %*% redsvd.LR$V)
+        results.redsvd <- cca.eigenwords(W, S, dim.internal, sparse = FALSE)
+    }
 
     return.list <- list()
-    return.list$svd <- redsvd.A
+    return.list$svd <- results.redsvd
     return.list$vocab.words <- vocab.words
     
     return(return.list)
