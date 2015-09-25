@@ -73,7 +73,6 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
 
         setTxtProgressBar(pb, i.sentence)
     }
-    cat("\n\n")
     
     indices <- indices[rowSums(indices) > 0, ]
     W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
@@ -103,6 +102,7 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
         }
         setTxtProgressBar(pb, i.sentence)
     }
+    cat("\n\n")
 
     indices <- indices[rowSums(indices) > 0, ]
     C <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
