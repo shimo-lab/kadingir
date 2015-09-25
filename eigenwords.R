@@ -111,10 +111,10 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
     
     ## CCAを実行
     if (mode == "oscca") { # One-step CCA
-        cat("Calculate OSCCA...")
+        cat("Calculate OSCCA...\n\n")
         results.redsvd <- cca.eigenwords(W, C, dim.internal)
     } else if (mode == "tscca") { # Two-Step CCA
-        cat("Calculate TSCCA...")
+        cat("Calculate TSCCA...\n\n")
         L <- C[ , 1:(window.size*n.vocab)]
         R <- C[ , (window.size*n.vocab+1):(2*window.size*n.vocab)]
         redsvd.LR <- cca.eigenwords(L, R, dim.internal)
