@@ -38,7 +38,7 @@ cca.eigenwords <- function(X, Y, k, sparse = TRUE){
 eigenwords <- function(sentence.orig, min.count = 10,
                        dim.internal = 200, window.size = 2, mode = "oscca"){
 
-    time.start <- proc.time()
+    time.start <- Sys.time()
 
     if (!mode %in% c("oscca", "tscca")){
         cat(paste0("mode is invalid: ", mode))
@@ -138,8 +138,8 @@ eigenwords <- function(sentence.orig, min.count = 10,
     return.list$svd <- results.redsvd
     return.list$vocab.words <- vocab.words
 
-    diff.time <- proc.time() - time.start
-    cat(diff.time)
+    diff.time <- Sys.time() - time.start
+    cat(paste0("total time : ", diff.time/60, " [min]\n\n"))
     
     return(return.list)
 }
