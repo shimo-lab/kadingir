@@ -131,9 +131,14 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
 }
 
 
-most.similar <- function(res.eigenwords, positive = NULL, negative = NULL, topn = 10){
+most.similar <- function(res.eigenwords, positive = NULL, negative = NULL,
+                         topn = 10, normalize = FALSE){
     vocab <- res.eigenwords$vocab.words
     rep.vocab <- res.eigenwords$svd$U
+
+    if (normalize){
+        rep.vocab <- rep.vocab/sqrt(rowSums(rep.vocab**2))
+    }
 
     queries.info <- list(list(positive, 1), list(negative, -1))
     rep.query <- rep(0, times=ncol(rep.vocab))
@@ -154,6 +159,10 @@ most.similar <- function(res.eigenwords, positive = NULL, negative = NULL, topn 
                 rep.query <- rep.query + pm * rep.vocab[index.query, ]
             }
         }
+    }
+
+    if (normalize){
+        rep.query <- rep.query/sqrt(sum(rep.query**2))
     }
 
     rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
