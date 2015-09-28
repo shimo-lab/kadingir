@@ -142,7 +142,7 @@ eigenwords <- function(sentence.orig, min.count = 10,
 
 
 most.similar <- function(res.eigenwords, positive = NULL, negative = NULL,
-                         topn = 10, normalize = FALSE){
+                         topn = 10, normalize = FALSE, format = "euclid"){
     vocab <- res.eigenwords$vocab.words
     rep.vocab <- res.eigenwords$svd$U
 
@@ -175,9 +175,18 @@ most.similar <- function(res.eigenwords, positive = NULL, negative = NULL,
         rep.query <- rep.query/sqrt(sum(rep.query**2))
     }
 
-    rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
-    distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
-    names(distances) <- vocab
-    
-    return(sort(distances)[1:topn])
+    if (format == "euclid") {
+        rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
+        distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
+        names(distances) <- vocab
+
+        return(sort(distances)[1:topn])
+        
+    } else if (format == "cosine") {
+        distances <- rep.vocab %*% rep.query
+        names(distances) <- vocab
+
+        return(sort(distances, decreasing = TRUE)[1:topn])
+
+    }
 }
