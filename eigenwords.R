@@ -49,6 +49,13 @@ eigenwords <- function(sentence.orig, min.count = 10,
         vocab.words <- unique(sentence)
     }
 
+    cat("\n\n")
+    cat("Size of sentence   :", length(sentence.orig), "\n")
+    cat("dim.internal       :", dim.internal, "\n")
+    cat("min.count          :", min.count, "\n")
+    cat("Size of vocab      :", length(vocab.words), "\n")
+    cat("mode               :", mode, "\n\n")
+
     sentence <- match(sentence.orig, vocab.words, nomatch = 0)
     n.vocab <- length(vocab.words)
     n.train.words <- length(sentence)
@@ -60,7 +67,7 @@ eigenwords <- function(sentence.orig, min.count = 10,
     ##  sparseMatrix関数を使ってまとめて行列を生成している．
     
     ## W を構成
-    cat("\nConstructing W\n")
+    cat("Constructing W\n")
     pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
     
     indices <- matrix(0, nrow = length(sentence), ncol = 2)
@@ -102,13 +109,16 @@ eigenwords <- function(sentence.orig, min.count = 10,
         }
         setTxtProgressBar(pb, i.sentence)
     }
-    cat("\n\n")
 
     indices <- indices[rowSums(indices) > 0, ]
     C <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, 2*window.size*n.vocab))
     
+    cat("\n\nW :", format(object.size(W), unit = "auto"))
+    cat("\nC :", format(object.size(C), unit = "auto"))
+    cat("\n\n")
+
     ## CCAを実行
     if (mode == "oscca") { # One-step CCA
         cat("Calculate OSCCA...\n\n")
