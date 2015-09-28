@@ -115,9 +115,9 @@ eigenwords <- function(sentence.orig, min.count = 10,
     C <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, 2*window.size*n.vocab))
-    
-    cat("\n\nW :", format(object.size(W), unit = "auto"))
-    cat("\nC :", format(object.size(C), unit = "auto"))
+
+    cat("\n\nSize of W :", format(object.size(W), unit = "auto"))
+    cat("\nSize of C :", format(object.size(C), unit = "auto"))
     cat("\n\n")
 
     ## Execute CCA
