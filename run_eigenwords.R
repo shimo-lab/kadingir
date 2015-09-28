@@ -12,11 +12,10 @@ line <- readLines(con = f, -1)
 close(f)
 
 sentence.orig.full <- unlist(strsplit(tolower(line), " "))
-sentence.orig <- sentence.orig.full[1:1000000]
-vocab.orig <- unique(sentence.orig)
+sentence.orig <- sentence.orig.full[1:5000000]
 
 ## Eigenwords
-res.eigenwords <- eigenwords(sentence.orig, vocab.orig, min.count, dim.internal, window.size)
+res.eigenwords <- eigenwords(sentence.orig, min.count, dim.internal, window.size)
 
 ## Check vector representations
 most.similar(res.eigenwords, positive=c("統計"), topn=10)

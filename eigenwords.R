@@ -35,7 +35,7 @@ cca.eigenwords <- function(X, Y, k, sparse = TRUE){
 }
 
 
-eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
+eigenwords <- function(sentence.orig, min.count = 10,
                        dim.internal = 200, window.size = 2, mode = "oscca"){
 
     if (!mode %in% c("oscca", "tscca")){
