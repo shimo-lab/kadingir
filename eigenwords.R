@@ -6,7 +6,7 @@ library(tcltk)
 library(svd)
 
 
-## CCA using randomized SVD
+## CCA using randomized SVD or propack.svd
 ##  In the same way as [Dhillon+2015], ignore off-diagonal elements of Cxx & Cyy
 ##
 ##  Arguments :
@@ -64,11 +64,10 @@ eigenwords <- function(sentence.orig, min.count = 10,
 
 
     ## Calculate Eigenwords
-    ##  行列W, Cを構成する
     ##  実行速度の観点から，1が立つ要素のインデックスをfor文で生成し，
-    ##  sparseMatrix関数を使ってまとめて行列を生成している．
+    ##  sparseMatrix関数を使ってまとめて行列 W, C を生成している．
     
-    ## W を構成
+    ## Construction of W
     cat("Constructing W\n")
     pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
     
@@ -88,7 +87,7 @@ eigenwords <- function(sentence.orig, min.count = 10,
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, n.vocab))
     
-    ## C を構成
+    ## Construction of C
     cat("\nConstructing C\n")
     pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
     
@@ -121,7 +120,7 @@ eigenwords <- function(sentence.orig, min.count = 10,
     cat("\nC :", format(object.size(C), unit = "auto"))
     cat("\n\n")
 
-    ## CCAを実行
+    ## Execute CCA
     if (mode == "oscca") { # One-step CCA
         cat("Calculate OSCCA...\n\n")
         results.redsvd <- cca.eigenwords(W, C, dim.internal)
