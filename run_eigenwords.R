@@ -2,21 +2,20 @@
 source("eigenwords.R")
 
 ## Tuning parameters
-min.count <- 10       # 出現回数がmin.count回以下の単語はvocabに入れない
+min.count <- 100      # 出現回数がmin.count回以下の単語はvocabに入れない
 dim.internal <- 200   # 共通空間の次元
 window.size <- 2      # 前後何個の単語をcontextとするか
 
 ## Making train data
-f <- file("train_all.txt", "r")
+f <- file("data/text8", "r")
 line <- readLines(con = f, -1)
 close(f)
 
 sentence.orig.full <- unlist(strsplit(tolower(line), " "))
-sentence.orig <- sentence.orig.full#[1:100000]
-vocab.orig <- unique(sentence.orig)
+sentence.orig <- sentence.orig.full#[1:1000000]
 
 ## Eigenwords
-res.eigenwords <- eigenwords(sentence.orig, vocab.orig, min.count, dim.internal, window.size)
+res.eigenwords <- eigenwords(sentence.orig, min.count, dim.internal, window.size)
 
 ## Check vector representations
-most.similar("安全", res.eigenwords)
+most.similar(res.eigenwords, positive=c("man"), topn=10)

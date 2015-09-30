@@ -3,23 +3,47 @@
 library(Matrix)
 library(RRedsvd)
 library(tcltk)
+library(svd)
 
 
-## CCA using randomized SVD
-##  論文を参考にして，Aの計算中で，Cww,Cccの非対角成分を無視して計算をしている．
-cca.redsvd <- function(W, C, k){
-    Cww <- t(W) %*% W
-    Cwc <- t(W) %*% C
-    Ccc <- t(C) %*% C
+## CCA using randomized SVD or propack.svd
+##  In the same way as [Dhillon+2015], ignore off-diagonal elements of Cxx & Cyy
+##
+##  Arguments :
+##    X : matrix
+##    Y : matrix
+##    k : number of desired singular values
+##    sparse : Use redsvd or propack.svd?
+cca.eigenwords <- function(X, Y, k, sparse = TRUE){
+    Cxx <- t(X) %*% X
+    Cxy <- t(X) %*% Y
+    Cyy <- t(Y) %*% Y
     
-    A <- Diagonal(nrow(Cww), diag(Cww)^(-1/2)) %*% Cwc %*% Diagonal(nrow(Ccc), diag(Ccc)^(-1/2))
-    
-    return(redsvd(A, k))
+    A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
+
+    if (sparse) {
+        results.svd <- redsvd(A, k)
+    } else {
+        results.propack.svd <- propack.svd(as.matrix(A), neig=k)
+        results.svd <- list()
+        results.svd$U <- results.propack.svd$u
+        results.svd$V <- results.propack.svd$v
+        results.svd$D <- results.propack.svd$d
+    }
+
+    return(results.svd)
 }
 
 
-eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
-                       dim.internal = 200, window.size = 2){
+eigenwords <- function(sentence.orig, min.count = 10,
+                       dim.internal = 200, window.size = 2, mode = "oscca"){
+
+    time.start <- Sys.time()
+
+    if (!mode %in% c("oscca", "tscca")){
+        cat(paste0("mode is invalid: ", mode))
+    }
+    
     if (min.count > 0){
         d.table <- table(sentence.orig)
         vocab.words <- names(d.table[d.table >= min.count])
@@ -27,18 +51,24 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
         vocab.words <- unique(sentence)
     }
 
+    cat("\n\n")
+    cat("Size of sentence   :", length(sentence.orig), "\n")
+    cat("dim.internal       :", dim.internal, "\n")
+    cat("min.count          :", min.count, "\n")
+    cat("Size of vocab      :", length(vocab.words), "\n")
+    cat("mode               :", mode, "\n\n")
+
     sentence <- match(sentence.orig, vocab.words, nomatch = 0)
     n.vocab <- length(vocab.words)
     n.train.words <- length(sentence)
 
 
     ## Calculate Eigenwords
-    ##  行列W, Cを構成する
     ##  実行速度の観点から，1が立つ要素のインデックスをfor文で生成し，
-    ##  sparseMatrix関数を使ってまとめて行列を生成している．
+    ##  sparseMatrix関数を使ってまとめて行列 W, C を生成している．
     
-    ## W を構成
-    cat("\nConstructing W\n")
+    ## Construction of W
+    cat("Constructing W\n")
     pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
     
     indices <- matrix(0, nrow = length(sentence), ncol = 2)
@@ -57,7 +87,7 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, n.vocab))
     
-    ## C を構成
+    ## Construction of C
     cat("\nConstructing C\n")
     pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
     
@@ -85,32 +115,82 @@ eigenwords <- function(sentence.orig, vocab.orig, min.count = 10,
     C <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, 2*window.size*n.vocab))
-    
-    ## CCAを実行
-    redsvd.A <- cca.redsvd(W, C, dim.internal)
+
+    cat("\n\nSize of W :", format(object.size(W), unit = "auto"))
+    cat("\nSize of C :", format(object.size(C), unit = "auto"))
+    cat("\n\n")
+
+    ## Execute CCA
+    if (mode == "oscca") { # One-step CCA
+        cat("Calculate OSCCA...\n\n")
+        results.redsvd <- cca.eigenwords(W, C, dim.internal)
+    } else if (mode == "tscca") { # Two-Step CCA
+        cat("Calculate TSCCA...\n\n")
+        L <- C[ , 1:(window.size*n.vocab)]
+        R <- C[ , (window.size*n.vocab+1):(2*window.size*n.vocab)]
+        redsvd.LR <- cca.eigenwords(L, R, dim.internal)
+
+        S <- cbind(L %*% redsvd.LR$U, R %*% redsvd.LR$V)
+        results.redsvd <- cca.eigenwords(W, S, dim.internal, sparse = FALSE)
+    }
 
     return.list <- list()
-    return.list$svd <- redsvd.A
+    return.list$svd <- results.redsvd
     return.list$vocab.words <- vocab.words
+
+    diff.time <- Sys.time() - time.start
+    print(diff.time)
     
     return(return.list)
 }
 
 
-most.similar <- function(query, res.eigenwords, topn = 10){
+most.similar <- function(res.eigenwords, positive = NULL, negative = NULL,
+                         topn = 10, normalize = FALSE, format = "euclid"){
     vocab <- res.eigenwords$vocab.words
     rep.vocab <- res.eigenwords$svd$U
-    
-    if (!query %in% vocab){
-        print(paste0("Error: `", query, "` is not in vocaburary."))
-        return(FALSE)
+
+    if (normalize){
+        rep.vocab <- rep.vocab/sqrt(rowSums(rep.vocab**2))
     }
 
-    index.query <- which(vocab == query)
-    rep.query <- rep.vocab[index.query, ]
-    rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
-    distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
-    names(distances) <- vocab
-    
-    return(sort(distances)[1:topn])
+    queries.info <- list(list(positive, 1), list(negative, -1))
+    rep.query <- rep(0, times=ncol(rep.vocab))
+
+    for (q in queries.info) {
+        queries <- q[[1]]
+        pm <- q[[2]]
+        
+        if (!is.null(queries)) {
+            for (query in queries) {
+                
+                if (!query %in% vocab) {
+                    print(paste0("Error: `", query, "` is not in vocaburary."))
+                    return(FALSE)
+                }
+                
+                index.query <- which(vocab == query)
+                rep.query <- rep.query + pm * rep.vocab[index.query, ]
+            }
+        }
+    }
+
+    if (normalize){
+        rep.query <- rep.query/sqrt(sum(rep.query**2))
+    }
+
+    if (format == "euclid") {
+        rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
+        distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
+        names(distances) <- vocab
+
+        return(sort(distances)[1:topn])
+        
+    } else if (format == "cosine") {
+        distances <- rep.vocab %*% rep.query
+        names(distances) <- vocab
+
+        return(sort(distances, decreasing = TRUE)[1:topn])
+
+    }
 }
