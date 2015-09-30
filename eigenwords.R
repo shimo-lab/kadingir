@@ -139,7 +139,7 @@ eigenwords <- function(sentence.orig, min.count = 10,
     return.list$vocab.words <- vocab.words
 
     diff.time <- Sys.time() - time.start
-    cat(paste0("total time : ", diff.time/60, " [min]\n\n"))
+    print(diff.time)
     
     return(return.list)
 }
