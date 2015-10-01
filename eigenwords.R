@@ -69,20 +69,10 @@ eigenwords <- function(sentence.orig, min.count = 10,
     
     ## Construction of W
     cat("Constructing W\n")
-    pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
-    
-    indices <- matrix(0, nrow = length(sentence), ncol = 2)
-    for(i.sentence in seq(sentence)){    
-        word <- sentence[i.sentence]
 
-        if(word != 0){
-            indices[i.sentence, ] <- c(i.sentence, word)
-        }
-
-        setTxtProgressBar(pb, i.sentence)
-    }
+    indices <- cbind(seq(sentence), sentence)
+    indices <- indices[indices[ , 2] > 0, ]
     
-    indices <- indices[rowSums(indices) > 0, ]
     W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, n.vocab))
