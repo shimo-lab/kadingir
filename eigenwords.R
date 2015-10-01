@@ -1,19 +1,20 @@
-## Implementation of Eigenwords
+### Implementation of Eigenwords
 
 library(Matrix)
 library(RRedsvd)
 library(svd)
 
 
-## CCA using randomized SVD or propack.svd
-##  In the same way as [Dhillon+2015], ignore off-diagonal elements of Cxx & Cyy
-##
-##  Arguments :
-##    X : matrix
-##    Y : matrix
-##    k : number of desired singular values
-##    sparse : Use redsvd or propack.svd?
-cca.eigenwords <- function(X, Y, k, sparse = TRUE){
+CcaEigenwords <- function(X, Y, k, sparse = TRUE) {
+    ## CCA using randomized SVD or propack.svd
+    ##  In the same way as [Dhillon+2015], ignore off-diagonal elements of Cxx & Cyy
+    ##
+    ##  Arguments :
+    ##    X : matrix
+    ##    Y : matrix
+    ##    k : number of desired singular values
+    ##    sparse : Use redsvd or propack.svd?
+
     Cxx <- t(X) %*% X
     Cxy <- t(X) %*% Y
     Cyy <- t(Y) %*% Y
@@ -34,16 +35,16 @@ cca.eigenwords <- function(X, Y, k, sparse = TRUE){
 }
 
 
-eigenwords <- function(sentence.orig, min.count = 10,
-                       dim.internal = 200, window.size = 2, mode = "oscca"){
+Eigenwords <- function(sentence.orig, min.count = 10,
+                       dim.internal = 200, window.size = 2, mode = "oscca") {
 
     time.start <- Sys.time()
 
-    if (!mode %in% c("oscca", "tscca")){
+    if (!mode %in% c("oscca", "tscca")) {
         cat(paste0("mode is invalid: ", mode))
     }
     
-    if (min.count > 0){
+    if (min.count > 0) {
         d.table <- table(sentence.orig)
         vocab.words <- names(d.table[d.table >= min.count])
     } else {
@@ -98,15 +99,15 @@ eigenwords <- function(sentence.orig, min.count = 10,
     ## Execute CCA
     if (mode == "oscca") { # One-step CCA
         cat("Calculate OSCCA...\n\n")
-        results.redsvd <- cca.eigenwords(W, C, dim.internal)
+        results.redsvd <- CcaEigenwords(W, C, dim.internal)
     } else if (mode == "tscca") { # Two-Step CCA
         cat("Calculate TSCCA...\n\n")
         L <- C[ , 1:(window.size*n.vocab)]
         R <- C[ , (window.size*n.vocab+1):(2*window.size*n.vocab)]
-        redsvd.LR <- cca.eigenwords(L, R, dim.internal)
+        redsvd.LR <- CcaEigenwords(L, R, dim.internal)
 
         S <- cbind(L %*% redsvd.LR$U, R %*% redsvd.LR$V)
-        results.redsvd <- cca.eigenwords(W, S, dim.internal, sparse = FALSE)
+        results.redsvd <- CcaEigenwords(W, S, dim.internal, sparse = FALSE)
     }
 
     return.list <- list()
@@ -120,12 +121,12 @@ eigenwords <- function(sentence.orig, min.count = 10,
 }
 
 
-most.similar <- function(res.eigenwords, positive = NULL, negative = NULL,
-                         topn = 10, normalize = FALSE, format = "euclid"){
+MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
+                         topn = 10, normalize = FALSE, format = "euclid") {
     vocab <- res.eigenwords$vocab.words
     rep.vocab <- res.eigenwords$svd$U
 
-    if (normalize){
+    if (normalize) {
         rep.vocab <- rep.vocab/sqrt(rowSums(rep.vocab**2))
     }
 
@@ -150,7 +151,7 @@ most.similar <- function(res.eigenwords, positive = NULL, negative = NULL,
         }
     }
 
-    if (normalize){
+    if (normalize) {
         rep.query <- rep.query/sqrt(sum(rep.query**2))
     }
 

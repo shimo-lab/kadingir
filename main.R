@@ -15,7 +15,7 @@ sentence.orig.full <- unlist(strsplit(tolower(line), " "))
 sentence.orig <- sentence.orig.full#[1:1000000]
 
 ## Eigenwords
-res.eigenwords <- eigenwords(sentence.orig, min.count, dim.internal, window.size)
+res.eigenwords <- Eigenwords(sentence.orig, min.count, dim.internal, window.size)
 
 ## Check vector representations
-most.similar(res.eigenwords, positive=c("man"), topn=10)
+MostSimilar(res.eigenwords, positive=c("man"), topn=10)
