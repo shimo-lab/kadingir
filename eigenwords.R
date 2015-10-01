@@ -67,8 +67,6 @@ eigenwords <- function(sentence.orig, min.count = 10,
     ##  sparseMatrix関数を使ってまとめて行列 W, C を生成している．
     
     ## Construction of W
-    cat("Constructing W\n")
-
     indices <- cbind(seq(sentence), sentence)
     indices <- indices[indices[ , 2] > 0, ]
     
@@ -77,8 +75,6 @@ eigenwords <- function(sentence.orig, min.count = 10,
                       dims = c(n.train.words, n.vocab))
     
     ## Construction of C
-    cat("\nConstructing C\n")
-
     offsets <- c(-2, -1, 1, 2)
     indices <- c()
     for (i.offset in seq(offsets)) {
@@ -95,7 +91,7 @@ eigenwords <- function(sentence.orig, min.count = 10,
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, 2*window.size*n.vocab))
 
-    cat("\n\nSize of W :", format(object.size(W), unit = "auto"))
+    cat("\nSize of W :", format(object.size(W), unit = "auto"))
     cat("\nSize of C :", format(object.size(C), unit = "auto"))
     cat("\n\n")
 
