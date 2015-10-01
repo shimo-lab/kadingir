@@ -63,7 +63,7 @@ eigenwords <- function(sentence.orig, min.count = 10,
 
 
     ## Calculate Eigenwords
-    ##  実行速度の観点から，1が立つ要素のインデックスをfor文で生成し，
+    ##  実行速度の観点から，1が立つ要素のインデックスをすべて生成し，
     ##  sparseMatrix関数を使ってまとめて行列 W, C を生成している．
     
     ## Construction of W
