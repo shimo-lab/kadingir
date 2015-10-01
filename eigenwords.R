@@ -2,7 +2,6 @@
 
 library(Matrix)
 library(RRedsvd)
-library(tcltk)
 library(svd)
 
 
