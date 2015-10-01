@@ -79,29 +79,19 @@ eigenwords <- function(sentence.orig, min.count = 10,
     
     ## Construction of C
     cat("\nConstructing C\n")
-    pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
-    
-    indices <- matrix(0, nrow = 2*window.size*length(sentence), ncol = 2)
-    offsets <- sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)
-    for(i.sentence in seq(sentence)){
-        word <- sentence[i.sentence]
 
-        if(word != 0){
-            for(i.context in seq(offsets)){
-                offset <- offsets[i.context]
-                
-                i <- offset + i.sentence
-                j <- word + n.vocab*(i.context - 1)
-                
-                if(i >= 1 && i <= n.train.words){
-                    indices[(i.sentence - 1)*(2*window.size) + i.context, ] <- c(i, j)
-                }
-            }
-        }
-        setTxtProgressBar(pb, i.sentence)
+    offsets <- c(-2, -1, 1, 2)
+    indices <- c()
+    for (i.offset in seq(offsets)) {
+        offset <- offsets[i.offset]
+        indices.temp <- cbind(seq(sentence) - offset,
+                              sentence + n.vocab * (i.offset - 1))
+        indices <- rbind(indices, indices.temp)
     }
 
-    indices <- indices[rowSums(indices) > 0, ]
+    indices <- indices[(indices[ , 1] > 0) & (indices[ , 1] <= n.train.words), ]
+    indices <- indices[indices[ , 2] > 0, ]
+
     C <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, 2*window.size*n.vocab))
