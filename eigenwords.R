@@ -46,17 +46,17 @@ TSCCA <- function(W, L, R, k) {
         V <- redsvd.LR$V
         
         Cww <- t(W) %*% W
-        Css <- rbind(
-            cbind(
+        Css <- rbind2(
+            cbind2(
                 t(U) %*% (t(L) %*% L) %*% U,
                 t(U) %*% (t(L) %*% R) %*% V
             ),
-            cbind(
+            cbind2(
                 t(V) %*% (t(R) %*% L) %*% U,
                 t(V) %*% (t(R) %*% R) %*% V
             )
         )
-        Cws <- cbind(
+        Cws <- cbind2(
             (t(W) %*% L) %*% U,
             (t(W) %*% R) %*% V
         )
