@@ -19,3 +19,5 @@ res.eigenwords <- Eigenwords(sentence.orig, min.count, dim.internal, window.size
 
 ## Check vector representations
 MostSimilar(res.eigenwords, positive=c("man"), topn=10)
+MostSimilar(res.eigenwords, positive=c("king", "woman"), negative=c("man"),
+            normalize=TRUE, format="cosine", topn=10)
