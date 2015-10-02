@@ -5,21 +5,7 @@ library(RRedsvd)
 library(svd)
 
 
-CcaEigenwords <- function(X, Y, k, sparse = TRUE) {
-    ## CCA using randomized SVD or propack.svd
-    ##  In the same way as [Dhillon+2015], ignore off-diagonal elements of Cxx & Cyy
-    ##
-    ##  Arguments :
-    ##    X : matrix
-    ##    Y : matrix
-    ##    k : number of desired singular values
-    ##    sparse : Use redsvd or propack.svd?
-
-    Cxx <- t(X) %*% X
-    Cxy <- t(X) %*% Y
-    Cyy <- t(Y) %*% Y
-    
-    A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
+TruncatedSVD <- function(A, k, sparse) {
 
     if (sparse) {
         results.svd <- redsvd(A, k)
@@ -32,6 +18,52 @@ CcaEigenwords <- function(X, Y, k, sparse = TRUE) {
     }
 
     return(results.svd)
+
+}
+OSCCA <- function(X, Y, k) {
+    ## CCA using randomized SVD
+    ##  In the same way as [Dhillon+2015],
+    ##  ignore off-diagonal elements of Cxx & Cyy
+    ##
+    ##  Arguments :
+    ##    X : matrix
+    ##    Y : matrix
+    ##    k : number of desired singular values
+
+    Cxx <- t(X) %*% X
+    Cxy <- t(X) %*% Y
+    Cyy <- t(Y) %*% Y
+    
+    A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
+
+    return(TruncatedSVD(A, k, sparse = TRUE))
+
+}
+
+TSCCA <- function(W, L, R, k) {
+        redsvd.LR <- OSCCA(L, R, k)
+        U <- redsvd.LR$U
+        V <- redsvd.LR$V
+        
+        Cww <- t(W) %*% W
+        Css <- rbind(
+            cbind(
+                t(U) %*% (t(L) %*% L) %*% U,
+                t(U) %*% (t(L) %*% R) %*% V
+            ),
+            cbind(
+                t(V) %*% (t(R) %*% L) %*% U,
+                t(V) %*% (t(R) %*% R) %*% V
+            )
+        )
+        Cws <- cbind(
+            (t(W) %*% L) %*% U,
+            (t(W) %*% R) %*% V
+        )
+
+        A <- diag(diag(Cww)^(-1/2)) %*% Cws %*% diag(diag(Css)^(-1/2))
+
+        return(TruncatedSVD(A, k, sparse = FALSE))
 }
 
 
@@ -99,15 +131,14 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     ## Execute CCA
     if (mode == "oscca") { # One-step CCA
         cat("Calculate OSCCA...\n\n")
-        results.redsvd <- CcaEigenwords(W, C, dim.internal)
+        
+        results.redsvd <- OSCCA(W, C, dim.internal)
     } else if (mode == "tscca") { # Two-Step CCA
         cat("Calculate TSCCA...\n\n")
+        
         L <- C[ , 1:(window.size*n.vocab)]
         R <- C[ , (window.size*n.vocab+1):(2*window.size*n.vocab)]
-        redsvd.LR <- CcaEigenwords(L, R, dim.internal)
-
-        S <- cbind(L %*% redsvd.LR$U, R %*% redsvd.LR$V)
-        results.redsvd <- CcaEigenwords(W, S, dim.internal, sparse = FALSE)
+        results.redsvd <- TSCCA(W, L, R, dim.internal)
     }
 
     return.list <- list()
