@@ -11,8 +11,8 @@ f <- file("data/text8", "r")
 line <- readLines(con = f, -1)
 close(f)
 
-sentence.orig.full <- unlist(strsplit(tolower(line), " "))
-sentence.orig <- sentence.orig.full#[1:1000000]
+sentence.orig <- unlist(strsplit(tolower(line), " "))
+rm(line)
 
 ## Eigenwords
 res.eigenwords <- Eigenwords(sentence.orig, min.count, dim.internal, window.size)
