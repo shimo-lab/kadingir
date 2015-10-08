@@ -109,7 +109,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
                       dims = c(n.train.words, n.vocab))
     
     ## Construction of C
-    offsets <- c(-2, -1, 1, 2)
+    offsets <- c(-window.size:-1, 1:window.size)
     indices <- c()
     for (i.offset in seq(offsets)) {
         offset <- offsets[i.offset]
