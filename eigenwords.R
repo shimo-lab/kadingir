@@ -154,7 +154,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
 
 MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
                         topn = 10, normalize = FALSE, format = "euclid",
-                        ignore.query.words = TRUE) {
+                        ignore.query.words = TRUE, print.error = TRUE) {
     vocab <- res.eigenwords$vocab.words
     rep.vocab <- res.eigenwords$svd$U
 
@@ -173,7 +173,9 @@ MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
             for (query in queries) {
                 
                 if (!query %in% vocab) {
-                    print(paste0("Error: `", query, "` is not in vocaburary."))
+                    if (print.error) {
+                        print(paste0("Error: `", query, "` is not in vocaburary."))
+                    }
                     return(FALSE)
                 }
                 
