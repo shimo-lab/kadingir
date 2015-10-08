@@ -87,6 +87,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     cat("Size of sentence   :", length(sentence.orig), "\n")
     cat("dim.internal       :", dim.internal, "\n")
     cat("min.count          :", min.count, "\n")
+    cat("window.size        :", window.size, "\n")
     cat("Size of vocab      :", length(vocab.words), "\n")
     cat("mode               :", mode, "\n\n")
 
