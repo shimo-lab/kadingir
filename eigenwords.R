@@ -87,6 +87,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     cat("Size of sentence   :", length(sentence.orig), "\n")
     cat("dim.internal       :", dim.internal, "\n")
     cat("min.count          :", min.count, "\n")
+    cat("window.size        :", window.size, "\n")
     cat("Size of vocab      :", length(vocab.words), "\n")
     cat("mode               :", mode, "\n\n")
 
@@ -108,7 +109,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
                       dims = c(n.train.words, n.vocab))
     
     ## Construction of C
-    offsets <- c(-2, -1, 1, 2)
+    offsets <- c(-window.size:-1, 1:window.size)
     indices <- c()
     for (i.offset in seq(offsets)) {
         offset <- offsets[i.offset]
@@ -153,7 +154,8 @@ Eigenwords <- function(sentence.orig, min.count = 10,
 
 
 MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
-                         topn = 10, normalize = FALSE, format = "euclid") {
+                        topn = 10, normalize = FALSE, format = "euclid",
+                        ignore.query.words = TRUE, print.error = TRUE) {
     vocab <- res.eigenwords$vocab.words
     rep.vocab <- res.eigenwords$svd$U
 
@@ -172,7 +174,9 @@ MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
             for (query in queries) {
                 
                 if (!query %in% vocab) {
-                    print(paste0("Error: `", query, "` is not in vocaburary."))
+                    if (print.error) {
+                        print(paste0("Error: `", query, "` is not in vocaburary."))
+                    }
                     return(FALSE)
                 }
                 
@@ -186,8 +190,15 @@ MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
         rep.query <- rep.query/sqrt(sum(rep.query**2))
     }
 
+    if (ignore.query.words) {
+        query.words <- c(positive, negative)
+        index.vocab.reduced <- which(!vocab %in% query.words)
+        rep.vocab <- rep.vocab[index.vocab.reduced, ]
+        vocab <- vocab[index.vocab.reduced]
+    }
+
     if (format == "euclid") {
-        rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
+        rep.query.matrix <- matrix(rep.query, nrow=nrow(rep.vocab), ncol=ncol(rep.vocab), byrow=TRUE)
         distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
         names(distances) <- vocab
 
