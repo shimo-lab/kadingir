@@ -9,7 +9,8 @@ Eigenwords
 
 # memo
 ## "Zipfian nature" の確認
-`plot(sort(table(sentence.orig), decreasing = TRUE), log="y")`
+* `plot(sort(table(sentence.orig), decreasing = TRUE), log="y")`
+* `plot(sort(colMeans(W), decreasing = TRUE), log = "y", cex.axis = 3)`
 
 ## How to get data files
 `scp poomo:/data/oshikiri/eigenwords/* ./`
