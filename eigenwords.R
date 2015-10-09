@@ -125,8 +125,10 @@ Eigenwords <- function(sentence.orig, min.count = 10,
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, 2*window.size*n.vocab))
 
-    cat("\nSize of W :", format(object.size(W), unit = "GB"))
-    cat("\nSize of C :", format(object.size(C), unit = "GB"))
+    cat("Size of W :")
+    print(object.size(W), unit = "GB")
+    cat("Size of C :")
+    print(object.size(C), unit = "GB")
     cat("\n\n")
 
     ## Execute CCA
