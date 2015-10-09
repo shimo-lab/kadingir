@@ -186,7 +186,7 @@ MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
         }
     }
 
-    if (normalize) {
+    if (normalize || format == "cosine") {
         rep.query <- rep.query/sqrt(sum(rep.query**2))
     }
 
