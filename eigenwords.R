@@ -214,3 +214,24 @@ MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
 
     }
 }
+
+
+TestGoogleTasks <- function (res.eigenwords, path) {
+  ## Calcurate accuracy of Google analogy task
+  queries <- read.csv(path, header = FALSE,
+                      sep = " ", comment.char = ":")
+
+  time.start <- Sys.time()
+  results <- rep(NULL, times = nrow(queries))
+  for (i in seq(nrow(queries))) {
+    q <- as.character(unlist(queries[i, ]))
+    res.MostSimilar <- MostSimilar(res.eigenwords, positive=c(q[[2]], q[[3]]),
+                                   negative=c(q[[1]]),
+                                   format="cosine", topn=10, print.error = FALSE)
+
+    results[i] <- res.MostSimilar && names(res.MostSimilar)[[1]] == q[4]
+  }
+  print(Sys.time() - time.start)
+
+  cat("accuracy = ", sum(results), "/", length(results))
+}

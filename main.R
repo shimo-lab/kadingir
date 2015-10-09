@@ -22,20 +22,6 @@ MostSimilar(res.eigenwords, positive=c("man"), topn=10)
 MostSimilar(res.eigenwords, positive=c("king", "woman"), negative=c("man"),
             normalize=TRUE, format="cosine", topn=10)
 
-
 ## Calcurate accuracy of Google analogy task
-queries <- read.csv("test/questions-words.txt", header = FALSE,
-                    sep = " ", comment.char = ":")
-
-results <- rep(NULL, times = nrow(queries))
-for (i in seq(nrow(queries))) {
-    q <- as.character(unlist(queries[i, ]))
-    res.MostSimilar <- MostSimilar(res.eigenwords, positive=c(q[[2]], q[[3]]),
-                                   negative=c(q[[1]]), normalize=TRUE,
-                                   format="cosine", topn=10, print.error = FALSE)
-
-    results[i] <- res.MostSimilar && names(res.MostSimilar)[[1]] == q[4]
-}
-
-print(sum(results))
-print(mean(results))
+path <- "test/questions-words.txt"
+TestGoogleTasks(res.eigenwords, path)
