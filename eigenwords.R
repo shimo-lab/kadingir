@@ -227,7 +227,7 @@ TestGoogleTasks <- function (res.eigenwords, path) {
     q <- as.character(unlist(queries[i, ]))
     res.MostSimilar <- MostSimilar(res.eigenwords, positive=c(q[[2]], q[[3]]),
                                    negative=c(q[[1]]),
-                                   format="cosine", topn=10, print.error = FALSE)
+                                   format="euclid", topn=10, print.error = FALSE)
 
     results[i] <- res.MostSimilar && names(res.MostSimilar)[[1]] == q[4]
   }
