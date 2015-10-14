@@ -2,12 +2,12 @@
 source("eigenwords.R")
 
 ## Tuning parameters
-min.count <- 100      # 出現回数がmin.count回以下の単語はvocabに入れない
+min.count <- 200      # 出現回数がmin.count回以下の単語はvocabに入れない
 dim.internal <- 200   # 共通空間の次元
-window.size <- 2      # 前後何個の単語をcontextとするか
+window.size <- 4      # 前後何個の単語をcontextとするか
 
 ## Making train data
-f <- file("data/text8", "r")
+f <- file("data/enwiki1GB.txt", "r")
 line <- readLines(con = f, -1)
 close(f)
 
