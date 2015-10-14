@@ -107,6 +107,9 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, n.vocab))
+
+    cat("Size of W :")
+    print(object.size(W), unit = "GB")
     
     ## Construction of C
     offsets <- c(-window.size:-1, 1:window.size)
@@ -125,8 +128,6 @@ Eigenwords <- function(sentence.orig, min.count = 10,
                       x = rep(1, times = nrow(indices)),
                       dims = c(n.train.words, 2*window.size*n.vocab))
 
-    cat("Size of W :")
-    print(object.size(W), unit = "GB")
     cat("Size of C :")
     print(object.size(C), unit = "GB")
     cat("\n\n")
