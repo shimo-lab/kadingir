@@ -113,20 +113,24 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     
     ## Construction of C
     offsets <- c(-window.size:-1, 1:window.size)
-    indices <- c()
+    C <- sparseMatrix(i = 1, j = 1, x = 0, dims = c(n.train.words, 2*window.size*n.vocab))
+    
     for (i.offset in seq(offsets)) {
         offset <- offsets[i.offset]
         indices.temp <- cbind(seq(sentence) - offset,
-                              sentence + n.vocab * (i.offset - 1))
-        indices <- rbind(indices, indices.temp)
+                              sentence + n.vocab * (i.offset - 1L))
+        indices.temp <- indices.temp[(indices.temp[ , 1] > 0) & (indices.temp[ , 1] <= n.train.words), ]
+        indices.temp <- indices.temp[indices.temp[ , 2] > 0, ]
+        
+        C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2], x = rep(1L, times = nrow(indices.temp)),
+                               dims = c(n.train.words, 2*window.size*n.vocab))
+        
+        C <- C + C.temp
+        
+        rm(indices.temp)
+        rm(C.temp)
+        invisible(gc())
     }
-
-    indices <- indices[(indices[ , 1] > 0) & (indices[ , 1] <= n.train.words), ]
-    indices <- indices[indices[ , 2] > 0, ]
-
-    C <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
-                      x = rep(1, times = nrow(indices)),
-                      dims = c(n.train.words, 2*window.size*n.vocab))
 
     cat("Size of C :")
     print(object.size(C), unit = "GB")
