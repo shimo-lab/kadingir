@@ -126,9 +126,6 @@ Eigenwords <- function(sentence.orig, min.count = 10,
         
         C <- cbind2(C, C.temp)
         
-        rm(indices.temp)
-        rm(C.temp)
-        invisible(gc())
     }
 
     cat("Size of C :")
