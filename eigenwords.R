@@ -45,20 +45,20 @@ TSCCA <- function(W, L, R, k) {
         U <- redsvd.LR$U
         V <- redsvd.LR$V
         
-        Cww <- t(W) %*% W
+        Cww <- crossprod(W)
         Css <- rbind2(
             cbind2(
-                t(U) %*% (t(L) %*% L) %*% U,
-                t(U) %*% (t(L) %*% R) %*% V
+                t(U) %*% crossprod(L) %*% U,
+                t(U) %*% crossprod(L, R) %*% V
             ),
             cbind2(
-                t(V) %*% (t(R) %*% L) %*% U,
-                t(V) %*% (t(R) %*% R) %*% V
+                t(V) %*% crossprod(R, L) %*% U,
+                t(V) %*% crossprod(R) %*% V
             )
         )
         Cws <- cbind2(
-            (t(W) %*% L) %*% U,
-            (t(W) %*% R) %*% V
+            crossprod(W, L) %*% U,
+            crossprod(W, R) %*% V
         )
 
         A <- diag(diag(Cww)^(-1/2)) %*% Cws %*% diag(diag(Css)^(-1/2))
