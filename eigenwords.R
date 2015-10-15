@@ -30,9 +30,9 @@ OSCCA <- function(X, Y, k) {
     ##    Y : matrix
     ##    k : number of desired singular values
 
-    Cxx <- crossprod(X, boolArith = TRUE)
-    Cxy <- crossprod(X, Y, boolArith = TRUE)
-    Cyy <- crossprod(Y, boolArith = TRUE)
+    Cxx <- crossprod(X)
+    Cxy <- crossprod(X, Y)
+    Cyy <- crossprod(Y)
     
     A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
 
