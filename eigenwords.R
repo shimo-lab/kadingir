@@ -126,6 +126,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
         
         C <- cbind2(C, C.temp)
         
+        print(i.offset)
     }
 
     cat("Size of C :")
