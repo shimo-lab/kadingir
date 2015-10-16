@@ -30,9 +30,9 @@ OSCCA <- function(X, Y, k) {
     ##    Y : matrix
     ##    k : number of desired singular values
 
-    Cxx <- t(X) %*% X
-    Cxy <- t(X) %*% Y
-    Cyy <- t(Y) %*% Y
+    Cxx <- crossprod(X)
+    Cxy <- crossprod(X, Y)
+    Cyy <- crossprod(Y)
     
     A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
 
@@ -45,20 +45,20 @@ TSCCA <- function(W, L, R, k) {
         U <- redsvd.LR$U
         V <- redsvd.LR$V
         
-        Cww <- t(W) %*% W
+        Cww <- crossprod(W)
         Css <- rbind2(
             cbind2(
-                t(U) %*% (t(L) %*% L) %*% U,
-                t(U) %*% (t(L) %*% R) %*% V
+                t(U) %*% crossprod(L) %*% U,
+                t(U) %*% crossprod(L, R) %*% V
             ),
             cbind2(
-                t(V) %*% (t(R) %*% L) %*% U,
-                t(V) %*% (t(R) %*% R) %*% V
+                t(V) %*% crossprod(R, L) %*% U,
+                t(V) %*% crossprod(R) %*% V
             )
         )
         Cws <- cbind2(
-            (t(W) %*% L) %*% U,
-            (t(W) %*% R) %*% V
+            crossprod(W, L) %*% U,
+            crossprod(W, R) %*% V
         )
 
         A <- diag(diag(Cww)^(-1/2)) %*% Cws %*% diag(diag(Css)^(-1/2))
@@ -105,7 +105,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     indices <- indices[indices[ , 2] > 0, ]
     
     W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
-                      x = rep(1L, times = nrow(indices)),
+                      x = rep(T, times = nrow(indices)),
                       dims = c(n.train.words, n.vocab))
 
     cat("Size of W :")
@@ -113,23 +113,19 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     
     ## Construction of C
     offsets <- c(-window.size:-1, 1:window.size)
-    
-    C <- sparseMatrix(i = 1, j = 1, x = 0L, dims = c(n.train.words, 2*window.size*n.vocab))
+    C <- Matrix(F, nrow = n.train.words, ncol = 0)
     for (i.offset in seq(offsets)) {
         offset <- offsets[i.offset]
-        indices.temp <- cbind(seq(sentence) - offset,
-                              sentence + n.vocab * (i.offset - 1L))
+        indices.temp <- cbind(seq(sentence) - offset, sentence)
         indices.temp <- indices.temp[(indices.temp[ , 1] > 0) & (indices.temp[ , 1] <= n.train.words), ]
         indices.temp <- indices.temp[indices.temp[ , 2] > 0, ]
         
-        C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2], x = rep(1L, times = nrow(indices.temp)),
+        C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2], x = rep(T, times = nrow(indices.temp)),
                                dims = c(n.train.words, 2*window.size*n.vocab))
         
-        C <- C + C.temp
+        C <- cbind2(C, C.temp)
         
-        rm(indices.temp)
-        rm(C.temp)
-        invisible(gc())
+        print(i.offset)
     }
 
     cat("Size of C :")
