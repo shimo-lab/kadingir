@@ -20,20 +20,51 @@ TruncatedSVD <- function(A, k, sparse) {
     return(results.svd)
 
 }
-OSCCA <- function(X, Y, k) {
+
+crossprod.block <- function(X, Y = NULL, only.diag = FALSE) {
+
+  if (is.null(Y)) {
+    Y <- X
+  }
+
+  ZZ <- Matrix(FALSE, nrow = 0, ncol = sum(sapply(Y, ncol)))
+  for (i in seq(X)) {
+    Zi <- Matrix(FALSE, nrow = ncol(X[[i]]), ncol = 0)
+    for (j in seq(Y)) {
+      if (only.diag && i != j) {
+        Zi <- cbind2(Zi, Matrix(FALSE, nrow = ncol(X[[i]]), ncol = ncol(Y[[j]])))
+      } else {
+        Zi <- cbind2(Zi, crossprod(X[[i]], Y[[j]]))        
+      }
+      print(c(i, j))
+    }
+    ZZ <- rbind2(ZZ, Zi)
+  }
+  
+  return(ZZ)
+}
+
+OSCCA <- function(X, Y, k, use.block.matrix) {
     ## CCA using randomized SVD
     ##  In the same way as [Dhillon+2015],
     ##  ignore off-diagonal elements of Cxx & Cyy
     ##
     ##  Arguments :
-    ##    X : matrix
-    ##    Y : matrix
+    ##    X : matrix or list of matrices
+    ##    Y : matrix or list of matrices
     ##    k : number of desired singular values
+    ##    use.block.matrix : Are X, Y block matrix?
 
-    Cxx <- crossprod(X)
-    Cxy <- crossprod(X, Y)
-    Cyy <- crossprod(Y)
-    
+    if (use.block.matrix) {
+      Cxx <- crossprod.block(X, only.diag = TRUE)
+      Cxy <- crossprod.block(X, Y)
+      Cyy <- crossprod.block(Y, only.diag = TRUE)
+    } else {
+      Cxx <- crossprod(X)
+      Cxy <- crossprod(X, Y)
+      Cyy <- crossprod(Y)
+    }
+
     A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
 
     return(TruncatedSVD(A, k, sparse = TRUE))
@@ -68,7 +99,8 @@ TSCCA <- function(W, L, R, k) {
 
 
 Eigenwords <- function(sentence.orig, min.count = 10,
-                       dim.internal = 200, window.size = 2, mode = "oscca") {
+                       dim.internal = 200, window.size = 2, mode = "oscca",
+                       use.block.matrix = FALSE) {
 
     time.start <- Sys.time()
 
@@ -108,12 +140,22 @@ Eigenwords <- function(sentence.orig, min.count = 10,
                       x = rep(T, times = nrow(indices)),
                       dims = c(n.train.words, n.vocab))
 
+    if (use.block.matrix) {
+      W <- list(W)
+    }
+
     cat("Size of W :")
     print(object.size(W), unit = "GB")
     
     ## Construction of C
     offsets <- c(-window.size:-1, 1:window.size)
-    C <- Matrix(F, nrow = n.train.words, ncol = 0)
+    
+    if (use.block.matrix) {
+      C <- list()
+    } else {
+      C <- Matrix(F, nrow = n.train.words, ncol = 0)
+    }
+
     for (i.offset in seq(offsets)) {
         offset <- offsets[i.offset]
         indices.temp <- cbind(seq(sentence) - offset, sentence)
@@ -123,7 +165,11 @@ Eigenwords <- function(sentence.orig, min.count = 10,
         C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2], x = rep(T, times = nrow(indices.temp)),
                                dims = c(n.train.words, 2*window.size*n.vocab))
         
-        C <- cbind2(C, C.temp)
+        if (use.block.matrix) {
+          C[[i.offset]] <- C.temp
+        } else {
+          C <- cbind2(C, C.temp)
+        }
         
         print(i.offset)
     }
@@ -136,7 +182,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     if (mode == "oscca") { # One-step CCA
         cat("Calculate OSCCA...\n\n")
         
-        results.redsvd <- OSCCA(W, C, dim.internal)
+        results.redsvd <- OSCCA(W, C, dim.internal, use.block.matrix)
     } else if (mode == "tscca") { # Two-Step CCA
         cat("Calculate TSCCA...\n\n")
         

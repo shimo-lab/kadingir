@@ -18,7 +18,7 @@ rm(line)
 
 
 ## Eigenwords
-res.eigenwords <- Eigenwords(sentence.orig, min.count, dim.internal, window.size)
+res.eigenwords <- Eigenwords(sentence.orig, min.count, dim.internal, window.size, use.block.matrix=TRUE)
 
 
 ## Check vector representations
