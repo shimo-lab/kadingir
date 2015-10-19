@@ -163,7 +163,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     indices.temp <- indices.temp[indices.temp[ , 2] > 0, ]
     
     C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2], x = rep(T, times = nrow(indices.temp)),
-                           dims = c(n.train.words, 2*window.size*n.vocab))
+                           dims = c(n.train.words, n.vocab))
     
     if (use.block.matrix) {
       C[[i.offset]] <- C.temp
