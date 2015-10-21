@@ -3,6 +3,10 @@
 library(Matrix)
 library(RRedsvd)
 library(svd)
+library(Rcpp)
+library(RcppEigen)
+
+sourceCpp("rcppeigenwords.cpp")
 
 
 TruncatedSVD <- function(A, k, sparse) {
@@ -127,60 +131,14 @@ Eigenwords <- function(sentence.orig, min.count = 10,
   n.vocab <- length(vocab.words)
   n.train.words <- length(sentence)
   
-  
-  ## Calculate Eigenwords
-  ##  実行速度の観点から，1が立つ要素のインデックスをすべて生成し，
-  ##  sparseMatrix関数を使ってまとめて行列 W, C を生成している．
-  
-  ## Construction of W
-  indices <- cbind(seq(sentence), sentence)
-  indices <- indices[indices[ , 2] > 0, ]
-  
-  W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
-                    x = rep(T, times = nrow(indices)),
-                    dims = c(n.train.words, n.vocab))
-  
-  if (use.block.matrix) {
-    W <- list(W)
-  }
-  
-  cat("Size of W :")
-  print(object.size(W), unit = "GB")
-  
-  ## Construction of C
-  offsets <- c(-window.size:-1, 1:window.size)
-  
-  if (use.block.matrix) {
-    C <- list()
-  } else {
-    C <- Matrix(F, nrow = n.train.words, ncol = 0)
-  }
-  
-  for (i.offset in seq(offsets)) {
-    offset <- offsets[i.offset]
-    indices.temp <- cbind(seq(sentence) - offset, sentence)
-    indices.temp <- indices.temp[(indices.temp[ , 1] > 0) & (indices.temp[ , 1] <= n.train.words), ]
-    indices.temp <- indices.temp[indices.temp[ , 2] > 0, ]
-    
-    C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2], x = rep(T, times = nrow(indices.temp)),
-                           dims = c(n.train.words, n.vocab))
-    
-    if (use.block.matrix) {
-      C[[i.offset]] <- C.temp
-    } else {
-      C <- cbind2(C, C.temp)
-    }
-  }
-  
-  cat("Size of C :")
-  print(object.size(C), unit = "GB")
-  cat("\n\n")
+  sentence <- as.integer(sentence) - 1L
+  r <- MakeMatrices(sentence, window.size, length(unique(sentence))-1)
   
   ## Execute CCA
   if (mode == "oscca") { # One-step CCA
     cat("Calculate OSCCA...\n\n")
     
-    results.redsvd <- OSCCA(W, C, dim.internal, use.block.matrix)
+    results.redsvd <- OSCCA(r$W, r$C, dim.internal, use.block.matrix)
   } else if (mode == "tscca") { # Two-Step CCA
     cat("Calculate TSCCA...\n\n")
     
