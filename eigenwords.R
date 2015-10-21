@@ -36,7 +36,6 @@ crossprod.block <- function(X, Y = NULL, only.diag = FALSE) {
       } else {
         Zi <- cbind2(Zi, crossprod(X[[i]], Y[[j]]))        
       }
-      print(c(i, j))
     }
     ZZ <- rbind2(ZZ, Zi)
   }
@@ -67,6 +66,7 @@ OSCCA <- function(X, Y, k, use.block.matrix) {
   
   A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
   
+  cat("Calculate redsvd...")
   return(TruncatedSVD(A, k, sparse = TRUE))
   
 }
@@ -170,8 +170,6 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     } else {
       C <- cbind2(C, C.temp)
     }
-    
-    print(i.offset)
   }
   
   cat("Size of C :")
