@@ -23,11 +23,12 @@ typedef Eigen::Triplet<int> T;
 SEXP MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   int i, j, i_sentence;
   unsigned long long sentence_size = sentence.size();
+  unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
   int i_offset, offset;
   int offsets[2*window_size];
   
   dSparseMatrix w(sentence_size, (unsigned long long)vocab_size);
-  dSparseMatrix c(sentence_size, 2*(unsigned long long)window_size*(unsigned long long)vocab_size);
+  dSparseMatrix c(sentence_size, c_col_size);
   std::vector<T> tripletList;
   
   std::cout << "window size = "   << window_size   << std::endl;
@@ -73,7 +74,7 @@ SEXP MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
         i = i_sentence - offsets[i_offset];
         j = sentence[i_sentence] + i_offset*vocab_size;
         
-        if (i >= 0 && i < sentence_size && j >= 0 && j < vocab_size) {
+        if ((i >= 0) && (i < sentence_size) && (j >= 0) && (j < c_col_size)) {
           tripletList.push_back(T(i, j, 1));
         }
       }
