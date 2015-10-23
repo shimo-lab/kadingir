@@ -23,12 +23,13 @@ typedef Eigen::Triplet<int> T;
 SEXP MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   int i, j, i_sentence;
   unsigned long long sentence_size = sentence.size();
+  unsigned long long ii, n_nonzeros;
+  unsigned long long i_nonzeros[sentence_size];
   unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
   int i_offset, offset;
   int offsets[2*window_size];
   
-  dSparseMatrix w(sentence_size, (unsigned long long)vocab_size);
-  dSparseMatrix c(sentence_size, c_col_size);
+  dSparseMatrix w, c;
   std::vector<T> tripletList;
   
   std::cout << "window size = "   << window_size   << std::endl;
@@ -41,19 +42,24 @@ SEXP MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   
   tripletList.reserve(sentence_size);
 
+  ii = 0;
   for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
     if (sentence[i_sentence] >= 0) {
-      i = i_sentence;
+      i = ii;
       j = sentence[i_sentence];
-    
+      
       tripletList.push_back(T(i, j, 1));
+      
+      i_nonzeros[ii] = i_sentence;
+      ii++;
     }
   }
+  n_nonzeros = ii;
 
+  w.resize(n_nonzeros, (unsigned long long)vocab_size);
   w.setFromTriplets(tripletList.begin(), tripletList.end());
-
   tripletList.clear();
-  
+
   
   // Make context matrix
   std::cout << "Constructing context matrix..." << std::endl;
@@ -66,20 +72,23 @@ SEXP MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
     }
   }
 
-  tripletList.reserve(2*(unsigned long long)window_size*sentence_size);
-  
-  for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
+  tripletList.reserve(2*(unsigned long long)window_size*n_nonzeros);
+
+  for (ii=0; ii<n_nonzeros; ii++) {
+    i_sentence = i_nonzeros[ii];
+    
     for (i_offset=0; i_offset<2*window_size; i_offset++) {
-      if (sentence[i_sentence] >= 0){
+      if (sentence[i_sentence] >= 0) {
         i = i_sentence - offsets[i_offset];
         j = sentence[i_sentence] + i_offset*vocab_size;
         
-        if ((i >= 0) && (i < sentence_size) && (j >= 0) && (j < c_col_size)) {
+        if ((i >= 0) && (i < n_nonzeros) && (j >= 0) && (j < c_col_size)) {
           tripletList.push_back(T(i, j, 1));
         }
       }
     }
   }
+  c.resize(n_nonzeros, c_col_size);
   c.setFromTriplets(tripletList.begin(), tripletList.end());
   
   
