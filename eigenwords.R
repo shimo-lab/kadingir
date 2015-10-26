@@ -134,6 +134,11 @@ Eigenwords <- function(sentence.orig, min.count = 10,
   sentence <- as.integer(sentence) - 1L
   r <- MakeMatrices(sentence, window.size, length(unique(sentence))-1)
   
+  cat("Size of W :")
+  print(object.size(r$W), unit = "GB")
+  cat("Size of C :")
+  print(object.size(r$C), unit = "GB")
+
   ## Execute CCA
   if (mode == "oscca") { # One-step CCA
     cat("Calculate OSCCA...\n\n")
