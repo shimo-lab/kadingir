@@ -10,22 +10,24 @@
 // [[Rcpp::depends(RcppEigen)]]
 
 using Eigen::MatrixXi;
-using Eigen::VectorXi;
+using Eigen::VectorXd;
 using Eigen::MappedSparseMatrix;
 using Rcpp::List;
-typedef Eigen::Map<VectorXi> MapIM;
+typedef Eigen::Map<Eigen::VectorXi> MapIM;
 typedef Eigen::SparseMatrix<double> dSparseMatrix;
 typedef Eigen::SparseMatrix<int> iSparseMatrix;
+typedef Eigen::DiagonalMatrix<int, Eigen::Dynamic> iDiagonalMatrix;
 typedef Eigen::Triplet<int> T;
 
 
 // [[Rcpp::export]]
-SEXP MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
+Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   int i, j, i_sentence;
   unsigned long long sentence_size = sentence.size();
   unsigned long long ii, n_nonzeros;
-  unsigned long long i_nonzeros[sentence_size];
-  unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
+  unsigned long long *i_nonzeros = (unsigned long long *)malloc(sentence_size * sizeof(unsigned long long));
+  unsigned long long c_col_size = (unsigned long long)(2*window_size*vocab_size);
+  
   int i_offset, offset;
   int offsets[2*window_size];
   
@@ -90,11 +92,13 @@ SEXP MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   }
   c.resize(n_nonzeros, c_col_size);
   c.setFromTriplets(tripletList.begin(), tripletList.end());
-  
+
+  free(i_nonzeros);
   
   return Rcpp::List::create(Rcpp::Named("W") = Rcpp::wrap(w),
                             Rcpp::Named("C") = Rcpp::wrap(c));
 }
+
 
 // [[Rcpp::export]]
 dSparseMatrix MakeSVDMatrix(MappedSparseMatrix<int> x, MappedSparseMatrix<int> y) {
