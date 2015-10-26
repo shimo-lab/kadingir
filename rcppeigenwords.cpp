@@ -97,17 +97,10 @@ SEXP MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
 }
 
 // [[Rcpp::export]]
-SEXP MakeSVDMatrix(MappedSparseMatrix<int> x, MappedSparseMatrix<int> y) {
+dSparseMatrix MakeSVDMatrix(MappedSparseMatrix<int> x, MappedSparseMatrix<int> y) {
+  VectorXd cxx_inverse((x.transpose() * x).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
+  VectorXd cyy_inverse((y.transpose() * y).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
+  dSparseMatrix cxy((x.transpose() * y).eval().cast <double>());
   
-  int size_x = x.cols();
-  int size_y = y.cols();
-  
-  iSparseMatrix cxx(x.adjoint() * x);
-  iSparseMatrix cxy(x.adjoint() * y);
-  iSparseMatrix cyy(y.adjoint() * y);
-//  iSparseMatrix a(cxx.inverse() * cxy * cyy.inverse());
-
-  return Rcpp::wrap(0);
-//  
-//  return Rcpp::wrap(a);
+  return cxx_inverse.asDiagonal() * cxy * cyy_inverse.asDiagonal();
 }
