@@ -10,6 +10,7 @@ sourceCpp("rcppeigenwords.cpp")
 
 
 TruncatedSVD <- function(A, k, sparse) {
+  print("TruncatedSVD()...")
   
   if (sparse) {
     results.svd <- redsvd(A, k)
@@ -20,7 +21,7 @@ TruncatedSVD <- function(A, k, sparse) {
     results.svd$V <- results.propack.svd$v
     results.svd$D <- results.propack.svd$d
   }
-  
+  print("End of TruncatedSVD()")
   return(results.svd)
   
 }
