@@ -22,10 +22,8 @@ typedef Eigen::Triplet<int> T;
 
 // [[Rcpp::export]]
 Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
-  int i, j, i_sentence;
+  unsigned long long i, j, i_sentence, n_non_nullwords;
   unsigned long long sentence_size = sentence.size();
-  unsigned long long ii, n_nonzeros;
-  unsigned long long *i_nonzeros = (unsigned long long *)malloc(sentence_size * sizeof(unsigned long long));
   unsigned long long c_col_size = (unsigned long long)(2*window_size*vocab_size);
   
   int i_offset, offset;
@@ -44,21 +42,19 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   
   tripletList.reserve(sentence_size);
 
-  ii = 0;
+  n_non_nullwords = 0;
   for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
     if (sentence[i_sentence] >= 0) {
-      i = ii;
+      i = n_non_nullwords;
       j = sentence[i_sentence];
       
       tripletList.push_back(T(i, j, 1));
-      
-      i_nonzeros[ii] = i_sentence;
-      ii++;
+
+      n_non_nullwords++;
     }
   }
-  n_nonzeros = ii;
 
-  w.resize(n_nonzeros, (unsigned long long)vocab_size);
+  w.resize(n_non_nullwords, (unsigned long long)vocab_size);
   w.setFromTriplets(tripletList.begin(), tripletList.end());
   tripletList.clear();
 
@@ -74,27 +70,23 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
     }
   }
 
-  tripletList.reserve(2*(unsigned long long)window_size*n_nonzeros);
+  tripletList.reserve(2*(unsigned long long)window_size*n_non_nullwords);
 
-  for (ii=0; ii<n_nonzeros; ii++) {
-    i_sentence = i_nonzeros[ii];
-    
-    for (i_offset=0; i_offset<2*window_size; i_offset++) {
-      if (sentence[i_sentence] >= 0) {
+  for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
+    if (sentence[i_sentence] >= 0) {    
+      for (i_offset=0; i_offset<2*window_size; i_offset++) {
         i = i_sentence - offsets[i_offset];
         j = sentence[i_sentence] + i_offset*vocab_size;
         
-        if ((i >= 0) && (i < n_nonzeros) && (j >= 0) && (j < c_col_size)) {
+        if ((i >= 0) && (i < n_non_nullwords) && (j >= 0) && (j < c_col_size)) {
           tripletList.push_back(T(i, j, 1));
         }
       }
     }
   }
-  c.resize(n_nonzeros, c_col_size);
+  c.resize(n_non_nullwords, c_col_size);
   c.setFromTriplets(tripletList.begin(), tripletList.end());
 
-  free(i_nonzeros);
-  
   return Rcpp::List::create(Rcpp::Named("W") = Rcpp::wrap(w),
                             Rcpp::Named("C") = Rcpp::wrap(c));
 }
