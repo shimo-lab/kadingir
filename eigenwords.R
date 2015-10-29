@@ -143,8 +143,9 @@ Eigenwords <- function(sentence.orig, min.count = 10,
   ## Execute CCA
   if (mode == "oscca") { # One-step CCA
     cat("Calculate OSCCA...\n\n")
-    results.redsvd <- TruncatedSVD(A = MakeSVDMatrix(r$W, r$C), k = dim.internal, sparse = FALSE)
-    
+#    results.redsvd <- TruncatedSVD(A = MakeSVDMatrix(r$W, r$C), k = dim.internal, sparse = TRUE)
+    results.redsvd <- RedsvdOSCCA(r$W, r$C, k = dim.internal)
+
   } else if (mode == "tscca") { # Two-Step CCA
     cat("Calculate TSCCA...\n\n")
     

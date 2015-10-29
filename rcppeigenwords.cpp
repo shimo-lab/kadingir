@@ -6,6 +6,7 @@
 
 #include <Rcpp.h>
 #include <RcppEigen.h>
+#include "redsvd.hpp"
 
 // [[Rcpp::depends(RcppEigen)]]
 
@@ -99,4 +100,19 @@ dSparseMatrix MakeSVDMatrix(MappedSparseMatrix<int> x, MappedSparseMatrix<int> y
   dSparseMatrix cxy((x.transpose() * y).eval().cast <double>());
   
   return cxx_inverse.asDiagonal() * cxy * cyy_inverse.asDiagonal();
+}
+
+
+// [[Rcpp::export]]
+Rcpp::List RedsvdOSCCA(MappedSparseMatrix<int> x, MappedSparseMatrix<int> y, int k) {
+  dSparseMatrix a(MakeSVDMatrix(x, y));
+  RedSVD::RedSVD<dSparseMatrix> svdA(a, k);
+
+  return List::create(
+      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
+      Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+      Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
+      Rcpp::Named("k") = Rcpp::wrap(k),
+      Rcpp::Named("A") = Rcpp::wrap(a)
+      );
 }
