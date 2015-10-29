@@ -23,9 +23,9 @@ typedef Eigen::Triplet<int> T;
 
 // [[Rcpp::export]]
 Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
-  unsigned long long i, j, i_sentence, n_non_nullwords;
+  unsigned long long i, j, i_sentence, n_non_nullwords, n_added_words;
   unsigned long long sentence_size = sentence.size();
-  unsigned long long c_col_size = (unsigned long long)(2*window_size*vocab_size);
+  unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
   
   int i_offset, offset;
   int offsets[2*window_size];
@@ -33,9 +33,10 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   dSparseMatrix w, c;
   std::vector<T> tripletList;
   
-  std::cout << "window size = "   << window_size   << std::endl;
-  std::cout << "vocab size = "    << vocab_size    << std::endl;
+  std::cout << "window size   = " << window_size   << std::endl;
+  std::cout << "vocab size    = " << vocab_size    << std::endl;
   std::cout << "sentence size = " << sentence_size << std::endl;
+  std::cout << "c_col_size    = " << c_col_size    << std::endl;
 
 
   // Make word matrix
@@ -73,16 +74,25 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
 
   tripletList.reserve(2*(unsigned long long)window_size*n_non_nullwords);
 
+  n_added_words = 0;
   for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
-    if (sentence[i_sentence] >= 0) {    
+    if (sentence[i_sentence] >= 0) {  // If sentence[i_sentence] is NOT null words
       for (i_offset=0; i_offset<2*window_size; i_offset++) {
-        i = i_sentence - offsets[i_offset];
-        j = sentence[i_sentence] + i_offset*vocab_size;
-        
-        if ((i >= 0) && (i < n_non_nullwords) && (j >= 0) && (j < c_col_size)) {
-          tripletList.push_back(T(i, j, 1));
-        }
+	// If `i_sentence + offsets[i_offset]` is valid index of sentence
+	//    and sentence[i_sentence + offsets[i_offset]] is non-null word
+	if ((i_sentence + offsets[i_offset] >= 0) &&
+	    (i_sentence + offsets[i_offset] < sentence_size) && 
+	    sentence[i_sentence + offsets[i_offset]] > -1) {
+
+	  i = n_added_words;
+	  j = sentence[i_sentence + offsets[i_offset]] + i_offset*vocab_size;
+
+	  if ((i < n_non_nullwords) && (j < c_col_size)) {
+	    tripletList.push_back(T(i, j, 1));
+	  }
+	}
       }
+      n_added_words++;
     }
   }
   c.resize(n_non_nullwords, c_col_size);
@@ -99,7 +109,7 @@ dSparseMatrix MakeSVDMatrix(MappedSparseMatrix<int> x, MappedSparseMatrix<int> y
   VectorXd cyy_inverse((y.transpose() * y).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
   dSparseMatrix cxy((x.transpose() * y).eval().cast <double>());
   
-  return cxx_inverse.asDiagonal() * cxy * cyy_inverse.asDiagonal();
+  return (cxx_inverse.asDiagonal() * cxy * cyy_inverse.asDiagonal());
 }
 
 
