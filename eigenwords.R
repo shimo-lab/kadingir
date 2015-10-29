@@ -9,7 +9,7 @@ library(RcppEigen)
 sourceCpp("rcppeigenwords.cpp")
 
 
-make.matrices <- function(sentence, window.size, n.train.words, n.vocab) {
+make.matrices <- function(sentence, window.size, n.train.words, n.vocab, skip.null.words) {
 
   ## Construction of W
   indices <- cbind(seq(sentence), sentence)
@@ -35,6 +35,11 @@ make.matrices <- function(sentence, window.size, n.train.words, n.vocab) {
                            x = rep(1, times = nrow(indices.temp)),
                            dims = c(n.train.words, n.vocab))
     C <- cbind2(C, C.temp)
+  }
+
+  if (skip.null.words) {
+    W <- W[indices[ , 1], ]
+    C <- C[indices[ , 1], ]
   }
 
   return(list(W = W, C = C))
@@ -136,7 +141,7 @@ TSCCA <- function(W, L, R, k) {
 
 Eigenwords <- function(sentence.orig, min.count = 10,
                        dim.internal = 200, window.size = 2, mode = "oscca",
-                       use.block.matrix = FALSE) {
+                       use.block.matrix = FALSE, use.eigen = TRUE) {
   
   time.start <- Sys.time()
   
@@ -167,7 +172,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
     sentence <- as.integer(sentence) - 1L
     r <- MakeMatrices(sentence, window.size, length(unique(sentence))-1)
   } else {
-    r <- make.matrices(sentence, window.size, n.train.words, n.vocab)
+    r <- make.matrices(sentence, window.size, n.train.words, n.vocab, skip.null.words = TRUE)
   }
   
   cat("Size of W :")
