@@ -9,6 +9,37 @@ library(RcppEigen)
 sourceCpp("rcppeigenwords.cpp")
 
 
+make.matrices <- function(sentence, window.size, n.train.words, n.vocab) {
+
+  ## Construction of W
+  indices <- cbind(seq(sentence), sentence)
+  indices <- indices[indices[ , 2] > 0, ]
+
+  W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
+                    x = rep(1, times = nrow(indices)),
+                    dims = c(n.train.words, n.vocab))
+
+  ## Construction of C
+  offsets <- c(-window.size:-1, 1:window.size)
+  C <- Matrix(F, nrow = n.train.words, ncol = 0)
+
+  for (i.offset in seq(offsets)) {
+    offset <- offsets[i.offset]
+    indices.temp <- cbind(seq(sentence) - offset, sentence)
+
+    # Ignore invalid indices and indices of null words
+    indices.temp <- indices.temp[(indices.temp[ , 1] > 0) & (indices.temp[ , 1] <= n.train.words), ]
+    indices.temp <- indices.temp[indices.temp[ , 2] > 0, ]
+
+    C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2],
+                           x = rep(1, times = nrow(indices.temp)),
+                           dims = c(n.train.words, n.vocab))
+    C <- cbind2(C, C.temp)
+  }
+
+  return(list(W = W, C = C))
+}
+
 TruncatedSVD <- function(A, k, sparse) {
   print("TruncatedSVD()...")
   
@@ -131,9 +162,13 @@ Eigenwords <- function(sentence.orig, min.count = 10,
   sentence <- match(sentence.orig, vocab.words, nomatch = 0)
   n.vocab <- length(vocab.words)
   n.train.words <- length(sentence)
-  
-  sentence <- as.integer(sentence) - 1L
-  r <- MakeMatrices(sentence, window.size, length(unique(sentence))-1)
+
+  if (use.eigen) {
+    sentence <- as.integer(sentence) - 1L
+    r <- MakeMatrices(sentence, window.size, length(unique(sentence))-1)
+  } else {
+    r <- make.matrices(sentence, window.size, n.train.words, n.vocab)
+  }
   
   cat("Size of W :")
   print(object.size(r$W), unit = "GB")
