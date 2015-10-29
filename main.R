@@ -19,6 +19,7 @@ rm(line)
 
 ## Eigenwords
 res.eigenwords <- Eigenwords(sentence.orig, min.count, dim.internal, window.size, use.block.matrix=FALSE)
+save(res.eigenwords, file = "res_eigenwords.Rdata")
 
 
 ## Check vector representations
