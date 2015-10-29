@@ -13,10 +13,11 @@
 using Eigen::MatrixXi;
 using Eigen::VectorXd;
 using Eigen::MappedSparseMatrix;
+using Eigen::VectorXi;
 typedef Eigen::Map<Eigen::VectorXi> MapIM;
-typedef Eigen::SparseMatrix<double> dSparseMatrix;
 typedef Eigen::SparseMatrix<int> iSparseMatrix;
 typedef Eigen::DiagonalMatrix<int, Eigen::Dynamic> iDiagonalMatrix;
+typedef Eigen::SparseMatrix<double, Eigen::RowMajor> dSparseMatrix;
 typedef Eigen::Triplet<int> T;
 
 
@@ -70,7 +71,8 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
     }
   }
 
-  tripletList.reserve(2*(unsigned long long)window_size*n_non_nullwords);
+  c.resize(n_non_nullwords, 2*(unsigned long long)window_size*(unsigned long long)vocab_size);
+  c.reserve(VectorXi::Constant(n_non_nullwords, 2*window_size));
 
   n_added_words = 0;
   for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
@@ -86,7 +88,7 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
           j = sentence[i_sentence + offsets[i_offset]] + i_offset*vocab_size;
             
           if ((i < n_non_nullwords) && (j < c_col_size)) {
-            tripletList.push_back(T(i, j, 1));
+            c.insert(i, j) = 1;
           }
         }
       }
@@ -94,8 +96,7 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
     }
   }
 
-  c.resize(n_non_nullwords, c_col_size);
-  c.setFromTriplets(tripletList.begin(), tripletList.end());
+  c.makeCompressed();
 
 
   return Rcpp::List::create(Rcpp::Named("W") = Rcpp::wrap(w),
