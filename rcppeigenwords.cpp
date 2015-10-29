@@ -12,11 +12,9 @@
 
 using Eigen::MatrixXi;
 using Eigen::VectorXd;
-using Eigen::MappedSparseMatrix;
 using Eigen::VectorXi;
 typedef Eigen::Map<Eigen::VectorXi> MapIM;
-typedef Eigen::SparseMatrix<int> iSparseMatrix;
-typedef Eigen::DiagonalMatrix<int, Eigen::Dynamic> iDiagonalMatrix;
+typedef Eigen::MappedSparseMatrix<int, Eigen::RowMajor> MapMatI;
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor> dSparseMatrix;
 typedef Eigen::Triplet<int> T;
 
@@ -105,7 +103,7 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
 
 
 // [[Rcpp::export]]
-dSparseMatrix MakeSVDMatrix(MappedSparseMatrix<int> x, MappedSparseMatrix<int> y) {
+dSparseMatrix MakeSVDMatrix(MapMatI x, MapMatI y) {
   VectorXd cxx_inverse((x.transpose() * x).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
   VectorXd cyy_inverse((y.transpose() * y).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
   dSparseMatrix cxy((x.transpose() * y).eval().cast <double>());
@@ -115,7 +113,7 @@ dSparseMatrix MakeSVDMatrix(MappedSparseMatrix<int> x, MappedSparseMatrix<int> y
 
 
 // [[Rcpp::export]]
-Rcpp::List RedsvdOSCCA(MappedSparseMatrix<int> x, MappedSparseMatrix<int> y, int k) {
+Rcpp::List RedsvdOSCCA(MapMatI x, MapMatI y, int k) {
   dSparseMatrix a(MakeSVDMatrix(x, y));
   RedSVD::RedSVD<dSparseMatrix> svdA(a, k);
 
