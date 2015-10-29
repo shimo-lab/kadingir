@@ -13,7 +13,6 @@
 using Eigen::MatrixXi;
 using Eigen::VectorXd;
 using Eigen::MappedSparseMatrix;
-using Rcpp::List;
 typedef Eigen::Map<Eigen::VectorXi> MapIM;
 typedef Eigen::SparseMatrix<double> dSparseMatrix;
 typedef Eigen::SparseMatrix<int> iSparseMatrix;
@@ -26,10 +25,8 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   unsigned long long i, j, i_sentence, n_non_nullwords, n_added_words;
   unsigned long long sentence_size = sentence.size();
   unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
-  
   int i_offset, offset;
   int offsets[2*window_size];
-  
   dSparseMatrix w, c;
   std::vector<T> tripletList;
   
@@ -37,10 +34,11 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   std::cout << "vocab size    = " << vocab_size    << std::endl;
   std::cout << "sentence size = " << sentence_size << std::endl;
   std::cout << "c_col_size    = " << c_col_size    << std::endl;
+  std::cout << std::endl;
 
 
   // Make word matrix
-  std::cout << "Constructing word matrix..." << std::endl;
+  std::cout << "Constructing word matrix..." << std::endl << std::endl;
   
   tripletList.reserve(sentence_size);
 
@@ -95,8 +93,10 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
       n_added_words++;
     }
   }
+
   c.resize(n_non_nullwords, c_col_size);
   c.setFromTriplets(tripletList.begin(), tripletList.end());
+
 
   return Rcpp::List::create(Rcpp::Named("W") = Rcpp::wrap(w),
                             Rcpp::Named("C") = Rcpp::wrap(c));
@@ -118,11 +118,10 @@ Rcpp::List RedsvdOSCCA(MappedSparseMatrix<int> x, MappedSparseMatrix<int> y, int
   dSparseMatrix a(MakeSVDMatrix(x, y));
   RedSVD::RedSVD<dSparseMatrix> svdA(a, k);
 
-  return List::create(
-      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-      Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-      Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
-      Rcpp::Named("k") = Rcpp::wrap(k),
-      Rcpp::Named("A") = Rcpp::wrap(a)
-      );
+  return Rcpp::List::create(Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
+			    Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+			    Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
+			    Rcpp::Named("k") = Rcpp::wrap(k),
+			    Rcpp::Named("A") = Rcpp::wrap(a)
+			    );
 }
