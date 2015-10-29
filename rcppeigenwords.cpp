@@ -76,19 +76,19 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
     if (sentence[i_sentence] >= 0) {  // If sentence[i_sentence] is NOT null words
       for (i_offset=0; i_offset<2*window_size; i_offset++) {
-	// If `i_sentence + offsets[i_offset]` is valid index of sentence
-	//    and sentence[i_sentence + offsets[i_offset]] is non-null word
-	if ((i_sentence + offsets[i_offset] >= 0) &&
-	    (i_sentence + offsets[i_offset] < sentence_size) && 
-	    sentence[i_sentence + offsets[i_offset]] > -1) {
-
-	  i = n_added_words;
-	  j = sentence[i_sentence + offsets[i_offset]] + i_offset*vocab_size;
-
-	  if ((i < n_non_nullwords) && (j < c_col_size)) {
-	    tripletList.push_back(T(i, j, 1));
-	  }
-	}
+        // If `i_sentence + offsets[i_offset]` is valid index of sentence
+        //    and sentence[i_sentence + offsets[i_offset]] is non-null word
+        if ((i_sentence + offsets[i_offset] >= 0) &&
+            (i_sentence + offsets[i_offset] < sentence_size) && 
+            sentence[i_sentence + offsets[i_offset]] > -1) {
+              
+          i = n_added_words;
+          j = sentence[i_sentence + offsets[i_offset]] + i_offset*vocab_size;
+            
+          if ((i < n_non_nullwords) && (j < c_col_size)) {
+            tripletList.push_back(T(i, j, 1));
+          }
+        }
       }
       n_added_words++;
     }
