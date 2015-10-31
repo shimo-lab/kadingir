@@ -70,8 +70,11 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   }
 
   dSparseMatrix c(n_non_nullwords, 2*(unsigned long long)window_size*(unsigned long long)vocab_size);
+  std::cout << "before VectorXi" << std::endl;  
   VectorXi cc(VectorXi::Constant(n_non_nullwords, 2*window_size));
+  std::cout << "before c.reserve()" << std::endl;
   c.reserve(cc);
+  std::cout << "after  c.reserve()" << std::endl;
 
   n_added_words = 0;
   for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
@@ -82,7 +85,7 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
         if ((i_sentence + offsets[i_offset] >= 0) &&
             (i_sentence + offsets[i_offset] < sentence_size) && 
             sentence[i_sentence + offsets[i_offset]] > -1) {
-              
+          
           i = n_added_words;
           j = sentence[i_sentence + offsets[i_offset]] + i_offset*vocab_size;
             
@@ -95,7 +98,9 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
     }
   }
 
+  std::cout << "before c.makeCompressed()" << std::endl;
   c.makeCompressed();
+  std::cout << "after c.makeCompressed()" << std::endl;
 
 
   return Rcpp::List::create(Rcpp::Named("W") = Rcpp::wrap(w),
@@ -115,8 +120,13 @@ dSparseMatrix MakeSVDMatrix(MapMatI x, MapMatI y) {
 
 // [[Rcpp::export]]
 Rcpp::List RedsvdOSCCA(MapMatI x, MapMatI y, int k) {
+  std::cout << "a(MakeSVDMatrix(x, y))" << std::endl;
   dSparseMatrix a(MakeSVDMatrix(x, y));
+  
+  std::cout << "Calculate RedSVD" << std::endl;
   RedSVD::RedSVD<dSparseMatrix> svdA(a, k);
+  std::cout << "after RedSVD" << std::endl;
+
 
   return Rcpp::List::create(Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
 			    Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
