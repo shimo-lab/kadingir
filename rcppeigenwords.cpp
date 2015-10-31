@@ -27,7 +27,7 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
   int i_offset, offset;
   int offsets[2*window_size];
-  dSparseMatrix w;
+  iSparseMatrix w;
   std::vector<T> tripletList;
   
   std::cout << "window size   = " << window_size   << std::endl;
@@ -70,7 +70,7 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
     }
   }
 
-  dSparseMatrix c(n_non_nullwords, 2*(unsigned long long)window_size*(unsigned long long)vocab_size);
+  iSparseMatrix c(n_non_nullwords, 2*(unsigned long long)window_size*(unsigned long long)vocab_size);
   std::cout << "before VectorXi" << std::endl;  
   VectorXi cc(VectorXi::Constant(n_non_nullwords, 2*window_size));
   std::cout << "before c.reserve()" << std::endl;
