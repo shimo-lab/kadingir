@@ -21,7 +21,7 @@ typedef Eigen::Triplet<int> T;
 
 
 // [[Rcpp::export]]
-Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
+Rcpp::List RedSVDEigenwords(MapIM& sentence, int window_size, int vocab_size, int k) {
   unsigned long long i, j, i_sentence, n_non_nullwords, n_added_words;
   unsigned long long sentence_size = sentence.size();
   unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
@@ -104,25 +104,13 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size) {
   std::cout << "after c.makeCompressed()" << std::endl;
 
 
-  return Rcpp::List::create(Rcpp::Named("W") = Rcpp::wrap(w),
-                            Rcpp::Named("C") = Rcpp::wrap(c));
-}
-
-
-// [[Rcpp::export]]
-dSparseMatrix MakeSVDMatrix(MapMatI x, MapMatI y) {
-  VectorXd cxx_inverse((x.transpose() * x).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
-  VectorXd cyy_inverse((y.transpose() * y).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
-  dSparseMatrix cxy((x.transpose() * y).eval().cast <double>());
+  // Calculate RedSVD
   
-  return (cxx_inverse.asDiagonal() * cxy * cyy_inverse.asDiagonal());
-}
-
-
-// [[Rcpp::export]]
-Rcpp::List RedsvdOSCCA(MapMatI x, MapMatI y, int k) {
-  std::cout << "a(MakeSVDMatrix(x, y))" << std::endl;
-  dSparseMatrix a(MakeSVDMatrix(x, y));
+  VectorXd cww_inverse((w.transpose() * w).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
+  VectorXd ccc_inverse((c.transpose() * c).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
+  dSparseMatrix cwc((w.transpose() * c).eval().cast <double>());
+  
+  dSparseMatrix a((cww_inverse.asDiagonal() * cwc * ccc_inverse.asDiagonal()));
   
   std::cout << "Calculate RedSVD" << std::endl;
   RedSVD::RedSVD<dSparseMatrix> svdA(a, k);
@@ -130,9 +118,9 @@ Rcpp::List RedsvdOSCCA(MapMatI x, MapMatI y, int k) {
 
 
   return Rcpp::List::create(Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-			    Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-			    Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
-			    Rcpp::Named("k") = Rcpp::wrap(k),
-			    Rcpp::Named("A") = Rcpp::wrap(a)
-			    );
+    Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+		Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
+		Rcpp::Named("k") = Rcpp::wrap(k),
+		Rcpp::Named("A") = Rcpp::wrap(a)
+    );
 }
