@@ -15,7 +15,7 @@ using Eigen::VectorXd;
 using Eigen::VectorXi;
 typedef Eigen::Map<Eigen::VectorXi> MapIM;
 typedef Eigen::MappedSparseMatrix<int, Eigen::RowMajor> MapMatI;
-typedef Eigen::SparseMatrix<double, Eigen::RowMajor> dSparseMatrix;
+typedef Eigen::SparseMatrix<double, Eigen::RowMajor, std::ptrdiff_t> dSparseMatrix;
 typedef Eigen::Triplet<int> T;
 
 
