@@ -70,7 +70,7 @@ Rcpp::List RedSVDEigenwords(MapIM& sentence, int window_size, int vocab_size, in
     }
   }
 
-  iSparseMatrix c(n_non_nullwords, 2*(unsigned long long)window_size*(unsigned long long)vocab_size);
+  iSparseMatrix c(n_non_nullwords, c_col_size);
   std::cout << "before VectorXi" << std::endl;  
   VectorXi cc(VectorXi::Constant(n_non_nullwords, 2*window_size));
   std::cout << "before c.reserve()" << std::endl;
