@@ -21,6 +21,70 @@ typedef Eigen::Triplet<int> T;
 
 
 // [[Rcpp::export]]
+Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size, bool skip_null_words) {
+  unsigned long long i, j, i_sentence;
+  unsigned long long sentence_size = sentence.size();
+  unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
+  int i_offset, offset;
+  int offsets[2*window_size];
+
+  iSparseMatrix twc(vocab_size, c_col_size);  // t(W) %*% C
+  VectorXi tww_diag(vocab_size), tcc_diag(c_col_size);
+  tww_diag.setZero();
+  tcc_diag.setZero();
+  
+  std::cout << "window size   = " << window_size   << std::endl;
+  std::cout << "vocab size    = " << vocab_size    << std::endl;
+  std::cout << "sentence size = " << sentence_size << std::endl;
+  std::cout << "c_col_size    = " << c_col_size    << std::endl;
+  std::cout << std::endl;
+
+  i_offset = 0;
+  for (offset=-window_size; offset<=window_size; offset++){
+    if (offset != 0) {
+      offsets[i_offset] = offset;
+      i_offset++;
+    }
+  }
+  
+  for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
+    if (sentence[i_sentence] >= 0) {
+      i = sentence[i_sentence];
+      tww_diag(i) += 1;
+    }
+    
+    for (i_offset=0; i_offset<2*window_size; i_offset++) {
+      offset = offsets[i_offset];
+      
+      if (i_sentence + offset >= 0 && i_sentence + offset < sentence_size && sentence[i_sentence + offset] >= 0) {
+        j = sentence[i_sentence + offset] + vocab_size * i_offset;
+
+        // Skip if sentence[i_sentence] is null words and skip_null_words is true
+        if (sentence[i_sentence] >= 0 || !skip_null_words){
+          tcc_diag(j) += 1;
+        }
+        
+        if (sentence[i_sentence] >= 0) {
+          twc.coeffRef(i, j) += 1;
+        }
+      }
+    }
+  }
+  
+  VectorXd tww_h(tww_diag.cast <double> ().cwiseInverse().cwiseSqrt());
+  VectorXd tcc_h(tcc_diag.cast <double> ().cwiseInverse().cwiseSqrt());
+  dSparseMatrix a(tww_h.asDiagonal() * (twc.cast <double> ().eval()) * tcc_h.asDiagonal());
+
+  return Rcpp::List::create(
+    Rcpp::Named("A") = Rcpp::wrap(a),
+    Rcpp::Named("window.size") = Rcpp::wrap(window_size),
+    Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
+    Rcpp::Named("skip.null.words") = Rcpp::wrap(skip_null_words)
+  );
+}
+
+
+// [[Rcpp::export]]
 Rcpp::List RedSVDEigenwords(MapIM& sentence, int window_size, int vocab_size, int k) {
   unsigned long long i, j, i_sentence, n_non_nullwords, n_added_words;
   unsigned long long sentence_size = sentence.size();
