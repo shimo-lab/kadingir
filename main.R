@@ -1,4 +1,6 @@
 
+set.seed(0)
+
 source("eigenwords.R")
 
 
