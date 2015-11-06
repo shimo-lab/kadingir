@@ -32,6 +32,8 @@ Rcpp::List OSCCARedSVD(MapIM& sentence, int window_size, int vocab_size, int k, 
   int offsets[2*window_size];
 
   iSparseMatrix twc(vocab_size, c_col_size);  // t(W) %*% C
+  twc.reserve((unsigned long long)(0.05 * vocab_size * c_col_size));
+  
   VectorXi tww_diag(vocab_size), tcc_diag(c_col_size);
   tww_diag.setZero();
   tcc_diag.setZero();
@@ -73,6 +75,8 @@ Rcpp::List OSCCARedSVD(MapIM& sentence, int window_size, int vocab_size, int k, 
       }
     }
   }
+  
+  twc.makeCompressed();
   
   std::cout << "Calculate Matrix A..." << std::endl;
   VectorXd tcc_h(tcc_diag.cast <double> ().cwiseInverse().cwiseSqrt());
