@@ -13,6 +13,7 @@
 using Eigen::MatrixXi;
 using Eigen::VectorXd;
 using Eigen::VectorXi;
+using Eigen::MappedSparseMatrix;
 typedef Eigen::Map<Eigen::VectorXi> MapIM;
 typedef Eigen::MappedSparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> MapMatI;
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor, std::ptrdiff_t> dSparseMatrix;
@@ -21,7 +22,9 @@ typedef Eigen::Triplet<int> T;
 
 
 // [[Rcpp::export]]
-Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size, bool skip_null_words) {
+Rcpp::List OSCCARedSVD(MapIM& sentence, int window_size, int vocab_size, int k, bool skip_null_words) {
+  std::cout << "OSCCARedSVD()" << std::endl;
+
   unsigned long long i, j, i_sentence;
   unsigned long long sentence_size = sentence.size();
   unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
@@ -71,12 +74,20 @@ Rcpp::List MakeMatrices(MapIM& sentence, int window_size, int vocab_size, bool s
     }
   }
   
-  VectorXd tww_h(tww_diag.cast <double> ().cwiseInverse().cwiseSqrt());
+  std::cout << "Calculate Matrix A..." << std::endl;
   VectorXd tcc_h(tcc_diag.cast <double> ().cwiseInverse().cwiseSqrt());
+  VectorXd tww_h(tww_diag.cast <double> ().cwiseInverse().cwiseSqrt());
   dSparseMatrix a(tww_h.asDiagonal() * (twc.cast <double> ().eval()) * tcc_h.asDiagonal());
+
+  // Calculate Randomized SVD
+  std::cout << "Calculate Randomized SVD..." << std::endl;
+  RedSVD::RedSVD<dSparseMatrix> svdA(a, k);
 
   return Rcpp::List::create(
     Rcpp::Named("A") = Rcpp::wrap(a),
+    Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
+    Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+    Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
     Rcpp::Named("window.size") = Rcpp::wrap(window_size),
     Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
     Rcpp::Named("skip.null.words") = Rcpp::wrap(skip_null_words)
