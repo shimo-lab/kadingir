@@ -1,7 +1,7 @@
 ### Implementation of Eigenwords
 
 library(Matrix)
-#library(RRedsvd)
+library(RRedsvd)
 library(svd)
 library(Rcpp)
 library(RcppEigen)
