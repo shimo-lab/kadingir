@@ -6,7 +6,7 @@ library(svd)
 library(Rcpp)
 library(RcppEigen)
 
-sourceCpp("rcppeigenwords.cpp")
+sourceCpp("rcppeigenwords.cpp", rebuild = TRUE)
 
 
 make.matrices <- function(sentence, window.size, n.train.words, n.vocab, skip.null.words) {
