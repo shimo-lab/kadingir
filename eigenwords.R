@@ -170,28 +170,29 @@ Eigenwords <- function(sentence.orig, min.count = 10,
 
   if (use.eigen) {
     sentence <- as.integer(sentence) - 1L
-    r <- MakeMatrices(sentence, window.size, length(unique(sentence))-1)
+    results.redsvd <- OSCCARedSVD(sentence, window.size, length(unique(sentence))-1, dim.internal, FALSE)
+    
   } else {
     r <- make.matrices(sentence, window.size, n.train.words, n.vocab, skip.null.words = TRUE)
-  }
-  
-  cat("Size of W :")
-  print(object.size(r$W), unit = "GB")
-  cat("Size of C :")
-  print(object.size(r$C), unit = "GB")
-
-  ## Execute CCA
-  if (mode == "oscca") { # One-step CCA
-    cat("Calculate OSCCA...\n\n")
-#    results.redsvd <- TruncatedSVD(A = MakeSVDMatrix(r$W, r$C), k = dim.internal, sparse = TRUE)
-    results.redsvd <- RedsvdOSCCA(r$W, r$C, k = dim.internal)
-
-  } else if (mode == "tscca") { # Two-Step CCA
-    cat("Calculate TSCCA...\n\n")
     
-    L <- C[ , 1:(window.size*n.vocab)]
-    R <- C[ , (window.size*n.vocab+1):(2*window.size*n.vocab)]
-    results.redsvd <- TSCCA(W, L, R, dim.internal)
+    cat("Size of W :")
+    print(object.size(r$W), unit = "GB")
+    cat("Size of C :")
+    print(object.size(r$C), unit = "GB")
+    
+    ## Execute CCA
+    if (mode == "oscca") { # One-step CCA
+      cat("Calculate OSCCA...\n\n")
+      results.redsvd <- TruncatedSVD(A = MakeSVDMatrix(r$W, r$C), k = dim.internal, sparse = TRUE)
+      
+    } else if (mode == "tscca") { # Two-Step CCA
+      cat("Calculate TSCCA...\n\n")
+      
+      L <- C[ , 1:(window.size*n.vocab)]
+      R <- C[ , (window.size*n.vocab+1):(2*window.size*n.vocab)]
+      results.redsvd <- TSCCA(W, L, R, dim.internal)
+    }
+    
   }
   
   return.list <- list()
