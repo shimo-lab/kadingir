@@ -31,7 +31,7 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
   long long i_word1, i_word2;
   int i_offset, offset;
   int offsets[2*window_size];
-  bool non_null_word;
+  bool word_isnot_null_word;
 
   iSparseMatrix twc(vocab_size, c_col_size);  // t(W) %*% C
   iSparseMatrix tcc(c_col_size, c_col_size);  // t(C) %*% C
@@ -65,18 +65,19 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
   }
   
   for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
-    if (sentence[i_sentence] >= 0) {
+    word_isnot_null_word = sentence[i_sentence] >= 0
+    if (word_isnot_null_word) {
       i = sentence[i_sentence];
       tww_diag(i) += 1;
     }
     
     for (i_offset=0; i_offset<2*window_size; i_offset++) {
       i_word1 = i_sentence + offsets[i_offset];
-      if (i_word1 >= 0 && i_word1 < sentence_size && sentence[i_word1] >= 0) {
+      if (i_word1 >= 0 && i_word1 < sentence_size && word_isnot_null_word) {
         j = sentence[i_word1] + vocab_size * i_offset;
 
         // Skip if sentence[i_sentence] is null words and skip_null_words is true
-        if (sentence[i_sentence] >= 0 || !skip_null_words){
+        if (word_isnot_null_word || !skip_null_words){
           if (mode_oscca) {
             tcc_diag(j) += 1;
           } else {
@@ -90,7 +91,7 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
           }
         }
         
-        if (sentence[i_sentence] >= 0) {
+        if (word_isnot_null_word) {
           twc.coeffRef(i, j) += 1;
         }
       }
