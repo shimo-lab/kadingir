@@ -25,11 +25,11 @@ typedef Eigen::Triplet<int> T;
 // [[Rcpp::export]]
 Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, int k, bool skip_null_words, bool mode_oscca) {
   
-  unsigned long long i, j, i_sentence, j2;
+  unsigned long long i, j, j2;
   unsigned long long sentence_size = sentence.size();
   unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
   long long i_word1, i_word2;
-  int i_offset, offset;
+  int i_offset, offset, i_offset2;
   int offsets[2*window_size];
   bool word_isnot_null_word;
 
@@ -64,8 +64,9 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
     }
   }
   
-  for (i_sentence=0; i_sentence<sentence_size; i_sentence++) {
+  for (unsigned long long i_sentence=0; i_sentence<sentence_size; i_sentence++) {
     word_isnot_null_word = sentence[i_sentence] >= 0
+    
     if (word_isnot_null_word) {
       i = sentence[i_sentence];
       tww_diag(i) += 1;
@@ -81,7 +82,7 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
           if (mode_oscca) {
             tcc_diag(j) += 1;
           } else {
-            for (int i_offset2 = 0; i_offset2<2*window_size; i_offset2++) {
+            for (i_offset2 = 0; i_offset2<2*window_size; i_offset2++) {
               i_word2 = i_sentence + offsets[i_offset2];
               if (i_word2 >= 0 && i_word2 < sentence_size && sentence[i_word2] >= 0) {
                 j2 = sentence[i_word2] + vocab_size * i_offset2;
