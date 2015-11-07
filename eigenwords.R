@@ -113,7 +113,7 @@ OSCCA <- function(X, Y, k, use.block.matrix) {
 }
 
 TSCCA <- function(W, L, R, k) {
-  redsvd.LR <- OSCCA(L, R, k)
+  redsvd.LR <- OSCCA(L, R, k, FALSE)
   U <- redsvd.LR$U
   V <- redsvd.LR$V
   
