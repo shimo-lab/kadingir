@@ -113,7 +113,7 @@ OSCCA <- function(X, Y, k, use.block.matrix) {
 }
 
 TSCCA <- function(W, L, R, k) {
-  redsvd.LR <- OSCCA(L, R, k)
+  redsvd.LR <- OSCCA(L, R, k, FALSE)
   U <- redsvd.LR$U
   V <- redsvd.LR$V
   
@@ -170,7 +170,8 @@ Eigenwords <- function(sentence.orig, min.count = 10,
 
   if (use.eigen) {
     sentence <- as.integer(sentence) - 1L
-    results.redsvd <- OSCCARedSVD(sentence, window.size, length(unique(sentence))-1, dim.internal, FALSE)
+    results.redsvd <- EigenwordsRedSVD(sentence, window.size, length(unique(sentence))-1,
+                                       dim.internal, skip_null_words = FALSE, mode_oscca = (mode == "oscca"))
     
   } else {
     r <- make.matrices(sentence, window.size, n.train.words, n.vocab, skip.null.words = TRUE)
