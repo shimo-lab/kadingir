@@ -113,11 +113,13 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
       twc_tripletList.clear();
       twc += twc_temp;
       twc_temp.setZero();
-
-      tcc_temp.setFromTriplets(tcc_tripletList.begin(), tcc_tripletList.end());
-      tcc_tripletList.clear();
-      tcc += tcc_temp;
-      tcc_temp.setZero();
+      
+      if (!mode_oscca) {  
+        tcc_temp.setFromTriplets(tcc_tripletList.begin(), tcc_tripletList.end());
+        tcc_tripletList.clear();
+        tcc += tcc_temp;
+        tcc_temp.setZero();
+      }
       
       n_pushed_triplets = 0;
     }
