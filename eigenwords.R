@@ -139,11 +139,19 @@ TSCCA <- function(W, L, R, k) {
 }
 
 
-Eigenwords <- function(sentence.orig, min.count = 10,
+Eigenwords <- function(path.corpus, min.count = 10,
                        dim.internal = 200, window.size = 2, mode = "oscca",
                        use.block.matrix = FALSE, use.eigen = TRUE) {
   
   time.start <- Sys.time()
+  
+  ## Making train data
+  f <- file(path.corpus, "r")
+  line <- readLines(con = f, -1)
+  close(f)
+  
+  sentence.orig <- unlist(strsplit(tolower(line), " "))
+  rm(line)
   
   if (!mode %in% c("oscca", "tscca")) {
     cat(paste0("mode is invalid: ", mode))
@@ -157,6 +165,7 @@ Eigenwords <- function(sentence.orig, min.count = 10,
   }
   
   cat("\n\n")
+  cat("Corpus             :", path.corpus, "\n")
   cat("Size of sentence   :", length(sentence.orig), "\n")
   cat("dim.internal       :", dim.internal, "\n")
   cat("min.count          :", min.count, "\n")
