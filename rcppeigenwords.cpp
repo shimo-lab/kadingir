@@ -101,6 +101,10 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
   
   twc.makeCompressed();
   
+  std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
+  std::cout << "Density of tcc = " << tcc.nonZeros() << "/" << tcc.rows() * tcc.cols() << std::endl;
+
+  
   std::cout << "Calculate OSCCA/TSCCA..." << std::endl;
     
   if (mode_oscca) {
