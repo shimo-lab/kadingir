@@ -25,7 +25,8 @@ int TRIPLET_VECTOR_SIZE = 1000000;
 
 
 // [[Rcpp::export]]
-Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, int k, bool skip_null_words, bool mode_oscca) {
+Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
+                            int k, bool skip_null_words, bool mode_oscca) {
   
   unsigned long long i, j, j2;
   unsigned long long sentence_size = sentence.size();
@@ -124,17 +125,15 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
   
   
   std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
-  std::cout << "Density of tcc = " << tcc.nonZeros() << "/" << tcc.rows() * tcc.cols() << std::endl;
-
-  
+  std::cout << "Density of tcc = " << tcc.nonZeros() << "/" << tcc.rows() * tcc.cols() << std::endl << std::endl;
   std::cout << "Calculate OSCCA/TSCCA..." << std::endl;
     
   if (mode_oscca) {
+    // One Step CCA
     VectorXd tww_h(tww_diag.cast <double> ().cwiseInverse().cwiseSqrt());
     VectorXd tcc_h(tcc_diag.cast <double> ().cwiseInverse().cwiseSqrt());
     dSparseMatrix a(tww_h.asDiagonal() * (twc.cast <double> ().eval()) * tcc_h.asDiagonal());
   
-    // Calculate Randomized SVD
     std::cout << "Calculate Randomized SVD..." << std::endl;
     RedSVD::RedSVD<dSparseMatrix> svdA(a, k);
     
@@ -155,7 +154,7 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
   } else {
     tcc.makeCompressed();
     
-    // TSCCA : Step 1
+    // Two Step CCA : Step 1
     VectorXd tll_h(tcc.topLeftCorner(c_col_size/2, c_col_size/2).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
     VectorXd trr_h(tcc.bottomRightCorner(c_col_size/2, c_col_size/2).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
     dSparseMatrix b(tll_h.asDiagonal() * (tcc.topRightCorner(c_col_size/2, c_col_size/2).cast <double> ().eval()) * trr_h.asDiagonal());
@@ -163,7 +162,7 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
     RedSVD::RedSVD<dSparseMatrix> svdB(b, k);
     
-    // TSCCA : Step 2
+    // Two Step CCA : Step 2
     phi_l = svdB.matrixU();
     phi_r = svdB.matrixV();
         
