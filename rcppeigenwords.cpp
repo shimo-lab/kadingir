@@ -163,6 +163,7 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
     RedSVD::RedSVD<dSparseMatrix> svdB(b, k);
+    b.resize(0, 0);
     
     // Two Step CCA : Step 2
     phi_l = svdB.matrixU();
