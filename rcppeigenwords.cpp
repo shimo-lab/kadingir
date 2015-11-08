@@ -30,7 +30,8 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
   
   unsigned long long i, j, j2;
   unsigned long long sentence_size = sentence.size();
-  unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
+  unsigned long long lr_col_size = (unsigned long long)window_size*(unsigned long long)vocab_size;
+  unsigned long long c_col_size = 2*lr_col_size;
   unsigned long long n_pushed_triplets = 0;
   long long i_word1, i_word2;
   int i_offset1, i_offset2;
@@ -38,7 +39,9 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
   bool word_isnot_null_word;
   
   iSparseMatrix twc(vocab_size, c_col_size), twc_temp(vocab_size, c_col_size);
-  iSparseMatrix tcc(c_col_size, c_col_size), tcc_temp(c_col_size, c_col_size);
+  iSparseMatrix tll(lr_col_size, lr_col_size), tll_temp(lr_col_size, lr_col_size);
+  iSparseMatrix tlr(lr_col_size, lr_col_size), tlr_temp(lr_col_size, lr_col_size);
+  iSparseMatrix trr(lr_col_size, lr_col_size), trr_temp(lr_col_size, lr_col_size);
   MatrixXd phi_l, phi_r;
   
   VectorXi tww_diag(vocab_size);
@@ -47,9 +50,13 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
   tcc_diag.setZero();
   
   std::vector<Triplet> twc_tripletList;
-  std::vector<Triplet> tcc_tripletList;
+  std::vector<Triplet> tll_tripletList;
+  std::vector<Triplet> tlr_tripletList;
+  std::vector<Triplet> trr_tripletList;
   twc_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tcc_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tll_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tlr_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  trr_tripletList.reserve(TRIPLET_VECTOR_SIZE);
   
 
   std::cout << "mode          = ";
@@ -87,16 +94,31 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
 
         // Skip if sentence[i_sentence] is null words and skip_null_words is true
         if (word_isnot_null_word || !skip_null_words){
+          
           if (mode_oscca) {
             tcc_diag(j) += 1;
           } else {
+            
             for (i_offset2=0; i_offset2<2*window_size; i_offset2++) {
               i_word2 = i_sentence + offsets[i_offset2];
+              
               if (i_word2 >= 0 && i_word2 < sentence_size && sentence[i_word2] >= 0) {
                 j2 = sentence[i_word2] + vocab_size * i_offset2;
-                tcc_tripletList.push_back(Triplet(j, j2, 1));
+                
+                if (j < lr_col_size) {
+                  if (j2 < lr_col_size) {
+                    tll_tripletList.push_back(Triplet(j, j2, 1));
+                  } else {
+                    tlr_tripletList.push_back(Triplet(j, j2 - lr_col_size, 1));
+                  }
+                } else {
+                  if (j2 >= lr_col_size) {
+                    trr_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
+                  }
+                }
               }
             }
+            
           }
         }
         
@@ -114,11 +136,21 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
       twc += twc_temp;
       twc_temp.setZero();
       
-      if (!mode_oscca) {  
-        tcc_temp.setFromTriplets(tcc_tripletList.begin(), tcc_tripletList.end());
-        tcc_tripletList.clear();
-        tcc += tcc_temp;
-        tcc_temp.setZero();
+      if (!mode_oscca) {
+        tll_temp.setFromTriplets(tll_tripletList.begin(), tll_tripletList.end());
+        tll_tripletList.clear();
+        tll += tll_temp;
+        tll_temp.setZero();
+        
+        tlr_temp.setFromTriplets(tlr_tripletList.begin(), tlr_tripletList.end());
+        tlr_tripletList.clear();
+        tlr += tlr_temp;
+        tlr_temp.setZero();
+        
+        trr_temp.setFromTriplets(trr_tripletList.begin(), trr_tripletList.end());
+        trr_tripletList.clear();
+        trr += trr_temp;
+        trr_temp.setZero();
       }
       
       n_pushed_triplets = 0;
@@ -126,12 +158,12 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
   }
   
   
-  std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
-  std::cout << "Density of tcc = " << tcc.nonZeros() << "/" << tcc.rows() * tcc.cols() << std::endl << std::endl;
-  std::cout << "Calculate OSCCA/TSCCA..." << std::endl;
-    
   if (mode_oscca) {
     // One Step CCA
+    
+    std::cout << "Calculate OSCCA..." << std::endl;
+    std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
+
     VectorXd tww_h(tww_diag.cast <double> ().cwiseInverse().cwiseSqrt());
     VectorXd tcc_h(tcc_diag.cast <double> ().cwiseInverse().cwiseSqrt());
     dSparseMatrix a(tww_h.asDiagonal() * (twc.cast <double> ().eval()) * tcc_h.asDiagonal());
@@ -154,12 +186,22 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
     );
     
   } else {
-    tcc.makeCompressed();
+    // Two Step CCA
+    
+    tll.makeCompressed();
+    tlr.makeCompressed();
+    trr.makeCompressed();
+
+    std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
+    std::cout << "Density of tll = " << tll.nonZeros() << "/" << tll.rows() * tll.cols() << std::endl;
+    std::cout << "Density of tlr = " << tlr.nonZeros() << "/" << tlr.rows() * tlr.cols() << std::endl;
+    std::cout << "Density of trr = " << trr.nonZeros() << "/" << trr.rows() * trr.cols() << std::endl;
+    std::cout << "Calculate TSCCA..." << std::endl;
     
     // Two Step CCA : Step 1
-    VectorXd tll_h(tcc.topLeftCorner(c_col_size/2, c_col_size/2).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
-    VectorXd trr_h(tcc.bottomRightCorner(c_col_size/2, c_col_size/2).eval().diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
-    dSparseMatrix b(tll_h.asDiagonal() * (tcc.topRightCorner(c_col_size/2, c_col_size/2).cast <double> ().eval()) * trr_h.asDiagonal());
+    VectorXd tll_h(tll.diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
+    VectorXd trr_h(trr.diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
+    dSparseMatrix b(tll_h.asDiagonal() * (tlr.cast <double> ().eval()) * trr_h.asDiagonal());
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
     RedSVD::RedSVD<dSparseMatrix> svdB(b, k);
@@ -170,8 +212,8 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
     phi_r = svdB.matrixV();
         
     VectorXd tww_h(tww_diag.cast <double> ().cwiseInverse().cwiseSqrt());
-    VectorXd tss_h1((phi_l.transpose() * tcc.topLeftCorner(c_col_size/2, c_col_size/2).eval().cast <double> () * phi_l).eval().diagonal().cwiseInverse().cwiseSqrt());
-    VectorXd tss_h2((phi_r.transpose() * tcc.bottomRightCorner(c_col_size/2, c_col_size/2).eval().cast <double> () * phi_r).eval().diagonal().cwiseInverse().cwiseSqrt());
+    VectorXd tss_h1((phi_l.transpose() * tll.cast <double> () * phi_l).eval().diagonal().cwiseInverse().cwiseSqrt());
+    VectorXd tss_h2((phi_r.transpose() * trr.cast <double> () * phi_r).eval().diagonal().cwiseInverse().cwiseSqrt());
     VectorXd tss_h(2*k);
     tss_h << tss_h1, tss_h2;
     MatrixXd tws(vocab_size, 2*k);
