@@ -5,6 +5,8 @@ library(RRedsvd)
 library(svd)
 library(Rcpp)
 library(RcppEigen)
+library(foreach)
+library(doParallel)
 
 sourceCpp("rcppeigenwords.cpp", rebuild = TRUE)
 
@@ -277,20 +279,23 @@ MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
 }
 
 
-TestGoogleTasks <- function (res.eigenwords, path) {
+TestGoogleTasks <- function (res.eigenwords, path, n.cores = 1) {
+  
   ## Calcurate accuracy of Google analogy task
   queries <- read.csv(path, header = FALSE,
                       sep = " ", comment.char = ":")
   
   time.start <- Sys.time()
-  results <- rep(NULL, times = nrow(queries))
-  for (i in seq(nrow(queries))) {
+
+  registerDoParallel(n.cores)
+  
+  results <- foreach (i = seq(nrow(queries)), .combine = c) %dopar% {
     q <- as.character(unlist(queries[i, ]))
     res.MostSimilar <- MostSimilar(res.eigenwords, positive=c(q[[2]], q[[3]]),
                                    negative=c(q[[1]]),
                                    format="euclid", topn=10, print.error = FALSE)
     
-    results[i] <- res.MostSimilar && names(res.MostSimilar)[[1]] == q[4]
+    res.MostSimilar && names(res.MostSimilar)[[1]] == q[4]
   }
   print(Sys.time() - time.start)
   
