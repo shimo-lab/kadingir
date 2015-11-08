@@ -19,7 +19,9 @@ typedef Eigen::Map<Eigen::VectorXi> MapIM;
 typedef Eigen::MappedSparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> MapMatI;
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor, std::ptrdiff_t> dSparseMatrix;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> iSparseMatrix;
-typedef Eigen::Triplet<int> T;
+typedef Eigen::Triplet<int> Triplet;
+
+int TRIPLET_VECTOR_SIZE = 1000000;
 
 
 // [[Rcpp::export]]
@@ -28,15 +30,14 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
   unsigned long long i, j, j2;
   unsigned long long sentence_size = sentence.size();
   unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
+  unsigned long long n_pushed_triplets = 0;
   long long i_word1, i_word2;
   int i_offset1, i_offset2;
   int offsets[2*window_size];
   bool word_isnot_null_word;
-
-  iSparseMatrix twc(vocab_size, c_col_size);  // t(W) %*% C
-  iSparseMatrix tcc(c_col_size, c_col_size);  // t(C) %*% C
-  twc.reserve((unsigned long long)(0.05 * vocab_size * c_col_size));
-  tcc.reserve((unsigned long long)(0.05 * c_col_size * c_col_size));
+  
+  iSparseMatrix twc(vocab_size, c_col_size), twc_temp(vocab_size, c_col_size);
+  iSparseMatrix tcc(c_col_size, c_col_size), tcc_temp(c_col_size, c_col_size);
   MatrixXd phi_l, phi_r;
   
   VectorXi tww_diag(vocab_size);
@@ -44,6 +45,12 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
   tww_diag.setZero();  
   tcc_diag.setZero();
   
+  std::vector<Triplet> twc_tripletList;
+  std::vector<Triplet> tcc_tripletList;
+  twc_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tcc_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  
+
   std::cout << "mode          = ";
   if (mode_oscca) {
     std::cout << "OSCCA" << std::endl;
@@ -86,20 +93,35 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
               i_word2 = i_sentence + offsets[i_offset2];
               if (i_word2 >= 0 && i_word2 < sentence_size && sentence[i_word2] >= 0) {
                 j2 = sentence[i_word2] + vocab_size * i_offset2;
-                tcc.coeffRef(j, j2) += 1;
+                tcc_tripletList.push_back(Triplet(j, j2, 1));
               }
             }
           }
         }
         
         if (word_isnot_null_word) {
-          twc.coeffRef(i, j) += 1;
+          twc_tripletList.push_back(Triplet(i, j, 1));
         }
       }
     }
+    
+    n_pushed_triplets++;
+    
+    if (n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size || i_sentence == sentence_size - 1) {
+      twc_temp.setFromTriplets(twc_tripletList.begin(), twc_tripletList.end());
+      twc_tripletList.clear();
+      twc += twc_temp;
+      twc_temp.setZero();
+
+      tcc_temp.setFromTriplets(tcc_tripletList.begin(), tcc_tripletList.end());
+      tcc_tripletList.clear();
+      tcc += tcc_temp;
+      tcc_temp.setZero();
+      
+      n_pushed_triplets = 0;
+    }
   }
   
-  twc.makeCompressed();
   
   std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
   std::cout << "Density of tcc = " << tcc.nonZeros() << "/" << tcc.rows() * tcc.cols() << std::endl;
