@@ -29,7 +29,7 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
   unsigned long long sentence_size = sentence.size();
   unsigned long long c_col_size = 2*(unsigned long long)window_size*(unsigned long long)vocab_size;
   long long i_word1, i_word2;
-  int i_offset, offset, i_offset2;
+  int i_offset1, i_offset2;
   int offsets[2*window_size];
   bool word_isnot_null_word;
 
@@ -56,33 +56,33 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size, in
   std::cout << "c_col_size    = " << c_col_size    << std::endl;
   std::cout << std::endl;
 
-  i_offset = 0;
-  for (offset=-window_size; offset<=window_size; offset++){
+  i_offset1 = 0;
+  for (int offset=-window_size; offset<=window_size; offset++){
     if (offset != 0) {
-      offsets[i_offset] = offset;
-      i_offset++;
+      offsets[i_offset1] = offset;
+      i_offset1++;
     }
   }
   
   for (unsigned long long i_sentence=0; i_sentence<sentence_size; i_sentence++) {
-    word_isnot_null_word = sentence[i_sentence] >= 0
+    word_isnot_null_word = sentence[i_sentence] >= 0;
     
     if (word_isnot_null_word) {
       i = sentence[i_sentence];
       tww_diag(i) += 1;
     }
     
-    for (i_offset=0; i_offset<2*window_size; i_offset++) {
-      i_word1 = i_sentence + offsets[i_offset];
-      if (i_word1 >= 0 && i_word1 < sentence_size && word_isnot_null_word) {
-        j = sentence[i_word1] + vocab_size * i_offset;
+    for (i_offset1=0; i_offset1<2*window_size; i_offset1++) {
+      i_word1 = i_sentence + offsets[i_offset1];
+      if (i_word1 >= 0 && i_word1 < sentence_size && sentence[i_word1] >= 0) {
+        j = sentence[i_word1] + vocab_size * i_offset1;
 
         // Skip if sentence[i_sentence] is null words and skip_null_words is true
         if (word_isnot_null_word || !skip_null_words){
           if (mode_oscca) {
             tcc_diag(j) += 1;
           } else {
-            for (i_offset2 = 0; i_offset2<2*window_size; i_offset2++) {
+            for (i_offset2=0; i_offset2<2*window_size; i_offset2++) {
               i_word2 = i_sentence + offsets[i_offset2];
               if (i_word2 >= 0 && i_word2 < sentence_size && sentence[i_word2] >= 0) {
                 j2 = sentence[i_word2] + vocab_size * i_offset2;
