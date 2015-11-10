@@ -299,5 +299,5 @@ TestGoogleTasks <- function (res.eigenwords, path, n.cores = 1) {
   }
   print(Sys.time() - time.start)
   
-  cat("accuracy = ", sum(results), "/", length(results))
+  cat("accuracy = ", sum(results), "/", length(results), "\n\n")
 }
