@@ -15,13 +15,17 @@ using Eigen::MatrixXi;
 using Eigen::VectorXd;
 using Eigen::VectorXi;
 using Eigen::MappedSparseMatrix;
+typedef float real;
 typedef Eigen::Map<Eigen::VectorXi> MapIM;
 typedef Eigen::MappedSparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> MapMatI;
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor, std::ptrdiff_t> dSparseMatrix;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> iSparseMatrix;
+typedef Eigen::SparseMatrix<real, Eigen::RowMajor, std::ptrdiff_t> realSparseMatrix;
+typedef Eigen::VectorXf VectorXreal;
+typedef Eigen::MatrixXf MatrixXreal;
 typedef Eigen::Triplet<int> Triplet;
 
-int TRIPLET_VECTOR_SIZE = 1000000;
+int TRIPLET_VECTOR_SIZE = 10000000;
 
 
 // [[Rcpp::export]]
@@ -42,7 +46,7 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
   iSparseMatrix tll(lr_col_size, lr_col_size), tll_temp(lr_col_size, lr_col_size);
   iSparseMatrix tlr(lr_col_size, lr_col_size), tlr_temp(lr_col_size, lr_col_size);
   iSparseMatrix trr(lr_col_size, lr_col_size), trr_temp(lr_col_size, lr_col_size);
-  MatrixXd phi_l, phi_r;
+  MatrixXreal phi_l, phi_r;
   
   VectorXi tww_diag(vocab_size);
   VectorXi tcc_diag(c_col_size);
@@ -168,15 +172,15 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
     std::cout << "Calculate OSCCA..." << std::endl;
     std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
 
-    VectorXd tww_h(tww_diag.cast <double> ().cwiseInverse().cwiseSqrt());
-    VectorXd tcc_h(tcc_diag.cast <double> ().cwiseInverse().cwiseSqrt());
-    dSparseMatrix a(tww_h.asDiagonal() * (twc.cast <double> ().eval()) * tcc_h.asDiagonal());
+    VectorXreal tww_h(tww_diag.cast <real> ().cwiseInverse().cwiseSqrt());
+    VectorXreal tcc_h(tcc_diag.cast <real> ().cwiseInverse().cwiseSqrt());
+    realSparseMatrix a(tww_h.asDiagonal() * (twc.cast <real> ().eval()) * tcc_h.asDiagonal());
   
     std::cout << "Calculate Randomized SVD..." << std::endl;
-    RedSVD::RedSVD<dSparseMatrix> svdA(a, k);
+    RedSVD::RedSVD<realSparseMatrix> svdA(a, k);
     
     return Rcpp::List::create(
-      Rcpp::Named("tWC") = Rcpp::wrap(twc.cast <double> ()),
+      Rcpp::Named("tWC") = Rcpp::wrap(twc.cast <real> ()),
       Rcpp::Named("tWW_h") = Rcpp::wrap(tww_h),
       Rcpp::Named("tCC_h") = Rcpp::wrap(tcc_h),
       Rcpp::Named("A") = Rcpp::wrap(a),
@@ -203,33 +207,34 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
     std::cout << "Calculate TSCCA..." << std::endl;
     
     // Two Step CCA : Step 1
-    VectorXd tll_h(tll.diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
-    VectorXd trr_h(trr.diagonal().cast <double> ().cwiseInverse().cwiseSqrt());
-    dSparseMatrix b(tll_h.asDiagonal() * (tlr.cast <double> ().eval()) * trr_h.asDiagonal());
+    VectorXreal tll_h(tll.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
+    VectorXreal trr_h(trr.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
+    std::cout << "before b" << std::endl;    
+    realSparseMatrix b(tll_h.asDiagonal() * (tlr.cast <real> ().eval()) * trr_h.asDiagonal());
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
-    RedSVD::RedSVD<dSparseMatrix> svdB(b, k);
+    RedSVD::RedSVD<realSparseMatrix> svdB(b, k);
     b.resize(0, 0);
     
     // Two Step CCA : Step 2
     phi_l = svdB.matrixU();
     phi_r = svdB.matrixV();
         
-    VectorXd tww_h(tww_diag.cast <double> ().cwiseInverse().cwiseSqrt());
-    VectorXd tss_h1((phi_l.transpose() * (tll.cast <double> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt());
-    VectorXd tss_h2((phi_r.transpose() * (trr.cast <double> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt());
+    VectorXreal tww_h(tww_diag.cast <real> ().cwiseInverse().cwiseSqrt());
+    VectorXreal tss_h1((phi_l.transpose() * (tll.cast <real> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt());
+    VectorXreal tss_h2((phi_r.transpose() * (trr.cast <real> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt());
     
     tll.resize(0, 0);
     trr.resize(0, 0);
     
-    VectorXd tss_h(2*k);
+    VectorXreal tss_h(2*k);
     tss_h << tss_h1, tss_h2;
-    MatrixXd tws(vocab_size, 2*k);
-    tws << twc.topLeftCorner(vocab_size, c_col_size/2).cast <double> () * phi_l, twc.topRightCorner(vocab_size, c_col_size/2).cast <double> () * phi_r;
-    MatrixXd a(tww_h.asDiagonal() * tws * tss_h.asDiagonal());
+    MatrixXreal tws(vocab_size, 2*k);
+    tws << twc.topLeftCorner(vocab_size, c_col_size/2).cast <real> () * phi_l, twc.topRightCorner(vocab_size, c_col_size/2).cast <real> () * phi_r;
+    MatrixXreal a(tww_h.asDiagonal() * tws * tss_h.asDiagonal());
 
     std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
-    RedSVD::RedSVD<MatrixXd> svdA(a, k);
+    RedSVD::RedSVD<MatrixXreal> svdA(a, k);
     
     return Rcpp::List::create(
       Rcpp::Named("tWS") = Rcpp::wrap(tws),
