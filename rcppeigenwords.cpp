@@ -107,13 +107,17 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
                 
                 if (j < lr_col_size) {
                   if (j2 < lr_col_size) {
-                    tll_tripletList.push_back(Triplet(j, j2, 1));
+                    if (j <= j2) {
+                      tll_tripletList.push_back(Triplet(j, j2, 1));                      
+                    }
                   } else {
                     tlr_tripletList.push_back(Triplet(j, j2 - lr_col_size, 1));
                   }
                 } else {
                   if (j2 >= lr_col_size) {
-                    trr_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
+                    if (j <= j2) {
+                      trr_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
+                    }
                   }
                 }
               }
@@ -212,8 +216,12 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
     phi_r = svdB.matrixV();
         
     VectorXd tww_h(tww_diag.cast <double> ().cwiseInverse().cwiseSqrt());
-    VectorXd tss_h1((phi_l.transpose() * tll.cast <double> () * phi_l).eval().diagonal().cwiseInverse().cwiseSqrt());
-    VectorXd tss_h2((phi_r.transpose() * trr.cast <double> () * phi_r).eval().diagonal().cwiseInverse().cwiseSqrt());
+    VectorXd tss_h1((phi_l.transpose() * (tll.cast <double> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt());
+    VectorXd tss_h2((phi_r.transpose() * (trr.cast <double> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt());
+    
+    tll.resize(0, 0);
+    trr.resize(0, 0);
+    
     VectorXd tss_h(2*k);
     tss_h << tss_h1, tss_h2;
     MatrixXd tws(vocab_size, 2*k);
