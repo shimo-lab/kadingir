@@ -209,7 +209,6 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
     // Two Step CCA : Step 1
     VectorXreal tll_h(tll.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
     VectorXreal trr_h(trr.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
-    std::cout << "before b" << std::endl;    
     realSparseMatrix b(tll_h.asDiagonal() * (tlr.cast <real> ().eval()) * trr_h.asDiagonal());
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
