@@ -210,6 +210,7 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
     VectorXreal tll_h(tll.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
     VectorXreal trr_h(trr.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
     realSparseMatrix b(tll_h.asDiagonal() * (tlr.cast <real> ().eval()) * trr_h.asDiagonal());
+    std::cout << "Density of b = " << b.nonZeros() << "/" << b.rows() * b.cols() << std::endl;
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdB(b, k);
