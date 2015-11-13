@@ -141,7 +141,7 @@ TSCCA <- function(W, L, R, k) {
 }
 
 
-Eigenwords <- function(path.corpus, min.count = 10,
+Eigenwords <- function(path.corpus, n.vocabulary = 1000,
                        dim.internal = 200, window.size = 2, mode = "oscca",
                        use.block.matrix = FALSE, use.eigen = TRUE) {
   
@@ -159,9 +159,9 @@ Eigenwords <- function(path.corpus, min.count = 10,
     cat(paste0("mode is invalid: ", mode))
   }
   
-  if (min.count > 0) {
+  if (n.vocabulary > 0) {
     d.table <- table(sentence.orig)
-    vocab.words <- names(d.table[d.table >= min.count])
+    vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(n.vocabulary)])
   } else {
     vocab.words <- unique(sentence)
   }
@@ -170,7 +170,6 @@ Eigenwords <- function(path.corpus, min.count = 10,
   cat("Corpus             :", path.corpus, "\n")
   cat("Size of sentence   :", length(sentence.orig), "\n")
   cat("dim.internal       :", dim.internal, "\n")
-  cat("min.count          :", min.count, "\n")
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", length(vocab.words), "\n")
   cat("mode               :", mode, "\n\n")
