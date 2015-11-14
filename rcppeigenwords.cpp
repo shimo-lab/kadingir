@@ -99,10 +99,10 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
         // Skip if sentence[i_sentence] is null words and skip_null_words is true
         if (word_isnot_null_word || !skip_null_words){
           
-          if (mode_oscca) {
+          if (mode_oscca) {  // One Step CCA
             tcc_diag(j) += 1;
-          } else {
-            
+              
+          } else {  // Two step CCA
             for (i_offset2=0; i_offset2<2*window_size; i_offset2++) {
               i_word2 = i_sentence + offsets[i_offset2];
               
@@ -110,16 +110,16 @@ Rcpp::List EigenwordsRedSVD(MapIM& sentence, int window_size, int vocab_size,
                 j2 = sentence[i_word2] + vocab_size * i_offset2;
                 
                 if (j < lr_col_size) {
-                  if (j2 < lr_col_size) {
-                    if (j <= j2) {
+                  if (j2 < lr_col_size) {  // Upper left block of Ccc
+                    if (j <= j2) {  // If (j, j2) is upper-triangular element
                       tll_tripletList.push_back(Triplet(j, j2, 1));                      
                     }
-                  } else {
+                  } else {  // Upper right block of Ccc
                     tlr_tripletList.push_back(Triplet(j, j2 - lr_col_size, 1));
                   }
                 } else {
-                  if (j2 >= lr_col_size) {
-                    if (j <= j2) {
+                  if (j2 >= lr_col_size) {  // Lower right block of Ccc
+                    if (j <= j2) {  // If (j, j2) is upper-triangular element
                       trr_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
                     }
                   }
