@@ -143,7 +143,8 @@ TSCCA <- function(W, L, R, k) {
 
 Eigenwords <- function(path.corpus, n.vocabulary = 1000,
                        dim.internal = 200, window.size = 2, mode = "oscca",
-                       use.block.matrix = FALSE, use.eigen = TRUE) {
+                       use.block.matrix = FALSE, use.eigen = TRUE,
+                       skip.null.words = TRUE) {
   
   time.start <- Sys.time()
   
@@ -172,6 +173,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
   cat("dim.internal       :", dim.internal, "\n")
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", length(vocab.words), "\n")
+  cat("skip.null.words    :", skip.null.words, "\n")
   cat("mode               :", mode, "\n\n")
   
   sentence <- match(sentence.orig, vocab.words, nomatch = 0)
@@ -181,7 +183,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
   if (use.eigen) {
     sentence <- as.integer(sentence) - 1L
     results.redsvd <- EigenwordsRedSVD(sentence, window.size, length(unique(sentence))-1,
-                                       dim.internal, skip_null_words = FALSE, mode_oscca = (mode == "oscca"))
+                                       dim.internal, skip_null_words = skip.null.words, mode_oscca = (mode == "oscca"))
     
   } else {
     r <- make.matrices(sentence, window.size, n.train.words, n.vocab, skip.null.words = TRUE)
