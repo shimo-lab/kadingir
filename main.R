@@ -18,8 +18,10 @@ save(res.eigenwords, file = "res_eigenwords.Rdata")
 
 
 ## Check vector representations
-MostSimilar(res.eigenwords, positive=c("man"))
-MostSimilar(res.eigenwords, positive=c("king", "woman"), negative=c("man"))
+MostSimilar(res.eigenwords$svd$U, res.eigenwords$vocab.words, positive=c("man"), distance = "cosine")
+MostSimilar(res.eigenwords$svd$U, res.eigenwords$vocab.words, positive=c("king", "woman"), negative=c("man"), distance = "cosine")
 
 ## Calcurate accuracy of Google analogy task
-TestGoogleTasks(res.eigenwords, "test/questions-words.txt", n.cores = 25)
+TestGoogleTasks(res.eigenwords$svd$U, res.eigenwords$vocab.words,
+                "test/questions-words.txt", n.cores = 12, distance = "cosine")
+
