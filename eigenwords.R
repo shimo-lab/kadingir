@@ -219,18 +219,17 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
 }
 
 
-MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
-                        topn = 10, normalize = FALSE, format = "euclid",
-                        ignore.query.words = TRUE, print.error = TRUE) {
-  vocab <- res.eigenwords$vocab.words
-  rep.vocab <- res.eigenwords$svd$U
+MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
+                        topn = 10, distance = "euclid", print.error = TRUE) {
   
-  if (normalize) {
-    rep.vocab <- rep.vocab/sqrt(rowSums(rep.vocab**2))
+  rownames(U) <- vocab
+  
+  if (distance == "cosine") {
+    U <- U/sqrt(rowSums(U**2))
   }
   
   queries.info <- list(list(positive, 1), list(negative, -1))
-  rep.query <- rep(0, times=ncol(rep.vocab))
+  rep.query <- rep(0, times=ncol(U))
   
   for (q in queries.info) {
     queries <- q[[1]]
@@ -246,45 +245,37 @@ MostSimilar <- function(res.eigenwords, positive = NULL, negative = NULL,
           return(FALSE)
         }
         
-        index.query <- which(vocab == query)
-        rep.query <- rep.query + pm * rep.vocab[index.query, ]
+        rep.query <- rep.query + pm * U[query, ]
       }
     }
   }
   
-  if (normalize || format == "cosine") {
+  if (distance == "cosine") {
     rep.query <- rep.query/sqrt(sum(rep.query**2))
   }
   
-  if (ignore.query.words) {
-    query.words <- c(positive, negative)
-    index.vocab.reduced <- which(!vocab %in% query.words)
-    rep.vocab <- rep.vocab[index.vocab.reduced, ]
-    vocab <- vocab[index.vocab.reduced]
-  }
-  
-  if (format == "euclid") {
-    rep.query.matrix <- matrix(rep.query, nrow=nrow(rep.vocab), ncol=ncol(rep.vocab), byrow=TRUE)
-    distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
-    names(distances) <- vocab
+  # Ignore query words
+  query.words <- c(positive, negative)
+  index.vocab.reduced <- which(!vocab %in% query.words)
+  U <- U[index.vocab.reduced, ]
+  vocab <- vocab[index.vocab.reduced]
     
-    return(sort(distances)[1:topn])
+  if (distance == "euclid") {
+    rep.query.matrix <- matrix(rep.query, nrow=nrow(U), ncol=ncol(U), byrow=TRUE)
+    distances <- sqrt(rowSums((U - rep.query.matrix)**2))
+    return(distances[order(distances)[1:topn]])
     
-  } else if (format == "cosine") {
-    distances <- rep.vocab %*% rep.query
-    names(distances) <- vocab
-    
-    return(sort(distances, decreasing = TRUE)[1:topn])
-    
+  } else if (distance == "cosine") {
+    similarities <- drop(U %*% rep.query)
+    return(similarities[order(-similarities)[1:topn]])
   }
 }
 
 
-TestGoogleTasks <- function (res.eigenwords, path, n.cores = 1) {
+TestGoogleTasks <- function (word.representations, vocab, path, n.cores = 1, distance = "euclid") {
   
   ## Calcurate accuracy of Google analogy task
-  queries <- read.csv(path, header = FALSE,
-                      sep = " ", comment.char = ":")
+  queries <- read.csv(path, header = FALSE, sep = " ", comment.char = ":")
   
   time.start <- Sys.time()
 
@@ -292,11 +283,11 @@ TestGoogleTasks <- function (res.eigenwords, path, n.cores = 1) {
   
   results <- foreach (i = seq(nrow(queries)), .combine = c) %dopar% {
     q <- as.character(unlist(queries[i, ]))
-    res.MostSimilar <- MostSimilar(res.eigenwords, positive=c(q[[2]], q[[3]]),
-                                   negative=c(q[[1]]),
-                                   format="euclid", topn=10, print.error = FALSE)
+    res.MostSimilar <- MostSimilar(word.representations, vocab,
+                                   positive=c(q[[2]], q[[3]]), negative=c(q[[1]]),
+                                   distance=distance, topn=1, print.error = FALSE)
     
-    res.MostSimilar && names(res.MostSimilar)[[1]] == q[4]
+    res.MostSimilar && names(res.MostSimilar) == q[4]
   }
   print(Sys.time() - time.start)
   
