@@ -186,7 +186,6 @@ Rcpp::List EigenwordsRedSVD(
       Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
       Rcpp::Named("window.size") = Rcpp::wrap(window_size),
       Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
-      Rcpp::Named("skip.null.words") = Rcpp::wrap(skip_null_words),
       Rcpp::Named("k") = Rcpp::wrap(k)
       );
       

@@ -143,8 +143,7 @@ TSCCA <- function(W, L, R, k) {
 
 Eigenwords <- function(path.corpus, n.vocabulary = 1000,
                        dim.internal = 200, window.size = 2, mode = "oscca",
-                       use.block.matrix = FALSE, use.eigen = TRUE,
-                       skip.null.words = TRUE) {
+                       use.block.matrix = FALSE, use.eigen = TRUE) {
   
   time.start <- Sys.time()
   
@@ -167,23 +166,24 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
     vocab.words <- unique(sentence)
   }
   
+  sentence <- match(sentence.orig, vocab.words, nomatch = 0)
+  sentence <- sentence[sentence > 0]
+  n.vocab <- length(vocab.words)
+  n.corpus <- length(sentence)
+  
   cat("\n\n")
   cat("Corpus             :", path.corpus, "\n")
-  cat("Size of sentence   :", length(sentence.orig), "\n")
+  cat("Size of sentence   :", n.corpus, "\n")
   cat("dim.internal       :", dim.internal, "\n")
   cat("window.size        :", window.size, "\n")
-  cat("Size of vocab      :", length(vocab.words), "\n")
-  cat("skip.null.words    :", skip.null.words, "\n")
+  cat("Size of vocab      :", n.vocab, "\n")
   cat("mode               :", mode, "\n\n")
   
-  sentence <- match(sentence.orig, vocab.words, nomatch = 0)
-  n.vocab <- length(vocab.words)
-  n.train.words <- length(sentence)
 
   if (use.eigen) {
-    sentence <- as.integer(sentence) - 1L
-    results.redsvd <- EigenwordsRedSVD(sentence, window.size, length(unique(sentence))-1,
-                                       dim.internal, skip_null_words = skip.null.words, mode_oscca = (mode == "oscca"))
+    sentence <- as.integer(sentence)
+    results.redsvd <- EigenwordsRedSVD(sentence, window.size, length(unique(sentence)),
+                                       dim.internal, mode_oscca = (mode == "oscca"))
     
   } else {
     r <- make.matrices(sentence, window.size, n.train.words, n.vocab, skip.null.words = TRUE)
