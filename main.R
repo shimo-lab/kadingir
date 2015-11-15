@@ -5,14 +5,14 @@ source("eigenwords.R")
 
 
 ## Tuning parameters
-min.count <- 200      # 出現回数がmin.count回以下の単語はvocabに入れない
+n.vocabulary <- 100000 # 語彙に含める単語数
 dim.internal <- 200   # 共通空間の次元
 window.size <- 4      # 前後何個の単語をcontextとするか
 path.corpus <- "data/enwiki1GB.txt"
 
 
-res.eigenwords <- Eigenwords(path.corpus, min.count, dim.internal, window.size,
                              mode = "tscca", use.block.matrix=FALSE)
+res.eigenwords <- Eigenwords(path.corpus, n.vocabulary, dim.internal, window.size,
 save(res.eigenwords, file = "res_eigenwords.Rdata")
 
 
