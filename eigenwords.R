@@ -152,7 +152,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
   line <- readLines(con = f, -1)
   close(f)
   
-  sentence.orig <- unlist(strsplit(tolower(line), " "))
+  sentence.orig <- unlist(strsplit(tolower(paste(line,"\n")), " "))
   rm(line)
   
   if (!mode %in% c("oscca", "tscca")) {
@@ -181,9 +181,9 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
   
 
   if (use.eigen) {
-    sentence <- as.integer(sentence)
     results.redsvd <- EigenwordsRedSVD(sentence, window.size, length(unique(sentence)),
                                        dim.internal, mode_oscca = (mode == "oscca"))
+    sentence <- as.integer(sentence) - 1L
     
   } else {
     r <- make.matrices(sentence, window.size, n.train.words, n.vocab, skip.null.words = TRUE)
