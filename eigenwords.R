@@ -181,9 +181,8 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
   
 
   if (use.eigen) {
-    results.redsvd <- EigenwordsRedSVD(sentence, window.size, length(unique(sentence)),
-                                       dim.internal, mode_oscca = (mode == "oscca"))
     sentence <- as.integer(sentence) - 1L
+    results.redsvd <- EigenwordsRedSVD(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
     
   } else {
     r <- make.matrices(sentence, window.size, n.train.words, n.vocab, skip.null.words = TRUE)
