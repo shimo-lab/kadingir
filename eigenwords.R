@@ -167,8 +167,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
   }
   
   sentence <- match(sentence.orig, vocab.words, nomatch = 0)
-  sentence <- sentence[sentence > 0]
-  n.vocab <- length(vocab.words)
+  n.vocab <- length(vocab.words) + 1  # For null word, +1
   n.corpus <- length(sentence)
   
   cat("\n\n")
@@ -181,7 +180,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
   
 
   if (use.eigen) {
-    sentence <- as.integer(sentence) - 1L
+    sentence <- as.integer(sentence)
     results.redsvd <- EigenwordsRedSVD(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
     
   } else {
@@ -209,7 +208,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
   
   return.list <- list()
   return.list$svd <- results.redsvd
-  return.list$vocab.words <- vocab.words
+  return.list$vocab.words <- c("<OOV>", vocab.words)
   
   diff.time <- Sys.time() - time.start
   print(diff.time)
