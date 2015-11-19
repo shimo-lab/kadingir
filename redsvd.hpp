@@ -1,5 +1,7 @@
 /* 
- * A header-only version of RedSVD
+ * Implement other version of randomized SVD as same way as swell
+ * 
+ * based on redsvd-h
  * 
  * Copyright (c) 2014 Nicolas Tessore
  * 
@@ -109,12 +111,12 @@ namespace RedSVD
 		RedSVD(const MatrixType& A)
 		{
 			int r = (A.rows() < A.cols()) ? A.rows() : A.cols();
-			compute(A, r);
+			compute_tropp(A, r);
 		}
 		
 		RedSVD(const MatrixType& A, const Index rank)
 		{
-			compute(A, rank);
+			compute_tropp(A, rank);
 		}
 		
 		void compute(const MatrixType& A, const Index rank)
@@ -159,6 +161,41 @@ namespace RedSVD
 			m_matrixU = Z * svdOfC.matrixU();
 			m_vectorS = svdOfC.singularValues();
 			m_matrixV = Y * svdOfC.matrixV();
+		}
+
+    // Algorithm ?.? of [Halko+ 2009]
+    // We implement it as same way as swell
+    // (https://github.com/paramveerdhillon/swell)
+  	void compute_tropp(const MatrixType& A, const Index rank)
+		{
+      
+			if(A.cols() == 0 || A.rows() == 0)
+				return;
+			
+			Index r = (rank < A.cols()) ? rank : A.cols();
+			
+			r = (r < A.rows()) ? r : A.rows();
+			
+			// Gaussian Random Matrix for A^T
+			DenseMatrix O(A.cols(), r);
+			sample_gaussian(O);
+
+      DenseMatrix Y(A.rows(), r);
+      DenseMatrix B(r, A.cols());
+
+      // Power iteration
+      for (int pow_iter=0; pow_iter<2; pow_iter++) {
+        Y = A * O;
+        gram_schmidt(Y);
+        B = Y.transpose() * A;
+        O = B.transpose();
+      }
+			
+			Eigen::JacobiSVD<DenseMatrix> svdOfB(B, Eigen::ComputeThinU | Eigen::ComputeThinV);
+			
+			m_matrixU = Y * svdOfB.matrixU();
+			m_vectorS = svdOfB.singularValues();
+			m_matrixV = svdOfB.matrixV();
 		}
 		
 		DenseMatrix matrixU() const
