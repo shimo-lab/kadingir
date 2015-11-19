@@ -8,7 +8,7 @@ library(RcppEigen)
 library(foreach)
 library(doParallel)
 
-sourceCpp("rcppeigenwords.cpp", rebuild = TRUE)
+sourceCpp("rcppeigenwords.cpp", rebuild = TRUE, verbose = TRUE)
 
 
 make.matrices <- function(sentence, window.size, n.train.words, n.vocab, skip.null.words) {
