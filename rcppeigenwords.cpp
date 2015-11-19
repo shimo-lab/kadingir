@@ -9,6 +9,7 @@ sentence の要素で-1となっているのは NULL word に対応する．
 #include "redsvd.hpp"
 
 // [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::plugins(openmp)]]
 
 using Eigen::MatrixXd;
 using Eigen::MatrixXi;
