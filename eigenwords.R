@@ -8,7 +8,7 @@ library(RcppEigen)
 library(foreach)
 library(doParallel)
 
-sourceCpp("rcppeigenwords.cpp", rebuild = TRUE)
+sourceCpp("rcppeigenwords.cpp", rebuild = TRUE, verbose = TRUE)
 
 
 make.matrices <- function(sentence, window.size, n.train.words, n.vocab, skip.null.words) {
@@ -285,7 +285,7 @@ TestGoogleTasks <- function (word.representations, vocab, path, n.cores = 1, dis
                                    positive=c(q[[2]], q[[3]]), negative=c(q[[1]]),
                                    distance=distance, topn=1, print.error = FALSE)
     
-    res.MostSimilar && names(res.MostSimilar) == q[4]
+    res.MostSimilar && tolower(names(res.MostSimilar)) == tolower(q[4])
   }
   print(Sys.time() - time.start)
   
