@@ -4,3 +4,4 @@
 *.Rproj
 *.Rdata
 data
+*.out
