@@ -23,5 +23,5 @@ MostSimilar(res.eigenwords$svd$U, res.eigenwords$vocab.words, positive=c("king",
 
 ## Calcurate accuracy of Google analogy task
 TestGoogleTasks(res.eigenwords$svd$U, res.eigenwords$vocab.words,
-                "test/questions-words.txt", n.cores = 12, distance = "cosine")
+                "test/questions-words.txt", n.cores = 12)
 
