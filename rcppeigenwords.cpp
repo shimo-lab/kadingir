@@ -234,11 +234,11 @@ Rcpp::List EigenwordsRedSVD(
     RedSVD::RedSVD<MatrixXreal> svdA(a, k);
     
     return Rcpp::List::create(
-      Rcpp::Named("tWS") = Rcpp::wrap(tws),
-      Rcpp::Named("tWW_h") = Rcpp::wrap(tww_h),
-      Rcpp::Named("tSS_h") = Rcpp::wrap(tss_h),
-      Rcpp::Named("A") = Rcpp::wrap(a),
-      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
+//      Rcpp::Named("tWS") = Rcpp::wrap(tws),
+//      Rcpp::Named("tWW_h") = Rcpp::wrap(tww_h),
+//      Rcpp::Named("tSS_h") = Rcpp::wrap(tss_h),
+//      Rcpp::Named("A") = Rcpp::wrap(a),
+//      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
       Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
       Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
       Rcpp::Named("window.size") = Rcpp::wrap(window_size),
