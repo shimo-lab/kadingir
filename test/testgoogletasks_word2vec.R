@@ -10,4 +10,4 @@ vectors <- as.matrix(table[ , 2:201])
 
 MostSimilar(vectors, vocab, positive = c("japan"), distance = "cosine")
 
-TestGoogleTasks(vectors, vocab, "questions-words.txt", n.cores = 12)
+TestGoogleTasks(vectors, vocab, "test/questions-words.txt", n.cores = 12)
