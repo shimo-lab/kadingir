@@ -270,24 +270,38 @@ MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
 }
 
 
-TestGoogleTasks <- function (word.representations, vocab, path, n.cores = 1, distance = "euclid") {
+TestGoogleTasks <- function (U, vocab, path, n.cores = 1) {
+  
+  time.start <- Sys.time()
   
   ## Calcurate accuracy of Google analogy task
   queries <- read.csv(path, header = FALSE, sep = " ", comment.char = ":")
+  n.tasks <- nrow(queries)
+  queries <- as.character(unlist(t(queries)))
   
-  time.start <- Sys.time()
+  rownames(U) <- vocab
+  U <- U/sqrt(rowSums(U**2))
 
-  registerDoParallel(n.cores)
+  cl <- makeCluster(n.cores)
+  registerDoParallel(cl)
+  on.exit(stopCluster(cl)) 
   
-  results <- foreach (i = seq(nrow(queries)), .combine = c) %dopar% {
-    q <- as.character(unlist(queries[i, ]))
-    res.MostSimilar <- MostSimilar(word.representations, vocab,
-                                   positive=c(q[[2]], q[[3]]), negative=c(q[[1]]),
-                                   distance=distance, topn=1, print.error = FALSE)
+  results <- foreach (i = seq(n.tasks), .combine = c) %dopar% {
+    q <- queries[(4*(i-1) + 1):(4*i)]
     
-    res.MostSimilar && (tolower(names(res.MostSimilar)) == tolower(q[4]))
+    if (all(q %in% vocab)) {
+      q3 <- U[q[2], ] - U[q[1], ] + U[q[3], ]
+      q3 <- q3 / sqrt(q3 %*% q3)
+      
+      similarities <- drop(U %*% q3)[!vocab %in% q[1:3]]
+      most.similar.word <- names(which.max(similarities))
+      
+      tolower(most.similar.word) == tolower(q[4])
+    } else {
+      FALSE
+    }
   }
   print(Sys.time() - time.start)
   
-  cat("accuracy = ", sum(results), "/", length(results), "\n\n")
+  cat("accuracy = ", sum(results), "/", length(results), "=", mean(results), "\n\n")
 }
