@@ -108,15 +108,15 @@ namespace RedSVD
 		
 		RedSVD() {}
 		
-		RedSVD(const MatrixType& A)
+		RedSVD(const MatrixType& A, const int l)
 		{
 			int r = (A.rows() < A.cols()) ? A.rows() : A.cols();
-			compute_tropp(A, r);
+			compute_tropp(A, r, l);
 		}
 		
-		RedSVD(const MatrixType& A, const Index rank)
+		RedSVD(const MatrixType& A, const Index rank, const int l)
 		{
-			compute_tropp(A, rank);
+			compute_tropp(A, rank, l);
 		}
 		
 		void compute(const MatrixType& A, const Index rank)
@@ -163,10 +163,10 @@ namespace RedSVD
 			m_matrixV = Y * svdOfC.matrixV();
 		}
 
-    // Algorithm ?.? of [Halko+ 2009]
+    // Algorithm 5 of [Dhillon+ 2015]
     // We implement it as same way as swell
     // (https://github.com/paramveerdhillon/swell)
-  	void compute_tropp(const MatrixType& A, const Index rank)
+  	void compute_tropp(const MatrixType& A, const Index rank, const int l)
 		{
       
 			if(A.cols() == 0 || A.rows() == 0)
@@ -177,23 +177,23 @@ namespace RedSVD
 			r = (r < A.rows()) ? r : A.rows();
 			
 			// Gaussian Random Matrix for A^T
-			DenseMatrix O(A.cols(), r);
+			DenseMatrix O(A.cols(), r+l);
 			sample_gaussian(O);
 
-      DenseMatrix Y(A.rows(), r);
-      DenseMatrix B(r, A.cols());
+      DenseMatrix M(A.rows(), r+l);
+      DenseMatrix B(r+l, A.cols());
 
       // Power iteration
-      for (int pow_iter=0; pow_iter<2; pow_iter++) {
-        Y = A * O;
-        gram_schmidt(Y);
-        B = Y.transpose() * A;
+      for (int pow_iter=0; pow_iter<3; pow_iter++) {
+        M = A * O;
+        gram_schmidt(M);
+        B = M.transpose() * A;
         O = B.transpose();
       }
 			
 			Eigen::JacobiSVD<DenseMatrix> svdOfB(B, Eigen::ComputeThinU | Eigen::ComputeThinV);
 			
-			m_matrixU = Y * svdOfB.matrixU();
+			m_matrixU = M * (svdOfB.matrixU()).topLeftCorner(r+l, r);
 			m_vectorS = svdOfB.singularValues();
 			m_matrixV = svdOfB.matrixV();
 		}
