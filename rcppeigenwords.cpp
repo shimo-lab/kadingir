@@ -197,10 +197,10 @@ Rcpp::List EigenwordsRedSVD(
     tlr.makeCompressed();
     trr.makeCompressed();
     
-    std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
-    std::cout << "Density of tll = " << tll.nonZeros() << "/" << tll.rows() * tll.cols() << std::endl;
-    std::cout << "Density of tlr = " << tlr.nonZeros() << "/" << tlr.rows() * tlr.cols() << std::endl;
-    std::cout << "Density of trr = " << trr.nonZeros() << "/" << trr.rows() * trr.cols() << std::endl;
+    std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() << "*" << twc.cols() << std::endl;
+    std::cout << "Density of tll = " << tll.nonZeros() << "/" << tll.rows() << "*" <<  tll.cols() << std::endl;
+    std::cout << "Density of tlr = " << tlr.nonZeros() << "/" << tlr.rows() << "*" <<  tlr.cols() << std::endl;
+    std::cout << "Density of trr = " << trr.nonZeros() << "/" << trr.rows() << "*" <<  trr.cols() << std::endl;
     std::cout << "Calculate TSCCA..." << std::endl;
     
     // Two Step CCA : Step 1
