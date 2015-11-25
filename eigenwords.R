@@ -13,6 +13,8 @@ sourceCpp("rcppeigenwords.cpp", rebuild = TRUE, verbose = TRUE)
 
 make.matrices <- function(sentence, window.size, n.train.words, n.vocab, skip.null.words) {
 
+  sentence <- sentence + 1L
+  
   ## Construction of W
   indices <- cbind(seq(sentence), sentence)
   indices <- indices[indices[ , 2] > 0, ]
