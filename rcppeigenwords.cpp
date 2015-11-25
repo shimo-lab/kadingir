@@ -172,7 +172,18 @@ Rcpp::List EigenwordsRedSVD(
     
     VectorXreal tww_h(tww_diag.cast <real> ().cwiseInverse().cwiseSqrt());
     VectorXreal tcc_h(tcc_diag.cast <real> ().cwiseInverse().cwiseSqrt());
-    realSparseMatrix a(tww_h.asDiagonal() * (twc.cast <real> ().eval()) * tcc_h.asDiagonal());
+    realSparseMatrix tww_h_diag(tww_h.size(), tww_h.size());
+    realSparseMatrix tcc_h_diag(tcc_h.size(), tcc_h.size());
+
+    for (int ii = 0; ii<tww_h.size(); ii++) {
+      tww_h_diag.insert(ii, ii) = tww_h(ii);
+    }
+    
+    for (int ii = 0; ii<tcc_h.size(); ii++) {
+      tcc_h_diag.insert(ii, ii) = tcc_h(ii);
+    }
+
+    realSparseMatrix a(tww_h_diag * (twc.cast <real> ().eval()) * tcc_h_diag);
     
     std::cout << "Calculate Randomized SVD..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdA(a, k);
@@ -182,8 +193,8 @@ Rcpp::List EigenwordsRedSVD(
       Rcpp::Named("tWW_h") = Rcpp::wrap(tww_h),
       Rcpp::Named("tCC_h") = Rcpp::wrap(tcc_h),
       Rcpp::Named("A") = Rcpp::wrap(a),
-      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-      Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+      Rcpp::Named("V") = Rcpp::wrap(tcc_h_diag * svdA.matrixV()),
+      Rcpp::Named("U") = Rcpp::wrap(tww_h_diag * svdA.matrixU()),
       Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
       Rcpp::Named("window.size") = Rcpp::wrap(window_size),
       Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
