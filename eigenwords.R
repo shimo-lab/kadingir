@@ -152,7 +152,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000,
   line <- readLines(con = f, -1)
   close(f)
   
-  sentence.orig <- unlist(strsplit(paste(line,"\n"), " "))
+  sentence.orig <- unlist(strsplit(line, " "))
   rm(line)
   
   if (!mode %in% c("oscca", "tscca")) {
