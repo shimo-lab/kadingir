@@ -1,7 +1,7 @@
 /*
 RcppEigenwords
 
-sentence の要素で-1となっているのは NULL word に対応する．
+sentence の要素で 0 となっているのは <OOV> (Out of Vocabulary) に対応する．
 */
 
 #include <Rcpp.h>
@@ -76,6 +76,7 @@ Rcpp::List EigenwordsRedSVD(
   std::cout << "c_col_size    = " << c_col_size    << std::endl;
   std::cout << std::endl;
   
+  // Construct offset table (ex. [-2, -1, 1, 2])
   i_offset1 = 0;
   for (int offset=-window_size; offset<=window_size; offset++){
     if (offset != 0) {
@@ -110,7 +111,7 @@ Rcpp::List EigenwordsRedSVD(
                 if (j2 < lr_col_size) {
                   // Upper left block of Ccc
                   if (j <= j2) {
-                    // (j, j2) is upper-triangular element
+                    // (j, j2) is upper-triangular part of tll
                     tll_tripletList.push_back(Triplet(j, j2, 1));                      
                   }
                 } else {
@@ -121,7 +122,7 @@ Rcpp::List EigenwordsRedSVD(
                 if (j2 >= lr_col_size) {
                   // Lower right block of Ccc
                   if (j <= j2) {
-                    // (j, j2) is upper-triangular element
+                    // (j, j2) is upper-triangular part of trr
                     trr_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
                   }
                 }
@@ -136,6 +137,7 @@ Rcpp::List EigenwordsRedSVD(
     
     n_pushed_triplets++;
     
+    // Commit temporary matrices
     if (n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size || i_sentence == sentence_size - 1) {
       twc_temp.setFromTriplets(twc_tripletList.begin(), twc_tripletList.end());
       twc_tripletList.clear();
@@ -165,7 +167,7 @@ Rcpp::List EigenwordsRedSVD(
   
   
   if (mode_oscca) {
-    // One Step CCA
+    // Execute One Step CCA
     
     std::cout << "Calculate OSCCA..." << std::endl;
     std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
@@ -203,7 +205,7 @@ Rcpp::List EigenwordsRedSVD(
       );
       
   } else {
-    // Two Step CCA
+    // Execute Two Step CCA
     
     tll.makeCompressed();
     tlr.makeCompressed();
