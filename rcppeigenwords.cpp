@@ -235,9 +235,15 @@ Rcpp::List EigenwordsRedSVD(
     tll.resize(0, 0);
     trr.resize(0, 0);
     
-    VectorXreal tss_h(2*k);
+    VectorXreal tss_h(2*window_size*k);
+    
+    std::cout << phi_l.rows() << " " << phi_l.cols() << std::endl;
+    std::cout << phi_r.rows() << " " << phi_r.cols() << std::endl;
+    std::cout << tss_h1.rows() << " " << tss_h1.cols() << std::endl;
+    std::cout << tss_h2.rows() << " " << tss_h2.cols() << std::endl;
+    
     tss_h << tss_h1, tss_h2;
-    MatrixXreal tws(vocab_size, 2*k);
+    MatrixXreal tws(vocab_size, 2*window_size*k);
     tws << twc.topLeftCorner(vocab_size, c_col_size/2).cast <real> () * phi_l, twc.topRightCorner(vocab_size, c_col_size/2).cast <real> () * phi_r;
     MatrixXreal a(tww_h.asDiagonal() * tws * tss_h.asDiagonal());
     
