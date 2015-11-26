@@ -62,33 +62,12 @@ TruncatedSVD <- function(A, k, sparse) {
     results.svd$D <- results.propack.svd$d
   }
   print("End of TruncatedSVD()")
+
   return(results.svd)
-  
 }
 
-crossprod.block <- function(X, Y = NULL, only.diag = FALSE) {
-  
-  if (is.null(Y)) {
-    Y <- X
-  }
-  
-  ZZ <- Matrix(FALSE, nrow = 0, ncol = sum(sapply(Y, ncol)))
-  for (i in seq(X)) {
-    Zi <- Matrix(FALSE, nrow = ncol(X[[i]]), ncol = 0)
-    for (j in seq(Y)) {
-      if (only.diag && i != j) {
-        Zi <- cbind2(Zi, Matrix(FALSE, nrow = ncol(X[[i]]), ncol = ncol(Y[[j]])))
-      } else {
-        Zi <- cbind2(Zi, crossprod(X[[i]], Y[[j]]))        
-      }
-    }
-    ZZ <- rbind2(ZZ, Zi)
-  }
-  
-  return(ZZ)
-}
 
-OSCCA <- function(X, Y, k, use.block.matrix) {
+OSCCA <- function(X, Y, k) {
   ## CCA using randomized SVD
   ##  In the same way as [Dhillon+2015],
   ##  ignore off-diagonal elements of Cxx & Cyy
@@ -97,27 +76,20 @@ OSCCA <- function(X, Y, k, use.block.matrix) {
   ##    X : matrix or list of matrices
   ##    Y : matrix or list of matrices
   ##    k : number of desired singular values
-  ##    use.block.matrix : Are X, Y block matrix?
   
-  if (use.block.matrix) {
-    Cxx <- crossprod.block(X, only.diag = TRUE)
-    Cxy <- crossprod.block(X, Y)
-    Cyy <- crossprod.block(Y, only.diag = TRUE)
-  } else {
-    Cxx <- crossprod(X)
-    Cxy <- crossprod(X, Y)
-    Cyy <- crossprod(Y)
-  }
+  Cxx <- crossprod(X)
+  Cxy <- crossprod(X, Y)
+  Cyy <- crossprod(Y)
   
   A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
   
   cat("Calculate redsvd...")
   return(TruncatedSVD(A, k, sparse = TRUE))
-  
 }
 
+
 TSCCA <- function(W, L, R, k) {
-  redsvd.LR <- OSCCA(L, R, k, FALSE)
+  redsvd.LR <- OSCCA(L, R, k)
   U <- redsvd.LR$U
   V <- redsvd.LR$V
   
@@ -143,9 +115,8 @@ TSCCA <- function(W, L, R, k) {
 }
 
 
-Eigenwords <- function(path.corpus, n.vocabulary = 1000,
-                       dim.internal = 200, window.size = 2, mode = "oscca",
-                       use.block.matrix = FALSE, use.eigen = TRUE) {
+Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
+                       window.size = 2, mode = "oscca", use.eigen = TRUE) {
   
   time.start <- Sys.time()
   
