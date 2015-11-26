@@ -14,7 +14,7 @@ path.corpus <- "data/reuters/reuters_rcv1_text.csv"
 
 res.eigenwords <- Eigenwords(path.corpus, n.vocabulary, dim.internal, window.size,
                              mode = "oscca", use.block.matrix=FALSE)
-# save(res.eigenwords, file = "res_eigenwords.Rdata")
+save(res.eigenwords, file = "res_eigenwords.Rdata")
 
 
 ## Check vector representations
