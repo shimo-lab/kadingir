@@ -16,6 +16,8 @@ table <- read.table("./../word2vec/vectors.txt", sep = " ", skip = 1)
 vocab <- as.vector(table[ , 1])
 vectors <- as.matrix(table[ , 2:201])
 
+rownames(vectors) <- vocab
+
 
 for (n.use.vocab in c(10000,20000,40000,60000,80000,100000)) {
   vectors.topn <- vectors[seq(2, n.use.vocab), ]
@@ -28,3 +30,16 @@ for (n.use.vocab in c(10000,20000,40000,60000,80000,100000)) {
   
   TestGoogleTasks(vectors.topn, vocab.topn, "test/questions-words.txt", n.cores = 12)
 }
+
+
+
+
+# 実験
+index.word2vec <- tolower(vocab) %in% rownames(vectors.word2vec)
+vocab <- vocab[index.word2vec]
+vectors <- vectors[index.word2vec, ]
+rownames(vectors) <- vocab
+
+print(MostSimilar(vectors, vocab, positive = c("man"), distance = "cosine"))
+
+TestGoogleTasks(vectors, vocab, "test/questions-words.txt", n.cores = 32)
