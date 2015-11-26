@@ -111,14 +111,14 @@ namespace RedSVD
 		RedSVD(const MatrixType& A, const int l)
 		{
 			int r = (A.rows() < A.cols()) ? A.rows() : A.cols();
-  		compute(A, r);
-//      compute_tropp(A, r, l);
+//  		compute(A, r);
+      compute_tropp(A, r, l);
 		}
 		
 		RedSVD(const MatrixType& A, const Index rank, const int l)
 		{
-    	compute(A, rank);
-//			compute_tropp(A, rank, l);
+//    	compute(A, rank);
+			compute_tropp(A, rank, l);
 		}
 		
 		void compute(const MatrixType& A, const Index rank)
