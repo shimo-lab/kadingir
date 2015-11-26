@@ -278,3 +278,43 @@ TestGoogleTasks <- function (U, vocab, path, n.cores = 1) {
   
   cat("accuracy = ", sum(results), "/", length(results), "=", mean(results), "\n\n")
 }
+
+
+TestWordsim353 <- function (vectors, path = "data/wordsim353/combined.csv") {
+  
+  cosine.similarity <- function (w1, w2) {
+    v1 <- vectors[w1, ]
+    v2 <- vectors[w2, ]
+    
+    (v1 %*% v2) / sqrt((v1 %*% v1) * (v2 %*% v2))
+  }
+  
+  
+  ## Calculate similarities and correlation
+  wordsims <- read.csv(path, header = 1)
+  
+  n.tests <- nrow(wordsims)
+  similarity.eigenwords <- rep(NULL, times = n.tests)
+  
+  for(i in seq(n.tests)) {
+    w1 <- as.character(wordsims[i, 1])
+    w2 <- as.character(wordsims[i, 2])
+    
+    if (w1 %in% vocab && w2 %in% vocab) {
+      similarity.eigenwords[i] <- cosine.similarity(w1, w2)
+    }
+  }
+  similarity.human <- wordsims[ , 3]
+  
+  percent.used <- mean(!is.na(similarity.eigenwords))
+  
+  similarity.human <- similarity.human[!is.na(similarity.eigenwords)]
+  similarity.eigenwords <- similarity.eigenwords[!is.na(similarity.eigenwords)]
+  
+  spearman.cor <- cor(similarity.human, similarity.eigenwords, method = "spearman")
+  
+  cat("Spearman cor.   = ", spearman.cor, "\n")
+  cat("% of used pairs = ", percent.used, "\n")
+  
+  plot(similarity.human, similarity.eigenwords)
+}
