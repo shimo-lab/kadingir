@@ -1,0 +1,30 @@
+source("eigenwords.R")
+
+
+# my eigenwords
+load("res_eigenwords.Rdata")
+vocab <- res.eigenwords$vocab.words
+vectors <- res.eigenwords$svd$U
+
+# pretrained embedding by Dhillon
+vocab <- readLines("data/rcv1.tscca.100k.200.c10.vocab")
+vectors <- fread("data/rcv1.tscca.100k.200.c10.vectors", sep = " ", header = FALSE)
+vectors <- as.matrix(vectors)
+
+# word2vec
+table <- read.table("./../word2vec/vectors.txt", sep = " ", skip = 1)
+vocab <- as.vector(table[ , 1])
+vectors <- as.matrix(table[ , 2:201])
+
+
+for (n.use.vocab in c(10000,20000,40000,60000,80000,100000)) {
+  vectors.topn <- vectors[seq(2, n.use.vocab), ]
+  vocab.topn <- vocab[seq(2, n.use.vocab)]
+  rownames(vectors.topn) <- vocab.topn
+  
+  print(MostSimilar(vectors.topn, vocab.topn, positive = c("man"), distance = "cosine"))
+  print(MostSimilar(vectors.topn, vocab.topn, positive = c("japan"), distance = "cosine"))
+  print(MostSimilar(vectors.topn, vocab.topn, positive = c("Japan"), distance = "cosine"))
+  
+  TestGoogleTasks(vectors.topn, vocab.topn, "test/questions-words.txt", n.cores = 12)
+}
