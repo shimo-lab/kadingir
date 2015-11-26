@@ -5,4 +5,4 @@
 *.Rdata
 data
 *.out
-*.csv
+output_*.csv
