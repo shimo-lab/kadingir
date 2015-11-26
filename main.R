@@ -21,7 +21,7 @@ save(res.eigenwords, file = "res_eigenwords.Rdata")
 MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words, positive=c("man"), distance = "cosine")
 MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words, positive=c("king", "woman"), negative=c("man"), distance = "cosine")
 
-## Calcurate accuracy of Google analogy task
+## Test some tasks for check
 TestGoogleTasks(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
                 "test/questions-words.txt", n.cores = 12)
-
+TestWordsim353(res.eigenwords$svd$word_vector)
