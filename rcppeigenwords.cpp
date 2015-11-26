@@ -186,7 +186,7 @@ Rcpp::List EigenwordsRedSVD(
     realSparseMatrix a(tww_h_diag * (twc.cast <real> ().eval()) * tcc_h_diag);
     
     std::cout << "Calculate Randomized SVD..." << std::endl;
-    RedSVD::RedSVD<realSparseMatrix> svdA(a, k);
+    RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
     
     return Rcpp::List::create(
       Rcpp::Named("tWC") = Rcpp::wrap(twc.cast <real> ()),
@@ -221,7 +221,7 @@ Rcpp::List EigenwordsRedSVD(
     std::cout << "Density of b = " << b.nonZeros() << "/" << b.rows() * b.cols() << std::endl;
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
-    RedSVD::RedSVD<realSparseMatrix> svdB(b, k);
+    RedSVD::RedSVD<realSparseMatrix> svdB(b, k, 20);
     b.resize(0, 0);
     
     // Two Step CCA : Step 2
@@ -242,7 +242,7 @@ Rcpp::List EigenwordsRedSVD(
     MatrixXreal a(tww_h.asDiagonal() * tws * tss_h.asDiagonal());
     
     std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
-    RedSVD::RedSVD<MatrixXreal> svdA(a, k);
+    RedSVD::RedSVD<MatrixXreal> svdA(a, k, 20);
     
     return Rcpp::List::create(
 //      Rcpp::Named("tWS") = Rcpp::wrap(tws),
