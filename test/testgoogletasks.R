@@ -7,8 +7,8 @@ vocab <- res.eigenwords$vocab.words
 vectors <- res.eigenwords$svd$U
 
 # pretrained embedding by Dhillon
-vocab <- readLines("data/rcv1.tscca.100k.200.c10.vocab")
-vectors <- fread("data/rcv1.tscca.100k.200.c10.vectors", sep = " ", header = FALSE)
+vocab <- readLines("data/rcv1.oscca.100k.200.c10.vocab")
+vectors <- fread("data/rcv1.oscca.100k.200.c10.vectors", sep = " ", header = FALSE)
 vectors <- as.matrix(vectors)
 
 # word2vec
