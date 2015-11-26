@@ -5,7 +5,6 @@ source("eigenwords.R")
 load("res_eigenwords.Rdata")
 vocab <- res.eigenwords$vocab.words
 vectors <- res.eigenwords$svd$U
-rownames(vectors) <- vocab
 
 
-TestWordsim353(vectors)
+TestWordsim353(vectors, vocab)

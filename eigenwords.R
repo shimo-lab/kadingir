@@ -280,7 +280,7 @@ TestGoogleTasks <- function (U, vocab, path, n.cores = 1) {
 }
 
 
-TestWordsim353 <- function (vectors, path = "test/combined.csv") {
+TestWordsim353 <- function (vectors, vocab, path = "test/combined.csv") {
   
   cosine.similarity <- function (w1, w2) {
     v1 <- vectors[w1, ]
@@ -291,6 +291,8 @@ TestWordsim353 <- function (vectors, path = "test/combined.csv") {
   
   
   ## Calculate similarities and correlation
+  rownames(vectors) <- vocab
+  
   wordsims <- read.csv(path, header = 1)
   
   n.tests <- nrow(wordsims)

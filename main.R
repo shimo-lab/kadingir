@@ -24,4 +24,5 @@ MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words, positive
 ## Test some tasks for check
 TestGoogleTasks(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
                 "test/questions-words.txt", n.cores = 12)
-TestWordsim353(res.eigenwords$svd$word_vector)
+
+TestWordsim353(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words)
