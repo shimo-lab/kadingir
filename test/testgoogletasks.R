@@ -17,6 +17,7 @@ vocab <- as.vector(table[ , 1])
 vectors <- as.matrix(table[ , 2:201])
 
 rownames(vectors) <- vocab
+vocab.word2vec <- vocab
 
 
 for (n.use.vocab in c(10000,20000,40000,60000,80000,100000)) {
@@ -35,7 +36,7 @@ for (n.use.vocab in c(10000,20000,40000,60000,80000,100000)) {
 
 
 # 実験
-index.word2vec <- tolower(vocab) %in% rownames(vectors.word2vec)
+index.word2vec <- tolower(vocab) %in% vocab.word2vec
 vocab <- vocab[index.word2vec]
 vectors <- vectors[index.word2vec, ]
 rownames(vectors) <- vocab
