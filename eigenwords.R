@@ -290,8 +290,7 @@ TestGoogleTasks <- function (U, vocab, path, n.cores = 1) {
   
   results <- foreach (i = seq(n.tasks), .combine = c) %dopar% {
     q <- queries[(4*(i-1) + 1):(4*i)]
-    
-    q <- tolower(q)
+    #q <- tolower(q)
     
     if (all(q %in% vocab)) {
       q3 <- U[q[2], ] - U[q[1], ] + U[q[3], ]
