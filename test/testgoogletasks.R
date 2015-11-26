@@ -4,7 +4,7 @@ source("eigenwords.R")
 # my eigenwords
 load("res_eigenwords.Rdata")
 vocab <- res.eigenwords$vocab.words
-vectors <- res.eigenwords$svd$U
+vectors <- res.eigenwords$svd$word_vector
 
 # pretrained embedding by Dhillon
 vocab <- readLines("data/rcv1.oscca.100k.200.c10.vocab")
