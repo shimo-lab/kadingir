@@ -195,9 +195,9 @@ namespace RedSVD
 			
 			Eigen::JacobiSVD<DenseMatrix> svdOfB(B, Eigen::ComputeThinU | Eigen::ComputeThinV);
 			
-			m_matrixU = M * (svdOfB.matrixU()).topLeftCorner(r+l, r);
-			m_vectorS = svdOfB.singularValues();
-			m_matrixV = svdOfB.matrixV();
+			m_matrixU = M * (svdOfB.matrixU().topLeftCorner(r+l, r));
+			m_vectorS = svdOfB.singularValues().head(r);
+			m_matrixV = svdOfB.matrixV().topLeftCorner(A.cols(), r);
 		}
 		
 		DenseMatrix matrixU() const
