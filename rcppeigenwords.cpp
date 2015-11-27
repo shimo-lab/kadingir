@@ -172,8 +172,8 @@ Rcpp::List EigenwordsRedSVD(
     std::cout << "Calculate OSCCA..." << std::endl;
     std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
     
-    VectorXreal tww_h(tww_diag.cast <real> ().cwiseInverse().cwiseSqrt());
-    VectorXreal tcc_h(tcc_diag.cast <real> ().cwiseInverse().cwiseSqrt());
+    VectorXreal tww_h(tww_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+    VectorXreal tcc_h(tcc_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
     realSparseMatrix tww_h_diag(tww_h.size(), tww_h.size());
     realSparseMatrix tcc_h_diag(tcc_h.size(), tcc_h.size());
 
@@ -185,7 +185,7 @@ Rcpp::List EigenwordsRedSVD(
       tcc_h_diag.insert(ii, ii) = tcc_h(ii);
     }
 
-    realSparseMatrix a(tww_h_diag * (twc.cast <real> ().eval()) * tcc_h_diag);
+    realSparseMatrix a(tww_h_diag * (twc.cast <real> ().eval().cwiseSqrt()) * tcc_h_diag);
     
     std::cout << "Calculate Randomized SVD..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
