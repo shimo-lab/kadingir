@@ -36,11 +36,11 @@ for (n.use.vocab in c(10000,20000,40000,60000,80000,100000)) {
 
 
 # 実験
-index.word2vec <- tolower(vocab) %in% vocab.word2vec
+index.word2vec <- vocab %in% vocab.word2vec
 vocab <- vocab[index.word2vec]
 vectors <- vectors[index.word2vec, ]
 rownames(vectors) <- vocab
 
 print(MostSimilar(vectors, vocab, positive = c("man"), distance = "cosine"))
 
-TestGoogleTasks(vectors, vocab, "test/questions-words.txt", n.cores = 32)
+TestGoogleTasks(vectors, vocab, "test/questions-words.txt", n.cores = 24)
