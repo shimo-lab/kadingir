@@ -192,11 +192,11 @@ Rcpp::List EigenwordsRedSVD(
     
     return Rcpp::List::create(
 //      Rcpp::Named("tWC") = Rcpp::wrap(twc.cast <real> ()),
-//      Rcpp::Named("tWW_h") = Rcpp::wrap(tww_h),
+      Rcpp::Named("tWW_h") = Rcpp::wrap(tww_h),
 //      Rcpp::Named("tCC_h") = Rcpp::wrap(tcc_h),
 //      Rcpp::Named("A") = Rcpp::wrap(a),
 //      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-      Rcpp::Named("U") = Rcpp::wrap(tww_h_diag * svdA.matrixU()),
+      Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
       Rcpp::Named("word_vector") = Rcpp::wrap(tww_h_diag * svdA.matrixU()),
       Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
       Rcpp::Named("window.size") = Rcpp::wrap(window_size),
