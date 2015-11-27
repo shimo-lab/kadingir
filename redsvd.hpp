@@ -186,7 +186,7 @@ namespace RedSVD
       DenseMatrix B(r+l, A.cols());
 
       // Power iteration
-      for (int pow_iter=0; pow_iter<3; pow_iter++) {
+      for (int pow_iter=0; pow_iter<5; pow_iter++) {
         M = A * O;
         gram_schmidt(M);
         B = M.transpose() * A;
