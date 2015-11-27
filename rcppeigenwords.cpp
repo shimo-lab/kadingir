@@ -16,14 +16,14 @@ using Eigen::MatrixXi;
 using Eigen::VectorXd;
 using Eigen::VectorXi;
 using Eigen::MappedSparseMatrix;
-typedef float real;
+typedef double real;
+typedef Eigen::VectorXd VectorXreal;
+typedef Eigen::MatrixXd MatrixXreal;
 typedef Eigen::Map<Eigen::VectorXi> MapIM;
 typedef Eigen::MappedSparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> MapMatI;
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor, std::ptrdiff_t> dSparseMatrix;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> iSparseMatrix;
 typedef Eigen::SparseMatrix<real, Eigen::RowMajor, std::ptrdiff_t> realSparseMatrix;
-typedef Eigen::VectorXf VectorXreal;
-typedef Eigen::MatrixXf MatrixXreal;
 typedef Eigen::Triplet<int> Triplet;
 
 int TRIPLET_VECTOR_SIZE = 10000000;
