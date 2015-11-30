@@ -69,6 +69,7 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
   }
   std::cout << "window size   = " << window_size   << std::endl;
   std::cout << "vocab size    = " << vocab_size    << std::endl;
+  std::cout << "dim of output = " << k             << std::endl;
   std::cout << "sentence size = " << sentence_size << std::endl;
   std::cout << "c_col_size    = " << c_col_size    << std::endl;
   std::cout << std::endl;
