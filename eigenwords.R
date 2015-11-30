@@ -125,7 +125,7 @@ TSCCA <- function(W, C, k) {
 }
 
 
-Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
+Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
                        window.size = 2, mode = "oscca", use.eigen = TRUE) {
   
   time.start <- Sys.time()
@@ -142,15 +142,10 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
     cat(paste0("mode is invalid: ", mode))
   }
   
-  if (n.vocabulary > 0) {
-    d.table <- table(sentence.orig)
-    vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(n.vocabulary)])
-  } else {
-    vocab.words <- unique(sentence)
-  }
-  
+  d.table <- table(sentence.orig)
+  vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(max.vocabulary)])
   sentence <- match(sentence.orig, vocab.words, nomatch = 0)
-  n.vocab <- length(vocab.words) + 1  # For out-of-vocabulary word, +1
+  n.vocab <- max.vocabulary + 1  # For out-of-vocabulary word, +1
   
   cat("\n\n")
   cat("Corpus             :", path.corpus, "\n")
