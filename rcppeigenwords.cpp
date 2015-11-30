@@ -147,7 +147,12 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     }
   }
   
-  
+  std::cout << "matrix,  # of nonzero elements,  # of rows,  # of cols" << std::endl;
+  std::cout << "tWC,  " << tWC.nonZeros() << ",  " << tWC.rows() << ",  " << tWC.cols() << std::endl;
+  std::cout << "tLL,  " << tLL.nonZeros() << ",  " << tLL.rows() << ",  " << tLL.cols() << std::endl;
+  std::cout << "tLR,  " << tLR.nonZeros() << ",  " << tLR.rows() << ",  " << tLR.cols() << std::endl;
+  std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
+  std::cout << std::endl;
   if (mode_oscca) {
     // Execute One Step CCA
     
@@ -188,15 +193,6 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
       
   } else {
     // Execute Two Step CCA
-    
-    tLL.makeCompressed();
-    tLR.makeCompressed();
-    tRR.makeCompressed();
-    
-    std::cout << "Density of tWC = " << tWC.nonZeros() << "/" << tWC.rows() << "*" << tWC.cols() << std::endl;
-    std::cout << "Density of tLL = " << tLL.nonZeros() << "/" << tLL.rows() << "*" <<  tLL.cols() << std::endl;
-    std::cout << "Density of tLR = " << tLR.nonZeros() << "/" << tLR.rows() << "*" <<  tLR.cols() << std::endl;
-    std::cout << "Density of tRR = " << tRR.nonZeros() << "/" << tRR.rows() << "*" <<  tRR.cols() << std::endl;
     std::cout << "Calculate TSCCA..." << std::endl;
     
     // Two Step CCA : Step 1
