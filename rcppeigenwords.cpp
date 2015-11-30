@@ -37,25 +37,25 @@ Rcpp::List EigenwordsRedSVD(
   int i_offset1, i_offset2;
   int offsets[2*window_size];
   
-  iSparseMatrix twc(vocab_size, c_col_size), twc_temp(vocab_size, c_col_size);
-  iSparseMatrix tll(lr_col_size, lr_col_size), tll_temp(lr_col_size, lr_col_size);
-  iSparseMatrix tlr(lr_col_size, lr_col_size), tlr_temp(lr_col_size, lr_col_size);
-  iSparseMatrix trr(lr_col_size, lr_col_size), trr_temp(lr_col_size, lr_col_size);
+  iSparseMatrix tWC(vocab_size, c_col_size), tWC_temp(vocab_size, c_col_size);
+  iSparseMatrix tLL(lr_col_size, lr_col_size), tLL_temp(lr_col_size, lr_col_size);
+  iSparseMatrix tLR(lr_col_size, lr_col_size), tLR_temp(lr_col_size, lr_col_size);
+  iSparseMatrix tRR(lr_col_size, lr_col_size), tRR_temp(lr_col_size, lr_col_size);
   MatrixXreal phi_l, phi_r;
   
-  Eigen::VectorXi tww_diag(vocab_size);
-  Eigen::VectorXi tcc_diag(c_col_size);
-  tww_diag.setZero();  
-  tcc_diag.setZero();
+  Eigen::VectorXi tWW_diag(vocab_size);
+  Eigen::VectorXi tCC_diag(c_col_size);
+  tWW_diag.setZero();
+  tCC_diag.setZero();
   
-  std::vector<Triplet> twc_tripletList;
-  std::vector<Triplet> tll_tripletList;
-  std::vector<Triplet> tlr_tripletList;
-  std::vector<Triplet> trr_tripletList;
-  twc_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tll_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tlr_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  trr_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  std::vector<Triplet> tWC_tripletList;
+  std::vector<Triplet> tLL_tripletList;
+  std::vector<Triplet> tLR_tripletList;
+  std::vector<Triplet> tRR_tripletList;
+  tWC_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tLL_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tLR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tRR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
   
   
   std::cout << "mode          = ";
@@ -82,7 +82,7 @@ Rcpp::List EigenwordsRedSVD(
   for (unsigned long long i_sentence=0; i_sentence<sentence_size; i_sentence++) {
     
     i = sentence[i_sentence];
-    tww_diag(i) += 1;
+    tWW_diag(i) += 1;
     
     for (i_offset1=0; i_offset1<2*window_size; i_offset1++) {
       i_word1 = i_sentence + offsets[i_offset1];
@@ -91,7 +91,7 @@ Rcpp::List EigenwordsRedSVD(
         
         if (mode_oscca) {
           // One Step CCA
-          tcc_diag(j) += 1;
+          tCC_diag(j) += 1;
           
         } else {
           // Two step CCA
@@ -105,19 +105,19 @@ Rcpp::List EigenwordsRedSVD(
                 if (j2 < lr_col_size) {
                   // Upper left block of Ccc
                   if (j <= j2) {
-                    // (j, j2) is upper-triangular part of tll
-                    tll_tripletList.push_back(Triplet(j, j2, 1));                      
+                    // (j, j2) is upper-triangular part of tLL
+                    tLL_tripletList.push_back(Triplet(j, j2, 1));
                   }
                 } else {
                   // Upper right block of Ccc
-                  tlr_tripletList.push_back(Triplet(j, j2 - lr_col_size, 1));
+                  tLR_tripletList.push_back(Triplet(j, j2 - lr_col_size, 1));
                 }
               } else {
                 if (j2 >= lr_col_size) {
                   // Lower right block of Ccc
                   if (j <= j2) {
-                    // (j, j2) is upper-triangular part of trr
-                    trr_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
+                    // (j, j2) is upper-triangular part of tRR
+                    tRR_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
                   }
                 }
               }
@@ -125,7 +125,7 @@ Rcpp::List EigenwordsRedSVD(
           }
         }
         
-        twc_tripletList.push_back(Triplet(i, j, 1));
+        tWC_tripletList.push_back(Triplet(i, j, 1));
       }
     }
     
@@ -133,26 +133,26 @@ Rcpp::List EigenwordsRedSVD(
     
     // Commit temporary matrices
     if (n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size || i_sentence == sentence_size - 1) {
-      twc_temp.setFromTriplets(twc_tripletList.begin(), twc_tripletList.end());
-      twc_tripletList.clear();
-      twc += twc_temp;
-      twc_temp.setZero();
+      tWC_temp.setFromTriplets(tWC_tripletList.begin(), tWC_tripletList.end());
+      tWC_tripletList.clear();
+      tWC += tWC_temp;
+      tWC_temp.setZero();
       
       if (!mode_oscca) {
-        tll_temp.setFromTriplets(tll_tripletList.begin(), tll_tripletList.end());
-        tll_tripletList.clear();
-        tll += tll_temp;
-        tll_temp.setZero();
+        tLL_temp.setFromTriplets(tLL_tripletList.begin(), tLL_tripletList.end());
+        tLL_tripletList.clear();
+        tLL += tLL_temp;
+        tLL_temp.setZero();
         
-        tlr_temp.setFromTriplets(tlr_tripletList.begin(), tlr_tripletList.end());
-        tlr_tripletList.clear();
-        tlr += tlr_temp;
-        tlr_temp.setZero();
+        tLR_temp.setFromTriplets(tLR_tripletList.begin(), tLR_tripletList.end());
+        tLR_tripletList.clear();
+        tLR += tLR_temp;
+        tLR_temp.setZero();
         
-        trr_temp.setFromTriplets(trr_tripletList.begin(), trr_tripletList.end());
-        trr_tripletList.clear();
-        trr += trr_temp;
-        trr_temp.setZero();
+        tRR_temp.setFromTriplets(tRR_tripletList.begin(), tRR_tripletList.end());
+        tRR_tripletList.clear();
+        tRR += tRR_temp;
+        tRR_temp.setZero();
       }
       
       n_pushed_triplets = 0;
@@ -164,34 +164,34 @@ Rcpp::List EigenwordsRedSVD(
     // Execute One Step CCA
     
     std::cout << "Calculate OSCCA..." << std::endl;
-    std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() * twc.cols() << std::endl;
+    std::cout << "Density of tWC = " << tWC.nonZeros() << "/" << tWC.rows() * tWC.cols() << std::endl;
     
-    VectorXreal tww_h(tww_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-    VectorXreal tcc_h(tcc_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-    realSparseMatrix tww_h_diag(tww_h.size(), tww_h.size());
-    realSparseMatrix tcc_h_diag(tcc_h.size(), tcc_h.size());
+    VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+    VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+    realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
+    realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
 
-    for (int ii = 0; ii<tww_h.size(); ii++) {
-      tww_h_diag.insert(ii, ii) = tww_h(ii);
+    for (int ii = 0; ii<tWW_h.size(); ii++) {
+      tWW_h_diag.insert(ii, ii) = tWW_h(ii);
     }
     
-    for (int ii = 0; ii<tcc_h.size(); ii++) {
-      tcc_h_diag.insert(ii, ii) = tcc_h(ii);
+    for (int ii = 0; ii<tCC_h.size(); ii++) {
+      tCC_h_diag.insert(ii, ii) = tCC_h(ii);
     }
 
-    realSparseMatrix a(tww_h_diag * (twc.cast <real> ().eval().cwiseSqrt()) * tcc_h_diag);
+    realSparseMatrix a(tWW_h_diag * (tWC.cast <real> ().eval().cwiseSqrt()) * tCC_h_diag);
     
     std::cout << "Calculate Randomized SVD..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
     
     return Rcpp::List::create(
-//      Rcpp::Named("tWC") = Rcpp::wrap(twc.cast <real> ()),
-      Rcpp::Named("tWW_h") = Rcpp::wrap(tww_h),
-//      Rcpp::Named("tCC_h") = Rcpp::wrap(tcc_h),
+//      Rcpp::Named("tWC") = Rcpp::wrap(tWC.cast <real> ()),
+      Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
+//      Rcpp::Named("tCC_h") = Rcpp::wrap(tCC_h),
 //      Rcpp::Named("A") = Rcpp::wrap(a),
 //      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
       Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-      Rcpp::Named("word_vector") = Rcpp::wrap(tww_h_diag * svdA.matrixU()),
+      Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
       Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
       Rcpp::Named("window.size") = Rcpp::wrap(window_size),
       Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
@@ -201,20 +201,20 @@ Rcpp::List EigenwordsRedSVD(
   } else {
     // Execute Two Step CCA
     
-    tll.makeCompressed();
-    tlr.makeCompressed();
-    trr.makeCompressed();
+    tLL.makeCompressed();
+    tLR.makeCompressed();
+    tRR.makeCompressed();
     
-    std::cout << "Density of twc = " << twc.nonZeros() << "/" << twc.rows() << "*" << twc.cols() << std::endl;
-    std::cout << "Density of tll = " << tll.nonZeros() << "/" << tll.rows() << "*" <<  tll.cols() << std::endl;
-    std::cout << "Density of tlr = " << tlr.nonZeros() << "/" << tlr.rows() << "*" <<  tlr.cols() << std::endl;
-    std::cout << "Density of trr = " << trr.nonZeros() << "/" << trr.rows() << "*" <<  trr.cols() << std::endl;
+    std::cout << "Density of tWC = " << tWC.nonZeros() << "/" << tWC.rows() << "*" << tWC.cols() << std::endl;
+    std::cout << "Density of tLL = " << tLL.nonZeros() << "/" << tLL.rows() << "*" <<  tLL.cols() << std::endl;
+    std::cout << "Density of tLR = " << tLR.nonZeros() << "/" << tLR.rows() << "*" <<  tLR.cols() << std::endl;
+    std::cout << "Density of tRR = " << tRR.nonZeros() << "/" << tRR.rows() << "*" <<  tRR.cols() << std::endl;
     std::cout << "Calculate TSCCA..." << std::endl;
     
     // Two Step CCA : Step 1
-    VectorXreal tll_h(tll.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
-    VectorXreal trr_h(trr.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
-    realSparseMatrix b(tll_h.asDiagonal() * (tlr.cast <real> ().eval()) * trr_h.asDiagonal());
+    VectorXreal tLL_h(tLL.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
+    VectorXreal tRR_h(tRR.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
+    realSparseMatrix b(tLL_h.asDiagonal() * (tLR.cast <real> ().eval()) * tRR_h.asDiagonal());
     std::cout << "Density of b = " << b.nonZeros() << "/" << b.rows() * b.cols() << std::endl;
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
@@ -225,32 +225,32 @@ Rcpp::List EigenwordsRedSVD(
     phi_l = svdB.matrixU();
     phi_r = svdB.matrixV();
     
-    VectorXreal tww_h(tww_diag.cast <real> ().cwiseInverse().cwiseSqrt());
-    VectorXreal tss_h1((phi_l.transpose() * (tll.cast <real> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt());
-    VectorXreal tss_h2((phi_r.transpose() * (trr.cast <real> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt());
+    VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt());
+    VectorXreal tSS_h1((phi_l.transpose() * (tLL.cast <real> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt());
+    VectorXreal tSS_h2((phi_r.transpose() * (tRR.cast <real> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt());
     
-    tll.resize(0, 0);
-    trr.resize(0, 0);
+    tLL.resize(0, 0);
+    tRR.resize(0, 0);
     
-    VectorXreal tss_h(2*window_size*k);
+    VectorXreal tSS_h(2*window_size*k);
     
     std::cout << phi_l.rows() << " " << phi_l.cols() << std::endl;
     std::cout << phi_r.rows() << " " << phi_r.cols() << std::endl;
-    std::cout << tss_h1.rows() << " " << tss_h1.cols() << std::endl;
-    std::cout << tss_h2.rows() << " " << tss_h2.cols() << std::endl;
+    std::cout << tSS_h1.rows() << " " << tSS_h1.cols() << std::endl;
+    std::cout << tSS_h2.rows() << " " << tSS_h2.cols() << std::endl;
     
-    tss_h << tss_h1, tss_h2;
-    MatrixXreal tws(vocab_size, 2*window_size*k);
-    tws << twc.topLeftCorner(vocab_size, c_col_size/2).cast <real> () * phi_l, twc.topRightCorner(vocab_size, c_col_size/2).cast <real> () * phi_r;
-    MatrixXreal a(tww_h.asDiagonal() * tws * tss_h.asDiagonal());
+    tSS_h << tSS_h1, tSS_h2;
+    MatrixXreal tWS(vocab_size, 2*window_size*k);
+    tWS << tWC.topLeftCorner(vocab_size, c_col_size/2).cast <real> () * phi_l, tWC.topRightCorner(vocab_size, c_col_size/2).cast <real> () * phi_r;
+    MatrixXreal a(tWW_h.asDiagonal() * tWS * tSS_h.asDiagonal());
     
     std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
     RedSVD::RedSVD<MatrixXreal> svdA(a, k, 20);
     
     return Rcpp::List::create(
-//      Rcpp::Named("tWS") = Rcpp::wrap(tws),
-//      Rcpp::Named("tWW_h") = Rcpp::wrap(tww_h),
-//      Rcpp::Named("tSS_h") = Rcpp::wrap(tss_h),
+//      Rcpp::Named("tWS") = Rcpp::wrap(tWS),
+//      Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
+//      Rcpp::Named("tSS_h") = Rcpp::wrap(tSS_h),
 //      Rcpp::Named("A") = Rcpp::wrap(a),
 //      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
       Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
