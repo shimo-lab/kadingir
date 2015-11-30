@@ -35,13 +35,13 @@ void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
 }
 
 // [[Rcpp::export]]
-Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
-			    int vocab_size, int k, bool mode_oscca) {
+Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
+			    const int vocab_size, const int k, const bool mode_oscca) {
   
   unsigned long long i, j, j2;
-  unsigned long long sentence_size = sentence.size();
-  unsigned long long lr_col_size = (unsigned long long)window_size*(unsigned long long)vocab_size;
-  unsigned long long c_col_size = 2*lr_col_size;
+  const unsigned long long sentence_size = sentence.size();
+  const unsigned long long lr_col_size = (unsigned long long)window_size*(unsigned long long)vocab_size;
+  const unsigned long long c_col_size = 2*lr_col_size;
   unsigned long long n_pushed_triplets = 0;
   long long i_word1, i_word2;
   int i_offset1, i_offset2;
