@@ -220,11 +220,6 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     
     tLL.resize(0, 0);
     tRR.resize(0, 0);
-       
-    std::cout << phi_l.rows() << " " << phi_l.cols() << std::endl;
-    std::cout << phi_r.rows() << " " << phi_r.cols() << std::endl;
-    std::cout << tSS_h1.rows() << " " << tSS_h1.cols() << std::endl;
-    std::cout << tSS_h2.rows() << " " << tSS_h2.cols() << std::endl;
     
     VectorXreal tSS_h(2*window_size*k);
     tSS_h << tSS_h1, tSS_h2;
