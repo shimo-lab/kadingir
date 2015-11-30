@@ -243,7 +243,7 @@ MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
 }
 
 
-TestGoogleTasks <- function (U, vocab, path, n.cores = 1) {
+TestGoogleTasks <- function (U, vocab, path = "test/questions-words.txt", n.cores = 1) {
   
   time.start <- Sys.time()
   

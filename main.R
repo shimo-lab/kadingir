@@ -21,7 +21,5 @@ MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words, positive
 MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words, positive=c("king", "woman"), negative=c("man"), distance = "cosine")
 
 ## Test some tasks for check
-TestGoogleTasks(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
-                "test/questions-words.txt", n.cores = 12)
-
+TestGoogleTasks(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words, n.cores = 12)
 TestWordsim353(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words)
