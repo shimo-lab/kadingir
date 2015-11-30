@@ -81,7 +81,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
 
   // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
   i_offset1 = 0;
-  for (int offset=-window_size; offset<=window_size; offset++){
+  for (int offset = -window_size; offset <= window_size; offset++){
     if (offset != 0) {
       offsets[i_offset1] = offset;
       i_offset1++;
@@ -89,12 +89,12 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   }
   
   // Construct crossprod matrices
-  for (unsigned long long i_sentence=0; i_sentence<sentence_size; i_sentence++) {
+  for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
     
     i = sentence[i_sentence];
     tWW_diag(i) += 1;
     
-    for (i_offset1=0; i_offset1<2*window_size; i_offset1++) {
+    for (i_offset1 = 0; i_offset1 < 2*window_size; i_offset1++) {
       i_word1 = i_sentence + offsets[i_offset1];
       if ((i_word1 >= 0) && (i_word1 < sentence_size)) {
         j = sentence[i_word1] + vocab_size * i_offset1;
@@ -105,7 +105,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
 
         } else {
           // Two step CCA
-          for (i_offset2=0; i_offset2<2*window_size; i_offset2++) {
+          for (i_offset2 = 0; i_offset2 < 2*window_size; i_offset2++) {
             i_word2 = i_sentence + offsets[i_offset2];
             
             if ((i_word2 >= 0) && (i_word2 < sentence_size)) {
@@ -166,11 +166,11 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
   realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
 
-  for (int ii = 0; ii<tWW_h.size(); ii++) {
+  for (int ii = 0; ii < tWW_h.size(); ii++) {
     tWW_h_diag.insert(ii, ii) = tWW_h(ii);
   }
   if (mode_oscca) {
-    for (int ii = 0; ii<tCC_h.size(); ii++) {
+    for (int ii = 0; ii < tCC_h.size(); ii++) {
       tCC_h_diag.insert(ii, ii) = tCC_h(ii);
     }
   }
