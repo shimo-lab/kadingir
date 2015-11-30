@@ -160,7 +160,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   tLR.makeCompressed();
   tRR.makeCompressed();
   
-  std::cout << "matrix,  # of nonzero elements,  # of rows,  # of cols" << std::endl;
+  std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
   std::cout << "tWC,  " << tWC.nonZeros() << ",  " << tWC.rows() << ",  " << tWC.cols() << std::endl;
   std::cout << "tLL,  " << tLL.nonZeros() << ",  " << tLL.rows() << ",  " << tLL.cols() << std::endl;
   std::cout << "tLR,  " << tLR.nonZeros() << ",  " << tLR.rows() << ",  " << tLR.cols() << std::endl;
@@ -215,7 +215,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     VectorXreal tLL_h(tLL.diagonal().cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
     VectorXreal tRR_h(tRR.diagonal().cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
     realSparseMatrix b(tLL_h.asDiagonal() * (tLR.cast <real> ().eval().cwiseSqrt()) * tRR_h.asDiagonal());
-    std::cout << "Density of b = " << b.nonZeros() << "/" << b.rows() * b.cols() << std::endl;
+    std::cout << "# of nonzero,  # of rows,  # of cols = " << b.nonZeros() << ",  " << b.rows() << ",  " << b.cols() << std::endl;
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdB(b, k, 20);
