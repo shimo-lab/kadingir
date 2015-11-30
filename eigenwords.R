@@ -90,7 +90,10 @@ OSCCA <- function(X, Y, k) {
 }
 
 
-TSCCA <- function(W, L, R, k) {
+TSCCA <- function(W, C, k) {
+  L <- C[ , 1:(ncol(C)/2)]
+  R <- C[ , (ncol(C)/2 + 1):ncol(C)]
+
   redsvd.LR <- OSCCA(L, R, k)
   U <- redsvd.LR$U
   V <- redsvd.LR$V
@@ -173,10 +176,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
       
     } else if (mode == "tscca") { # Two-Step CCA
       cat("Calculate TSCCA...\n\n")
-      
-      L <- C[ , 1:(window.size*n.vocab)]
-      R <- C[ , (window.size*n.vocab+1):(2*window.size*n.vocab)]
-      results.redsvd <- TSCCA(W, L, R, dim.internal)
+      results.redsvd <- TSCCA(r$W, r$C, dim.internal)
     }
     
   }
