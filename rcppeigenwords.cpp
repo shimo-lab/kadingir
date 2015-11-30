@@ -21,7 +21,7 @@ typedef Eigen::SparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> iSparseMatrix;
 typedef Eigen::SparseMatrix<real, Eigen::RowMajor, std::ptrdiff_t> realSparseMatrix;
 typedef Eigen::Triplet<int> Triplet;
 
-int TRIPLET_VECTOR_SIZE = 10000000;
+const int TRIPLET_VECTOR_SIZE = 10000000;
 
 
 // Update crossprod matrix using triplets
