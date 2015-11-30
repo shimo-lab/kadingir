@@ -15,7 +15,6 @@ typedef double real;
 typedef Eigen::VectorXd VectorXreal;
 typedef Eigen::MatrixXd MatrixXreal;
 typedef Eigen::Map<Eigen::VectorXi> MapVectorXi;
-typedef Eigen::SparseMatrix<double, Eigen::RowMajor, std::ptrdiff_t> dSparseMatrix;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> iSparseMatrix;
 typedef Eigen::SparseMatrix<real, Eigen::RowMajor, std::ptrdiff_t> realSparseMatrix;
 typedef Eigen::Triplet<int> Triplet;
