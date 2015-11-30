@@ -13,8 +13,8 @@ sourceCpp("rcppeigenwords.cpp", rebuild = TRUE, verbose = TRUE)
 
 make.matrices <- function(sentence, window.size) {
 
+  sentence <- sentence + 1L  # To make min(sentence) == 1 for R indexing
 
-  sentence <- sentence + 1L
   n.train.words <- length(sentence)
   n.vocab <- max(sentence)
   
@@ -150,7 +150,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
   }
   
   sentence <- match(sentence.orig, vocab.words, nomatch = 0)
-  n.vocab <- length(vocab.words) + 1  # For null word, +1
+  n.vocab <- length(vocab.words) + 1  # For out-of-vocabulary word, +1
   
   cat("\n\n")
   cat("Corpus             :", path.corpus, "\n")
