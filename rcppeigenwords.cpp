@@ -196,9 +196,9 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     std::cout << "Calculate TSCCA..." << std::endl;
     
     // Two Step CCA : Step 1
-    VectorXreal tLL_h(tLL.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
-    VectorXreal tRR_h(tRR.diagonal().cast <real> ().cwiseInverse().cwiseSqrt());
-    realSparseMatrix b(tLL_h.asDiagonal() * (tLR.cast <real> ().eval()) * tRR_h.asDiagonal());
+    VectorXreal tLL_h(tLL.diagonal().cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+    VectorXreal tRR_h(tRR.diagonal().cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+    realSparseMatrix b(tLL_h.asDiagonal() * (tLR.cast <real> ().eval().cwiseSqrt()) * tRR_h.asDiagonal());
     std::cout << "Density of b = " << b.nonZeros() << "/" << b.rows() * b.cols() << std::endl;
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
@@ -209,9 +209,9 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     phi_l = svdB.matrixU();
     phi_r = svdB.matrixV();
     
-    VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt());
-    VectorXreal tSS_h1((phi_l.transpose() * (tLL.cast <real> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt());
-    VectorXreal tSS_h2((phi_r.transpose() * (tRR.cast <real> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt());
+    // Two Step CCA : Step 2
+    VectorXreal tSS_h1((phi_l.transpose() * (tLL.cast <real> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt());
+    VectorXreal tSS_h2((phi_r.transpose() * (tRR.cast <real> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt());
     
     tLL.resize(0, 0);
     tRR.resize(0, 0);
@@ -225,7 +225,8 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     
     tSS_h << tSS_h1, tSS_h2;
     MatrixXreal tWS(vocab_size, 2*window_size*k);
-    tWS << tWC.topLeftCorner(vocab_size, c_col_size/2).cast <real> () * phi_l, tWC.topRightCorner(vocab_size, c_col_size/2).cast <real> () * phi_r;
+    tWS << tWC.topLeftCorner(vocab_size, c_col_size/2).cast <real> ().cwiseSqrt() * phi_l, tWC.topRightCorner(vocab_size, c_col_size/2).cast <real> ().cwiseSqrt() * phi_r;
+
     MatrixXreal a(tWW_h.asDiagonal() * tWS * tSS_h.asDiagonal());
     
     std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
