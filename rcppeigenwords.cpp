@@ -32,9 +32,8 @@ void update_gram_matrix (std::vector<Triplet> &tXX_tripletList, iSparseMatrix &t
 
 
 // [[Rcpp::export]]
-Rcpp::List EigenwordsRedSVD(
-  MapVectorXi& sentence, int window_size, int vocab_size,
-  int k, bool mode_oscca) {
+Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
+			    int vocab_size, int k, bool mode_oscca) {
   
   unsigned long long i, j, j2;
   unsigned long long sentence_size = sentence.size();
@@ -56,10 +55,7 @@ Rcpp::List EigenwordsRedSVD(
   tWW_diag.setZero();
   tCC_diag.setZero();
   
-  std::vector<Triplet> tWC_tripletList;
-  std::vector<Triplet> tLL_tripletList;
-  std::vector<Triplet> tLR_tripletList;
-  std::vector<Triplet> tRR_tripletList;
+  std::vector<Triplet> tWC_tripletList, tLL_tripletList, tLR_tripletList, tRR_tripletList;
   tWC_tripletList.reserve(TRIPLET_VECTOR_SIZE);
   tLL_tripletList.reserve(TRIPLET_VECTOR_SIZE);
   tLR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
