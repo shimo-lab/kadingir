@@ -165,10 +165,10 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
   for (int ii = 0; ii<tWW_h.size(); ii++) {
     tWW_h_diag.insert(ii, ii) = tWW_h(ii);
   }
-
+  
+  VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
   if (mode_oscca) {
-    VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-    realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
     for (int ii = 0; ii<tCC_h.size(); ii++) {
       tCC_h_diag.insert(ii, ii) = tCC_h(ii);
     }
