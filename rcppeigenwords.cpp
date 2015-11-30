@@ -245,6 +245,7 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
 //      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
       Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
       Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
+      Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
       Rcpp::Named("window.size") = Rcpp::wrap(window_size),
       Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
       Rcpp::Named("k") = Rcpp::wrap(k)
