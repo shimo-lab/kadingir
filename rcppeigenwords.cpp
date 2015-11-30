@@ -1,8 +1,9 @@
 /*
  * rcppeigenwords.cpp
  *
- *  - sentence の要素で 0 となっているのは <OOV> (Out of Vocabulary) に対応する．
- *  - .asDiagonal() は密行列を返すので，仕方なく同様の処理をベタ書きしている箇所がある．
+ * memo :
+ *  - sentence の要素で 0 となっている要素は <OOV> (Out of Vocabulary, vocabulary に入っていない単語) に対応する．
+ *  - v.asDiagonal() は疎行列ではなく密行列を返すため，仕方なく同様の処理をベタ書きしている箇所がある．
  */
 
 #include <Rcpp.h>
@@ -24,6 +25,7 @@ int TRIPLET_VECTOR_SIZE = 10000000;
 
 
 void update_gram_matrix (std::vector<Triplet> &tXX_tripletList, iSparseMatrix &tXX_temp, iSparseMatrix &tXX) {
+// Update crossprod matrix using triplets
   tXX_temp.setFromTriplets(tXX_tripletList.begin(), tXX_tripletList.end());
   tXX_tripletList.clear();
   tXX += tXX_temp;
@@ -74,7 +76,8 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
   std::cout << "c_col_size    = " << c_col_size    << std::endl;
   std::cout << std::endl;
   
-  // Construct offset table (ex. [-2, -1, 1, 2])
+
+  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
   i_offset1 = 0;
   for (int offset=-window_size; offset<=window_size; offset++){
     if (offset != 0) {
@@ -83,6 +86,7 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     }
   }
   
+  // Construct crossprod matrices
   for (unsigned long long i_sentence=0; i_sentence<sentence_size; i_sentence++) {
     
     i = sentence[i_sentence];
@@ -162,7 +166,7 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
   std::cout << std::endl;
 
 
-  // `_h` in tWW_h means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
+  // `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
   VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
@@ -178,6 +182,7 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
   }
 
 
+  // Construct the matrices for CCA and execute CCA
   if (mode_oscca) {
     // Execute One Step CCA
     std::cout << "Calculate OSCCA..." << std::endl;
