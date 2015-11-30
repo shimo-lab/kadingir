@@ -2,6 +2,7 @@
  * rcppeigenwords.cpp
  *
  *  - sentence の要素で 0 となっているのは <OOV> (Out of Vocabulary) に対応する．
+ *  - .asDiagonal() は密行列を返すので，仕方なく同様の処理をベタ書きしている箇所がある．
  */
 
 #include <Rcpp.h>
@@ -159,6 +160,7 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
   std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
   std::cout << std::endl;
 
+
   VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
   for (int ii = 0; ii<tWW_h.size(); ii++) {
@@ -183,8 +185,8 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
     
     return Rcpp::List::create(
-//      Rcpp::Named("tWC") = Rcpp::wrap(tWC.cast <real> ()),
       Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
+//      Rcpp::Named("tWC") = Rcpp::wrap(tWC.cast <real> ()),
 //      Rcpp::Named("tCC_h") = Rcpp::wrap(tCC_h),
 //      Rcpp::Named("A") = Rcpp::wrap(a),
 //      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
@@ -209,8 +211,7 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdB(b, k, 20);
     b.resize(0, 0);
-    
-    // Two Step CCA : Step 2
+
     phi_l = svdB.matrixU();
     phi_r = svdB.matrixV();
     
@@ -220,15 +221,15 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     
     tLL.resize(0, 0);
     tRR.resize(0, 0);
-    
-    VectorXreal tSS_h(2*window_size*k);
-    
+       
     std::cout << phi_l.rows() << " " << phi_l.cols() << std::endl;
     std::cout << phi_r.rows() << " " << phi_r.cols() << std::endl;
     std::cout << tSS_h1.rows() << " " << tSS_h1.cols() << std::endl;
     std::cout << tSS_h2.rows() << " " << tSS_h2.cols() << std::endl;
     
+    VectorXreal tSS_h(2*window_size*k);
     tSS_h << tSS_h1, tSS_h2;
+
     MatrixXreal tWS(vocab_size, 2*window_size*k);
     tWS << tWC.topLeftCorner(vocab_size, c_col_size/2).cast <real> ().cwiseSqrt() * phi_l, tWC.topRightCorner(vocab_size, c_col_size/2).cast <real> ().cwiseSqrt() * phi_r;
 
