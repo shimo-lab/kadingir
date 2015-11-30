@@ -119,8 +119,8 @@ TSCCA <- function(W, C, k) {
     crossprod(W, R) %*% V
   )
 
-  Cxx.h <- sqrt(diag(diag(Cww)^(-1/2)))
-  A <- Cxx.h %*% sqrt(Cws) %*% sqrt(diag(diag(Css)^(-1/2)))
+  Cxx.h <- diag(diag(Cww)^(-1/2))
+  A <- Cxx.h %*% Cws %*% diag(diag(Css)^(-1/2))
 
   return.list <- TruncatedSVD(A, k, sparse = FALSE)
   return.list$word_vector <- Cxx.h %*% return.list$U
