@@ -160,7 +160,6 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
   std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
   std::cout << std::endl;
 
-
   VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
   for (int ii = 0; ii<tWW_h.size(); ii++) {
@@ -168,19 +167,20 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
   }
 
   if (mode_oscca) {
-    // Execute One Step CCA
-    std::cout << "Calculate OSCCA..." << std::endl;
-    
     VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-
     realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
-
     for (int ii = 0; ii<tCC_h.size(); ii++) {
       tCC_h_diag.insert(ii, ii) = tCC_h(ii);
     }
+  }
 
-    realSparseMatrix a(tWW_h_diag * (tWC.cast <real> ().eval().cwiseSqrt()) * tCC_h_diag);
+
+  if (mode_oscca) {
+    // Execute One Step CCA
+    std::cout << "Calculate OSCCA..." << std::endl;
     
+    realSparseMatrix a(tWW_h_diag * (tWC.cast <real> ().eval().cwiseSqrt()) * tCC_h_diag);
+   
     std::cout << "Calculate Randomized SVD..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
     
