@@ -11,9 +11,12 @@ library(doParallel)
 sourceCpp("rcppeigenwords.cpp", rebuild = TRUE, verbose = TRUE)
 
 
-make.matrices <- function(sentence, window.size, n.train.words, n.vocab, skip.null.words) {
+make.matrices <- function(sentence, window.size) {
 
-  sentence <- sentence + 1L
+  sentence <- sentence + 1L  # To make min(sentence) == 1 for R indexing
+
+  n.train.words <- length(sentence)
+  n.vocab <- max(sentence)
   
   ## Construction of W
   indices <- cbind(seq(sentence), sentence)
@@ -39,11 +42,6 @@ make.matrices <- function(sentence, window.size, n.train.words, n.vocab, skip.nu
                            x = rep(1, times = nrow(indices.temp)),
                            dims = c(n.train.words, n.vocab))
     C <- cbind2(C, C.temp)
-  }
-
-  if (skip.null.words) {
-    W <- W[indices[ , 1], ]
-    C <- C[indices[ , 1], ]
   }
 
   return(list(W = W, C = C))
@@ -77,18 +75,26 @@ OSCCA <- function(X, Y, k) {
   ##    Y : matrix or list of matrices
   ##    k : number of desired singular values
   
-  Cxx <- crossprod(X)
-  Cxy <- crossprod(X, Y)
-  Cyy <- crossprod(Y)
+  Cxx <- sqrt(crossprod(X))
+  Cxy <- sqrt(crossprod(X, Y))
+  Cyy <- sqrt(crossprod(Y))
+
+  Cxx.h <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2))
   
-  A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
+  A <- Cxx.h %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
   
   cat("Calculate redsvd...")
-  return(TruncatedSVD(A, k, sparse = TRUE))
+  return.list <- TruncatedSVD(A, k, sparse = TRUE)
+  return.list$word_vector <- Cxx.h %*% return.list$U
+
+  return(return.list)
 }
 
 
-TSCCA <- function(W, L, R, k) {
+TSCCA <- function(W, C, k) {
+  L <- C[ , 1:(ncol(C)/2)]
+  R <- C[ , (ncol(C)/2 + 1):ncol(C)]
+
   redsvd.LR <- OSCCA(L, R, k)
   U <- redsvd.LR$U
   V <- redsvd.LR$V
@@ -108,14 +114,18 @@ TSCCA <- function(W, L, R, k) {
     crossprod(W, L) %*% U,
     crossprod(W, R) %*% V
   )
-  
-  A <- diag(diag(Cww)^(-1/2)) %*% Cws %*% diag(diag(Css)^(-1/2))
-  
-  return(TruncatedSVD(A, k, sparse = FALSE))
+
+  Cxx.h <- diag(diag(Cww)^(-1/2))
+  A <- Cxx.h %*% Cws %*% diag(diag(Css)^(-1/2))
+
+  return.list <- TruncatedSVD(A, k, sparse = FALSE)
+  return.list$word_vector <- Cxx.h %*% return.list$U
+
+  return(return.list)
 }
 
 
-Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
+Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
                        window.size = 2, mode = "oscca", use.eigen = TRUE) {
   
   time.start <- Sys.time()
@@ -132,20 +142,14 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
     cat(paste0("mode is invalid: ", mode))
   }
   
-  if (n.vocabulary > 0) {
-    d.table <- table(sentence.orig)
-    vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(n.vocabulary)])
-  } else {
-    vocab.words <- unique(sentence)
-  }
-  
+  d.table <- table(sentence.orig)
+  vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(max.vocabulary)])
   sentence <- match(sentence.orig, vocab.words, nomatch = 0)
-  n.vocab <- length(vocab.words) + 1  # For null word, +1
-  n.corpus <- length(sentence)
+  n.vocab <- max.vocabulary + 1  # For out-of-vocabulary word, +1
   
   cat("\n\n")
   cat("Corpus             :", path.corpus, "\n")
-  cat("Size of sentence   :", n.corpus, "\n")
+  cat("Size of sentence   :", length(sentence), "\n")
   cat("dim.internal       :", dim.internal, "\n")
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", n.vocab, "\n")
@@ -157,8 +161,8 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
     results.redsvd <- EigenwordsRedSVD(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
     
   } else {
-    r <- make.matrices(sentence, window.size, n.train.words, n.vocab, skip.null.words = TRUE)
-    
+    r <- make.matrices(sentence, window.size)
+
     cat("Size of W :")
     print(object.size(r$W), unit = "GB")
     cat("Size of C :")
@@ -167,14 +171,11 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
     ## Execute CCA
     if (mode == "oscca") { # One-step CCA
       cat("Calculate OSCCA...\n\n")
-      results.redsvd <- TruncatedSVD(A = MakeSVDMatrix(r$W, r$C), k = dim.internal, sparse = TRUE)
+      results.redsvd <- OSCCA(r$W, r$C, dim.internal)
       
     } else if (mode == "tscca") { # Two-Step CCA
       cat("Calculate TSCCA...\n\n")
-      
-      L <- C[ , 1:(window.size*n.vocab)]
-      R <- C[ , (window.size*n.vocab+1):(2*window.size*n.vocab)]
-      results.redsvd <- TSCCA(W, L, R, dim.internal)
+      results.redsvd <- TSCCA(r$W, r$C, dim.internal)
     }
     
   }
