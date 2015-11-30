@@ -38,14 +38,9 @@ void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
 Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
 			    const int vocab_size, const int k, const bool mode_oscca) {
   
-  unsigned long long i, j, j2;
   const unsigned long long sentence_size = sentence.size();
   const unsigned long long lr_col_size = (unsigned long long)window_size*(unsigned long long)vocab_size;
   const unsigned long long c_col_size = 2*lr_col_size;
-  unsigned long long n_pushed_triplets = 0;
-  long long i_word1, i_word2;
-  int i_offset1, i_offset2;
-  int offsets[2*window_size];
   
   iSparseMatrix tWC(vocab_size, c_col_size), tWC_temp(vocab_size, c_col_size);
   iSparseMatrix tLL(lr_col_size, lr_col_size), tLL_temp(lr_col_size, lr_col_size);
@@ -78,26 +73,31 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   std::cout << "c_col_size    = " << c_col_size    << std::endl;
   std::cout << std::endl;
   
-
   // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
-  i_offset1 = 0;
-  for (int offset = -window_size; offset <= window_size; offset++){
-    if (offset != 0) {
-      offsets[i_offset1] = offset;
-      i_offset1++;
+  int offsets[2*window_size];
+
+  {
+    int i_offset1 = 0;
+    for (int offset = -window_size; offset <= window_size; offset++){
+      if (offset != 0) {
+	offsets[i_offset1] = offset;
+	i_offset1++;
+      }
     }
   }
   
   // Construct crossprod matrices
+  unsigned long long n_pushed_triplets = 0;
+
   for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
     
-    i = sentence[i_sentence];
+    unsigned long long i = sentence[i_sentence];
     tWW_diag(i) += 1;
     
-    for (i_offset1 = 0; i_offset1 < 2*window_size; i_offset1++) {
-      i_word1 = i_sentence + offsets[i_offset1];
+    for (int i_offset1 = 0; i_offset1 < 2*window_size; i_offset1++) {
+      long long i_word1 = i_sentence + offsets[i_offset1];
       if ((i_word1 >= 0) && (i_word1 < sentence_size)) {
-        j = sentence[i_word1] + vocab_size * i_offset1;
+        unsigned long long j = sentence[i_word1] + vocab_size * i_offset1;
         
         if (mode_oscca) {
           // One Step CCA
@@ -105,11 +105,11 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
 
         } else {
           // Two step CCA
-          for (i_offset2 = 0; i_offset2 < 2*window_size; i_offset2++) {
-            i_word2 = i_sentence + offsets[i_offset2];
+          for (int i_offset2 = 0; i_offset2 < 2*window_size; i_offset2++) {
+            long long i_word2 = i_sentence + offsets[i_offset2];
             
             if ((i_word2 >= 0) && (i_word2 < sentence_size)) {
-              j2 = sentence[i_word2] + vocab_size * i_offset2;
+              unsigned long long j2 = sentence[i_word2] + vocab_size * i_offset2;
               
 	      if ((j < lr_col_size) && (j2 < lr_col_size) && (j <= j2)) {
 		// (j, j2) is an element of upper-triangular part of tLL
@@ -134,7 +134,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     n_pushed_triplets++;
     
     // Commit temporary matrices
-    if (n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size || i_sentence == sentence_size - 1) {
+    if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
       update_crossprod_matrix(tWC_tripletList, tWC_temp, tWC);
             
       if (!mode_oscca) {
@@ -166,12 +166,12 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
   realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
 
-  for (int ii = 0; ii < tWW_h.size(); ii++) {
-    tWW_h_diag.insert(ii, ii) = tWW_h(ii);
+  for (int i = 0; i < tWW_h.size(); i++) {
+    tWW_h_diag.insert(i, i) = tWW_h(i);
   }
   if (mode_oscca) {
-    for (int ii = 0; ii < tCC_h.size(); ii++) {
-      tCC_h_diag.insert(ii, ii) = tCC_h(ii);
+    for (int i = 0; i < tCC_h.size(); i++) {
+      tCC_h_diag.insert(i, i) = tCC_h(i);
     }
   }
 
