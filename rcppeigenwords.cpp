@@ -209,7 +209,7 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdB(b, k, 20);
-    b.resize(0, 0);
+    b.resize(0, 0);  // Release memory
 
     phi_l = svdB.matrixU();
     phi_r = svdB.matrixV();
@@ -218,6 +218,7 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     VectorXreal tSS_h1((phi_l.transpose() * (tLL.cast <real> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt());
     VectorXreal tSS_h2((phi_r.transpose() * (tRR.cast <real> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt());
     
+    // Release memory
     tLL.resize(0, 0);
     tRR.resize(0, 0);
     
