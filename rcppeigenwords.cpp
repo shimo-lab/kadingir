@@ -184,19 +184,18 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     std::cout << "Calculate Randomized SVD..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
     
-    return Rcpp::List::create(
-      Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
-//      Rcpp::Named("tWC") = Rcpp::wrap(tWC.cast <real> ()),
-//      Rcpp::Named("tCC_h") = Rcpp::wrap(tCC_h),
-//      Rcpp::Named("A") = Rcpp::wrap(a),
-//      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-      Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-      Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
-      Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
-      Rcpp::Named("window.size") = Rcpp::wrap(window_size),
-      Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
-      Rcpp::Named("k") = Rcpp::wrap(k)
-      );
+    return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
+			      // Rcpp::Named("tWC") = Rcpp::wrap(tWC.cast <real> ()),
+			      // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
+			      // Rcpp::Named("tCC_h") = Rcpp::wrap(tCC_h),
+			      // Rcpp::Named("A") = Rcpp::wrap(a),
+			      // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
+			      // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+			      // Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
+			      Rcpp::Named("window.size") = Rcpp::wrap(window_size),
+			      Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
+			      Rcpp::Named("k") = Rcpp::wrap(k)
+			      );
       
   } else {
     // Execute Two Step CCA
@@ -238,18 +237,17 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
     RedSVD::RedSVD<MatrixXreal> svdA(a, k, 20);
     
-    return Rcpp::List::create(
-//      Rcpp::Named("tWS") = Rcpp::wrap(tWS),
-//      Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
-//      Rcpp::Named("tSS_h") = Rcpp::wrap(tSS_h),
-//      Rcpp::Named("A") = Rcpp::wrap(a),
-//      Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-      Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-      Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
-      Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
-      Rcpp::Named("window.size") = Rcpp::wrap(window_size),
-      Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
-      Rcpp::Named("k") = Rcpp::wrap(k)
-      );
+    return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
+			      // Rcpp::Named("tWS") = Rcpp::wrap(tWS),
+			      // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
+			      // Rcpp::Named("tSS_h") = Rcpp::wrap(tSS_h),
+			      // Rcpp::Named("A") = Rcpp::wrap(a),
+			      // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
+			      // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+			      // Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
+			      Rcpp::Named("window.size") = Rcpp::wrap(window_size),
+			      Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
+			      Rcpp::Named("k") = Rcpp::wrap(k)
+			      );
   }
 }
