@@ -11,7 +11,8 @@ library(doParallel)
 sourceCpp("rcppeigenwords.cpp", rebuild = TRUE, verbose = TRUE)
 
 
-make.matrices <- function(sentence, window.size, skip.null.words) {
+make.matrices <- function(sentence, window.size) {
+
 
   sentence <- sentence + 1L
   n.train.words <- length(sentence)
@@ -41,11 +42,6 @@ make.matrices <- function(sentence, window.size, skip.null.words) {
                            x = rep(1, times = nrow(indices.temp)),
                            dims = c(n.train.words, n.vocab))
     C <- cbind2(C, C.temp)
-  }
-
-  if (skip.null.words) {
-    W <- W[indices[ , 1], ]
-    C <- C[indices[ , 1], ]
   }
 
   return(list(W = W, C = C))
@@ -171,7 +167,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
     results.redsvd <- EigenwordsRedSVD(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
     
   } else {
-    r <- make.matrices(sentence, window.size, skip.null.words = TRUE)
+    r <- make.matrices(sentence, window.size)
 
     cat("Size of W :")
     print(object.size(r$W), unit = "GB")
