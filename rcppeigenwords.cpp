@@ -146,6 +146,11 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
       n_pushed_triplets = 0;
     }
   }
+
+  tWC.makeCompressed();  
+  tLL.makeCompressed();
+  tLR.makeCompressed();
+  tRR.makeCompressed();
   
   std::cout << "matrix,  # of nonzero elements,  # of rows,  # of cols" << std::endl;
   std::cout << "tWC,  " << tWC.nonZeros() << ",  " << tWC.rows() << ",  " << tWC.cols() << std::endl;
@@ -153,21 +158,21 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
   std::cout << "tLR,  " << tLR.nonZeros() << ",  " << tLR.rows() << ",  " << tLR.cols() << std::endl;
   std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
   std::cout << std::endl;
+
+  VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
+  for (int ii = 0; ii<tWW_h.size(); ii++) {
+    tWW_h_diag.insert(ii, ii) = tWW_h(ii);
+  }
+
   if (mode_oscca) {
     // Execute One Step CCA
-    
     std::cout << "Calculate OSCCA..." << std::endl;
-    std::cout << "Density of tWC = " << tWC.nonZeros() << "/" << tWC.rows() * tWC.cols() << std::endl;
     
-    VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
     VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-    realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
+
     realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
 
-    for (int ii = 0; ii<tWW_h.size(); ii++) {
-      tWW_h_diag.insert(ii, ii) = tWW_h(ii);
-    }
-    
     for (int ii = 0; ii<tCC_h.size(); ii++) {
       tCC_h_diag.insert(ii, ii) = tCC_h(ii);
     }
