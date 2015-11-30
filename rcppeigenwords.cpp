@@ -227,8 +227,8 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     VectorXreal tSS_h(2*window_size*k);
     tSS_h << tSS_h1, tSS_h2;
     realSparseMatrix tSS_h_diag(tSS_h.size(), tSS_h.size());
-    for (int ii = 0; ii<tSS_h.size(); ii++) {
-      tSS_h_diag.insert(ii, ii) = tSS_h(ii);
+    for (int i = 0; i < tSS_h.size(); i++) {
+      tSS_h_diag.insert(i, i) = tSS_h(i);
     }
 
     MatrixXreal tWS(vocab_size, 2*window_size*k);
