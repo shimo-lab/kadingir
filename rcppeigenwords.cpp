@@ -11,16 +11,10 @@ sentence の要素で 0 となっているのは <OOV> (Out of Vocabulary) に�
 // [[Rcpp::depends(RcppEigen)]]
 // [[Rcpp::plugins(openmp)]]
 
-using Eigen::MatrixXd;
-using Eigen::MatrixXi;
-using Eigen::VectorXd;
-using Eigen::VectorXi;
-using Eigen::MappedSparseMatrix;
 typedef double real;
 typedef Eigen::VectorXd VectorXreal;
 typedef Eigen::MatrixXd MatrixXreal;
-typedef Eigen::Map<Eigen::VectorXi> MapIM;
-typedef Eigen::MappedSparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> MapMatI;
+typedef Eigen::Map<Eigen::VectorXi> MapVectorXi;
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor, std::ptrdiff_t> dSparseMatrix;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> iSparseMatrix;
 typedef Eigen::SparseMatrix<real, Eigen::RowMajor, std::ptrdiff_t> realSparseMatrix;
@@ -31,7 +25,7 @@ int TRIPLET_VECTOR_SIZE = 10000000;
 
 // [[Rcpp::export]]
 Rcpp::List EigenwordsRedSVD(
-  MapIM& sentence, int window_size, int vocab_size,
+  MapVectorXi& sentence, int window_size, int vocab_size,
   int k, bool mode_oscca) {
   
   unsigned long long i, j, j2;
@@ -49,8 +43,8 @@ Rcpp::List EigenwordsRedSVD(
   iSparseMatrix trr(lr_col_size, lr_col_size), trr_temp(lr_col_size, lr_col_size);
   MatrixXreal phi_l, phi_r;
   
-  VectorXi tww_diag(vocab_size);
-  VectorXi tcc_diag(c_col_size);
+  Eigen::VectorXi tww_diag(vocab_size);
+  Eigen::VectorXi tcc_diag(c_col_size);
   tww_diag.setZero();  
   tcc_diag.setZero();
   
