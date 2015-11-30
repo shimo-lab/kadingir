@@ -17,8 +17,10 @@ save(res.eigenwords, file = "res_eigenwords.Rdata")
 
 
 ## Check vector representations
-MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words, positive=c("man"), distance = "cosine")
-MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words, positive=c("king", "woman"), negative=c("man"), distance = "cosine")
+MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
+            positive=c("man"), distance = "cosine")
+MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
+            positive=c("king", "woman"), negative=c("man"), distance = "cosine")
 
 ## Test some tasks for check
 TestGoogleTasks(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words, n.cores = 12)
