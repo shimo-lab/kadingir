@@ -223,11 +223,15 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     
     VectorXreal tSS_h(2*window_size*k);
     tSS_h << tSS_h1, tSS_h2;
+    realSparseMatrix tSS_h_diag(tSS_h.size(), tSS_h.size());
+    for (int ii = 0; ii<tSS_h.size(); ii++) {
+      tSS_h_diag.insert(ii, ii) = tSS_h(ii);
+    }
 
     MatrixXreal tWS(vocab_size, 2*window_size*k);
     tWS << tWC.topLeftCorner(vocab_size, lr_col_size).cast <real> ().cwiseSqrt() * phi_l, tWC.topRightCorner(vocab_size, lr_col_size).cast <real> ().cwiseSqrt() * phi_r;
 
-    MatrixXreal a(tWW_h.asDiagonal() * tWS * tSS_h.asDiagonal());
+    MatrixXreal a(tWW_h_diag * tWS * tSS_h_diag);
     
     std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
     RedSVD::RedSVD<MatrixXreal> svdA(a, k, 20);
