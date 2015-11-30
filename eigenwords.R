@@ -151,11 +151,10 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
   
   sentence <- match(sentence.orig, vocab.words, nomatch = 0)
   n.vocab <- length(vocab.words) + 1  # For null word, +1
-  n.corpus <- length(sentence)
   
   cat("\n\n")
   cat("Corpus             :", path.corpus, "\n")
-  cat("Size of sentence   :", n.corpus, "\n")
+  cat("Size of sentence   :", length(sentence), "\n")
   cat("dim.internal       :", dim.internal, "\n")
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", n.vocab, "\n")
