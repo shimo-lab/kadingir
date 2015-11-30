@@ -160,14 +160,16 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
   std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
   std::cout << std::endl;
 
+
+  // `_h` in tWW_h means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
   VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
+  realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
+
   for (int ii = 0; ii<tWW_h.size(); ii++) {
     tWW_h_diag.insert(ii, ii) = tWW_h(ii);
   }
-  
-  VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-  realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
   if (mode_oscca) {
     for (int ii = 0; ii<tCC_h.size(); ii++) {
       tCC_h_diag.insert(ii, ii) = tCC_h(ii);
