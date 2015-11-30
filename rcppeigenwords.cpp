@@ -36,7 +36,7 @@ void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
 
 // [[Rcpp::export]]
 Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
-			    const int vocab_size, const int k, const bool mode_oscca) {
+                            const int vocab_size, const int k, const bool mode_oscca) {
   
   const unsigned long long sentence_size = sentence.size();
   const unsigned long long lr_col_size = (unsigned long long)window_size*(unsigned long long)vocab_size;
@@ -80,8 +80,8 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     int i_offset1 = 0;
     for (int offset = -window_size; offset <= window_size; offset++){
       if (offset != 0) {
-	offsets[i_offset1] = offset;
-	i_offset1++;
+        offsets[i_offset1] = offset;
+        i_offset1++;
       }
     }
   }
@@ -111,18 +111,18 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
             if ((i_word2 >= 0) && (i_word2 < sentence_size)) {
               unsigned long long j2 = sentence[i_word2] + vocab_size * i_offset2;
               
-	      if ((j < lr_col_size) && (j2 < lr_col_size) && (j <= j2)) {
-		// (j, j2) is an element of upper-triangular part of tLL
-		tLL_tripletList.push_back(Triplet(j, j2, 1));
-	      }
-	      if ((j < lr_col_size) && (j2 >= lr_col_size)) {
-		// (j, j2) is an element of tLR
-		tLR_tripletList.push_back(Triplet(j, j2 - lr_col_size, 1));
-	      }
-	      if ((j >= lr_col_size) && (j2 >= lr_col_size) && (j <= j2)) {
-		// (j, j2) is an element of upper-triangular part of tRR
-		tRR_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
-	      }
+              if ((j < lr_col_size) && (j2 < lr_col_size) && (j <= j2)) {
+                // (j, j2) is an element of upper-triangular part of tLL
+                tLL_tripletList.push_back(Triplet(j, j2, 1));
+              }
+              if ((j < lr_col_size) && (j2 >= lr_col_size)) {
+                // (j, j2) is an element of tLR
+                tLR_tripletList.push_back(Triplet(j, j2 - lr_col_size, 1));
+              }
+              if ((j >= lr_col_size) && (j2 >= lr_col_size) && (j <= j2)) {
+                // (j, j2) is an element of upper-triangular part of tRR
+                tRR_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
+              }
             }
           }
         }
@@ -187,18 +187,18 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
     
     return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
-			      // Rcpp::Named("tWC") = Rcpp::wrap(tWC.cast <real> ()),
-			      // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
-			      // Rcpp::Named("tCC_h") = Rcpp::wrap(tCC_h),
-			      // Rcpp::Named("A") = Rcpp::wrap(a),
-			      // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-			      // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-			      // Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
-			      Rcpp::Named("window.size") = Rcpp::wrap(window_size),
-			      Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
-			      Rcpp::Named("k") = Rcpp::wrap(k)
-			      );
-      
+                              // Rcpp::Named("tWC") = Rcpp::wrap(tWC.cast <real> ()),
+                              // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
+                              // Rcpp::Named("tCC_h") = Rcpp::wrap(tCC_h),
+                              // Rcpp::Named("A") = Rcpp::wrap(a),
+                              // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
+                              // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+                              // Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
+                              Rcpp::Named("window.size") = Rcpp::wrap(window_size),
+                              Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
+                              Rcpp::Named("k") = Rcpp::wrap(k)
+                              );
+
   } else {
     // Execute Two Step CCA
     std::cout << "Calculate TSCCA..." << std::endl;
@@ -240,16 +240,16 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     RedSVD::RedSVD<MatrixXreal> svdA(a, k, 20);
     
     return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
-			      // Rcpp::Named("tWS") = Rcpp::wrap(tWS),
-			      // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
-			      // Rcpp::Named("tSS_h") = Rcpp::wrap(tSS_h),
-			      // Rcpp::Named("A") = Rcpp::wrap(a),
-			      // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-			      // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-			      // Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
-			      Rcpp::Named("window.size") = Rcpp::wrap(window_size),
-			      Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
-			      Rcpp::Named("k") = Rcpp::wrap(k)
-			      );
+                              // Rcpp::Named("tWS") = Rcpp::wrap(tWS),
+                              // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
+                              // Rcpp::Named("tSS_h") = Rcpp::wrap(tSS_h),
+                              // Rcpp::Named("A") = Rcpp::wrap(a),
+                              // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
+                              // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+                              // Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues()),
+                              Rcpp::Named("window.size") = Rcpp::wrap(window_size),
+                              Rcpp::Named("vocab.size") = Rcpp::wrap(vocab_size),
+                              Rcpp::Named("k") = Rcpp::wrap(k)
+                              );
   }
 }
