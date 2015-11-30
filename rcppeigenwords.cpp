@@ -26,7 +26,7 @@ const int TRIPLET_VECTOR_SIZE = 10000000;
 
 // Update crossprod matrix using triplets
 void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
-			 iSparseMatrix &tXX_temp, iSparseMatrix &tXX) {
+                              iSparseMatrix &tXX_temp, iSparseMatrix &tXX) {
 
   tXX_temp.setFromTriplets(tXX_tripletList.begin(), tXX_tripletList.end());
   tXX_tripletList.clear();
@@ -141,44 +141,44 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
         update_crossprod_matrix(tLL_tripletList, tLL_temp, tLL);
         update_crossprod_matrix(tLR_tripletList, tLR_temp, tLR);
         update_crossprod_matrix(tRR_tripletList, tRR_temp, tRR);
-       }
+      }
 
-       n_pushed_triplets = 0;
-     }
-   }
+      n_pushed_triplets = 0;
+    }
+  }
 
-   tWC.makeCompressed();
-   tLL.makeCompressed();
-   tLR.makeCompressed();
-   tRR.makeCompressed();
+  tWC.makeCompressed();
+  tLL.makeCompressed();
+  tLR.makeCompressed();
+  tRR.makeCompressed();
 
-   std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
-   std::cout << "tWC,  " << tWC.nonZeros() << ",  " << tWC.rows() << ",  " << tWC.cols() << std::endl;
-   std::cout << "tLL,  " << tLL.nonZeros() << ",  " << tLL.rows() << ",  " << tLL.cols() << std::endl;
-   std::cout << "tLR,  " << tLR.nonZeros() << ",  " << tLR.rows() << ",  " << tLR.cols() << std::endl;
-   std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
-   std::cout << std::endl;
-
-
-   // `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
-   VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-   VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-   realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
-   realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
-
-   for (int i = 0; i < tWW_h.size(); i++) {
-     tWW_h_diag.insert(i, i) = tWW_h(i);
-   }
-   if (mode_oscca) {
-     for (int i = 0; i < tCC_h.size(); i++) {
-       tCC_h_diag.insert(i, i) = tCC_h(i);
-     }
-   }
+  std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
+  std::cout << "tWC,  " << tWC.nonZeros() << ",  " << tWC.rows() << ",  " << tWC.cols() << std::endl;
+  std::cout << "tLL,  " << tLL.nonZeros() << ",  " << tLL.rows() << ",  " << tLL.cols() << std::endl;
+  std::cout << "tLR,  " << tLR.nonZeros() << ",  " << tLR.rows() << ",  " << tLR.cols() << std::endl;
+  std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
+  std::cout << std::endl;
 
 
-   // Construct the matrices for CCA and execute CCA
-   if (mode_oscca) {
-     // Execute One Step CCA
+  // `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
+  VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
+  realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
+
+  for (int i = 0; i < tWW_h.size(); i++) {
+    tWW_h_diag.insert(i, i) = tWW_h(i);
+  }
+  if (mode_oscca) {
+    for (int i = 0; i < tCC_h.size(); i++) {
+      tCC_h_diag.insert(i, i) = tCC_h(i);
+    }
+  }
+
+
+  // Construct the matrices for CCA and execute CCA
+  if (mode_oscca) {
+    // Execute One Step CCA
     std::cout << "Calculate OSCCA..." << std::endl;
     
     realSparseMatrix a(tWW_h_diag * (tWC.cast <real> ().eval().cwiseSqrt()) * tCC_h_diag);
