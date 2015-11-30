@@ -23,6 +23,14 @@ typedef Eigen::Triplet<int> Triplet;
 int TRIPLET_VECTOR_SIZE = 10000000;
 
 
+void update_gram_matrix (std::vector<Triplet> &tXX_tripletList, iSparseMatrix &tXX_temp, iSparseMatrix &tXX) {
+  tXX_temp.setFromTriplets(tXX_tripletList.begin(), tXX_tripletList.end());
+  tXX_tripletList.clear();
+  tXX += tXX_temp;
+  tXX_temp.setZero();
+}
+
+
 // [[Rcpp::export]]
 Rcpp::List EigenwordsRedSVD(
   MapVectorXi& sentence, int window_size, int vocab_size,
@@ -133,26 +141,12 @@ Rcpp::List EigenwordsRedSVD(
     
     // Commit temporary matrices
     if (n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size || i_sentence == sentence_size - 1) {
-      tWC_temp.setFromTriplets(tWC_tripletList.begin(), tWC_tripletList.end());
-      tWC_tripletList.clear();
-      tWC += tWC_temp;
-      tWC_temp.setZero();
-      
+      update_gram_matrix(tWC_tripletList, tWC_temp, tWC);
+            
       if (!mode_oscca) {
-        tLL_temp.setFromTriplets(tLL_tripletList.begin(), tLL_tripletList.end());
-        tLL_tripletList.clear();
-        tLL += tLL_temp;
-        tLL_temp.setZero();
-        
-        tLR_temp.setFromTriplets(tLR_tripletList.begin(), tLR_tripletList.end());
-        tLR_tripletList.clear();
-        tLR += tLR_temp;
-        tLR_temp.setZero();
-        
-        tRR_temp.setFromTriplets(tRR_tripletList.begin(), tRR_tripletList.end());
-        tRR_tripletList.clear();
-        tRR += tRR_temp;
-        tRR_temp.setZero();
+	update_gram_matrix(tLL_tripletList, tLL_temp, tLL);
+	update_gram_matrix(tLR_tripletList, tLR_temp, tLR);
+	update_gram_matrix(tRR_tripletList, tRR_temp, tRR);
       }
       
       n_pushed_triplets = 0;
