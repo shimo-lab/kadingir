@@ -96,41 +96,33 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     
     for (i_offset1=0; i_offset1<2*window_size; i_offset1++) {
       i_word1 = i_sentence + offsets[i_offset1];
-      if (i_word1 >= 0 && i_word1 < sentence_size) {
+      if ((i_word1 >= 0) && (i_word1 < sentence_size)) {
         j = sentence[i_word1] + vocab_size * i_offset1;
         
         if (mode_oscca) {
           // One Step CCA
           tCC_diag(j) += 1;
-          
+
         } else {
           // Two step CCA
           for (i_offset2=0; i_offset2<2*window_size; i_offset2++) {
             i_word2 = i_sentence + offsets[i_offset2];
             
-            if (i_word2 >= 0 && i_word2 < sentence_size) {
+            if ((i_word2 >= 0) && (i_word2 < sentence_size)) {
               j2 = sentence[i_word2] + vocab_size * i_offset2;
               
-              if (j < lr_col_size) {
-                if (j2 < lr_col_size) {
-                  // Upper left block of Ccc
-                  if (j <= j2) {
-                    // (j, j2) is upper-triangular part of tLL
-                    tLL_tripletList.push_back(Triplet(j, j2, 1));
-                  }
-                } else {
-                  // Upper right block of Ccc
-                  tLR_tripletList.push_back(Triplet(j, j2 - lr_col_size, 1));
-                }
-              } else {
-                if (j2 >= lr_col_size) {
-                  // Lower right block of Ccc
-                  if (j <= j2) {
-                    // (j, j2) is upper-triangular part of tRR
-                    tRR_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
-                  }
-                }
-              }
+	      if ((j < lr_col_size) && (j2 < lr_col_size) && (j <= j2)) {
+		// (j, j2) is an element of upper-triangular part of tLL
+		tLL_tripletList.push_back(Triplet(j, j2, 1));
+	      }
+	      if ((j < lr_col_size) && (j2 >= lr_col_size)) {
+		// (j, j2) is an element of tLR
+		tLR_tripletList.push_back(Triplet(j, j2 - lr_col_size, 1));
+	      }
+	      if ((j >= lr_col_size) && (j2 >= lr_col_size) && (j <= j2)) {
+		// (j, j2) is an element of upper-triangular part of tRR
+		tRR_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
+	      }
             }
           }
         }
