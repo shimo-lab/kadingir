@@ -169,7 +169,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
     ## Execute CCA
     if (mode == "oscca") { # One-step CCA
       cat("Calculate OSCCA...\n\n")
-      results.redsvd <- TruncatedSVD(A = MakeSVDMatrix(r$W, r$C), k = dim.internal, sparse = TRUE)
+      results.redsvd <- OSCCA(r$W, r$C, dim.internal)
       
     } else if (mode == "tscca") { # Two-Step CCA
       cat("Calculate TSCCA...\n\n")
