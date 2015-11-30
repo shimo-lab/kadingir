@@ -82,11 +82,15 @@ OSCCA <- function(X, Y, k) {
   Cxx <- crossprod(X)
   Cxy <- crossprod(X, Y)
   Cyy <- crossprod(Y)
+  Cxx.h <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2))
   
-  A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
+  A <- Cxx.h %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
   
   cat("Calculate redsvd...")
-  return(TruncatedSVD(A, k, sparse = TRUE))
+  return.list <- TruncatedSVD(A, k, sparse = TRUE)
+  return.list$word_vector <- Cxx.h %*% return.list$U
+
+  return(return.list)
 }
 
 
@@ -113,10 +117,14 @@ TSCCA <- function(W, C, k) {
     crossprod(W, L) %*% U,
     crossprod(W, R) %*% V
   )
-  
-  A <- diag(diag(Cww)^(-1/2)) %*% Cws %*% diag(diag(Css)^(-1/2))
-  
-  return(TruncatedSVD(A, k, sparse = FALSE))
+
+  Cxx.h <- sqrt(diag(diag(Cww)^(-1/2)))
+  A <- Cxx.h %*% sqrt(Cws) %*% sqrt(diag(diag(Css)^(-1/2)))
+
+  return.list <- TruncatedSVD(A, k, sparse = FALSE)
+  return.list$word_vector <- Cxx.h %*% return.list$U
+
+  return(return.list)
 }
 
 
@@ -163,7 +171,7 @@ Eigenwords <- function(path.corpus, n.vocabulary = 1000, dim.internal = 200,
     
   } else {
     r <- make.matrices(sentence, window.size, skip.null.words = TRUE)
-    
+
     cat("Size of W :")
     print(object.size(r$W), unit = "GB")
     cat("Size of C :")
