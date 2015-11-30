@@ -24,8 +24,10 @@ typedef Eigen::Triplet<int> Triplet;
 int TRIPLET_VECTOR_SIZE = 10000000;
 
 
-void update_gram_matrix (std::vector<Triplet> &tXX_tripletList, iSparseMatrix &tXX_temp, iSparseMatrix &tXX) {
 // Update crossprod matrix using triplets
+void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
+			 iSparseMatrix &tXX_temp, iSparseMatrix &tXX) {
+
   tXX_temp.setFromTriplets(tXX_tripletList.begin(), tXX_tripletList.end());
   tXX_tripletList.clear();
   tXX += tXX_temp;
@@ -141,12 +143,12 @@ Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
     
     // Commit temporary matrices
     if (n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size || i_sentence == sentence_size - 1) {
-      update_gram_matrix(tWC_tripletList, tWC_temp, tWC);
+      update_crossprod_matrix(tWC_tripletList, tWC_temp, tWC);
             
       if (!mode_oscca) {
-	update_gram_matrix(tLL_tripletList, tLL_temp, tLL);
-	update_gram_matrix(tLR_tripletList, tLR_temp, tLR);
-	update_gram_matrix(tRR_tripletList, tRR_temp, tRR);
+	update_crossprod_matrix(tLL_tripletList, tLL_temp, tLL);
+	update_crossprod_matrix(tLR_tripletList, tLR_temp, tLR);
+	update_crossprod_matrix(tRR_tripletList, tRR_temp, tRR);
       }
       
       n_pushed_triplets = 0;
