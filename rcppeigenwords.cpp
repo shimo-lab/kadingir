@@ -1,8 +1,8 @@
 /*
-RcppEigenwords
-
-sentence の要素で 0 となっているのは <OOV> (Out of Vocabulary) に対応する．
-*/
+ * rcppeigenwords.cpp
+ *
+ *  - sentence の要素で 0 となっているのは <OOV> (Out of Vocabulary) に対応する．
+ */
 
 #include <Rcpp.h>
 #include <RcppEigen.h>
@@ -28,7 +28,6 @@ void update_gram_matrix (std::vector<Triplet> &tXX_tripletList, iSparseMatrix &t
   tXX += tXX_temp;
   tXX_temp.setZero();
 }
-
 
 // [[Rcpp::export]]
 Rcpp::List EigenwordsRedSVD(MapVectorXi& sentence, int window_size,
