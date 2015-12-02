@@ -2,3 +2,9 @@
 .Rhistory
 .Rproj.user
 *.Rproj
+*.Rdata
+data
+*.out
+output_*.csv
+*.pdf
+*.html

@@ -1,196 +1,323 @@
-## Implementation of Eigenwords
+### Implementation of Eigenwords
 
 library(Matrix)
 library(RRedsvd)
-library(tcltk)
 library(svd)
+library(Rcpp)
+library(RcppEigen)
+library(foreach)
+library(doParallel)
+
+sourceCpp("rcppeigenwords.cpp", rebuild = TRUE, verbose = TRUE)
 
 
-## CCA using randomized SVD or propack.svd
-##  In the same way as [Dhillon+2015], ignore off-diagonal elements of Cxx & Cyy
-##
-##  Arguments :
-##    X : matrix
-##    Y : matrix
-##    k : number of desired singular values
-##    sparse : Use redsvd or propack.svd?
-cca.eigenwords <- function(X, Y, k, sparse = TRUE){
-    Cxx <- t(X) %*% X
-    Cxy <- t(X) %*% Y
-    Cyy <- t(Y) %*% Y
-    
-    A <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2)) %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
+make.matrices <- function(sentence, window.size) {
 
-    if (sparse) {
-        results.svd <- redsvd(A, k)
-    } else {
-        results.propack.svd <- propack.svd(as.matrix(A), neig=k)
-        results.svd <- list()
-        results.svd$U <- results.propack.svd$u
-        results.svd$V <- results.propack.svd$v
-        results.svd$D <- results.propack.svd$d
-    }
+  sentence <- sentence + 1L  # To make min(sentence) == 1 for R indexing
 
-    return(results.svd)
+  n.train.words <- length(sentence)
+  n.vocab <- max(sentence)
+  
+  ## Construction of W
+  indices <- cbind(seq(sentence), sentence)
+  indices <- indices[indices[ , 2] > 0, ]
+
+  W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
+                    x = rep(1, times = nrow(indices)),
+                    dims = c(n.train.words, n.vocab))
+
+  ## Construction of C
+  offsets <- c(-window.size:-1, 1:window.size)
+  C <- Matrix(F, nrow = n.train.words, ncol = 0)
+
+  for (i.offset in seq(offsets)) {
+    offset <- offsets[i.offset]
+    indices.temp <- cbind(seq(sentence) - offset, sentence)
+
+    # Ignore invalid indices and indices of null words
+    indices.temp <- indices.temp[(indices.temp[ , 1] > 0) & (indices.temp[ , 1] <= n.train.words), ]
+    indices.temp <- indices.temp[indices.temp[ , 2] > 0, ]
+
+    C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2],
+                           x = rep(1, times = nrow(indices.temp)),
+                           dims = c(n.train.words, n.vocab))
+    C <- cbind2(C, C.temp)
+  }
+
+  return(list(W = W, C = C))
+}
+
+TruncatedSVD <- function(A, k, sparse) {
+  print("TruncatedSVD()...")
+  
+  if (sparse) {
+    results.svd <- redsvd(A, k)
+  } else {
+    results.propack.svd <- propack.svd(as.matrix(A), neig=k)
+    results.svd <- list()
+    results.svd$U <- results.propack.svd$u
+    results.svd$V <- results.propack.svd$v
+    results.svd$D <- results.propack.svd$d
+  }
+  print("End of TruncatedSVD()")
+
+  return(results.svd)
 }
 
 
-eigenwords <- function(sentence.orig, min.count = 10,
-                       dim.internal = 200, window.size = 2, mode = "oscca"){
+OSCCA <- function(X, Y, k) {
+  ## CCA using randomized SVD
+  ##  In the same way as [Dhillon+2015],
+  ##  ignore off-diagonal elements of Cxx & Cyy
+  ##
+  ##  Arguments :
+  ##    X : matrix or list of matrices
+  ##    Y : matrix or list of matrices
+  ##    k : number of desired singular values
+  
+  Cxx <- sqrt(crossprod(X))
+  Cxy <- sqrt(crossprod(X, Y))
+  Cyy <- sqrt(crossprod(Y))
 
-    time.start <- Sys.time()
+  Cxx.h <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2))
+  
+  A <- Cxx.h %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
+  
+  cat("Calculate redsvd...")
+  return.list <- TruncatedSVD(A, k, sparse = TRUE)
+  return.list$word_vector <- Cxx.h %*% return.list$U
 
-    if (!mode %in% c("oscca", "tscca")){
-        cat(paste0("mode is invalid: ", mode))
-    }
+  return(return.list)
+}
+
+
+TSCCA <- function(W, C, k) {
+  L <- C[ , 1:(ncol(C)/2)]
+  R <- C[ , (ncol(C)/2 + 1):ncol(C)]
+
+  redsvd.LR <- OSCCA(L, R, k)
+  U <- redsvd.LR$U
+  V <- redsvd.LR$V
+  
+  Cww <- crossprod(W)
+  Css <- rbind2(
+    cbind2(
+      t(U) %*% crossprod(L) %*% U,
+      t(U) %*% crossprod(L, R) %*% V
+    ),
+    cbind2(
+      t(V) %*% crossprod(R, L) %*% U,
+      t(V) %*% crossprod(R) %*% V
+    )
+  )
+  Cws <- cbind2(
+    crossprod(W, L) %*% U,
+    crossprod(W, R) %*% V
+  )
+
+  Cxx.h <- diag(diag(Cww)^(-1/2))
+  A <- Cxx.h %*% Cws %*% diag(diag(Css)^(-1/2))
+
+  return.list <- TruncatedSVD(A, k, sparse = FALSE)
+  return.list$word_vector <- Cxx.h %*% return.list$U
+
+  return(return.list)
+}
+
+
+Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
+                       window.size = 2, mode = "oscca", use.eigen = TRUE) {
+  
+  time.start <- Sys.time()
+  
+  ## Making train data
+  f <- file(path.corpus, "r")
+  line <- readLines(con = f, -1)
+  close(f)
+  
+  sentence.orig <- unlist(strsplit(line, " "))
+  rm(line)
+  
+  if (!mode %in% c("oscca", "tscca")) {
+    cat(paste0("mode is invalid: ", mode))
+  }
+  
+  d.table <- table(sentence.orig)
+  vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(max.vocabulary)])
+  sentence <- match(sentence.orig, vocab.words, nomatch = 0)
+  n.vocab <- max.vocabulary + 1  # For out-of-vocabulary word, +1
+  
+  cat("\n\n")
+  cat("Corpus             :", path.corpus, "\n")
+  cat("Size of sentence   :", length(sentence), "\n")
+  cat("dim.internal       :", dim.internal, "\n")
+  cat("window.size        :", window.size, "\n")
+  cat("Size of vocab      :", n.vocab, "\n")
+  cat("mode               :", mode, "\n\n")
+  
+
+  if (use.eigen) {
+    sentence <- as.integer(sentence)
+    results.redsvd <- EigenwordsRedSVD(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
     
-    if (min.count > 0){
-        d.table <- table(sentence.orig)
-        vocab.words <- names(d.table[d.table >= min.count])
-    } else {
-        vocab.words <- unique(sentence)
-    }
+  } else {
+    r <- make.matrices(sentence, window.size)
 
-    cat("\n\n")
-    cat("Size of sentence   :", length(sentence.orig), "\n")
-    cat("dim.internal       :", dim.internal, "\n")
-    cat("min.count          :", min.count, "\n")
-    cat("Size of vocab      :", length(vocab.words), "\n")
-    cat("mode               :", mode, "\n\n")
-
-    sentence <- match(sentence.orig, vocab.words, nomatch = 0)
-    n.vocab <- length(vocab.words)
-    n.train.words <- length(sentence)
-
-
-    ## Calculate Eigenwords
-    ##  実行速度の観点から，1が立つ要素のインデックスをfor文で生成し，
-    ##  sparseMatrix関数を使ってまとめて行列 W, C を生成している．
+    cat("Size of W :")
+    print(object.size(r$W), unit = "GB")
+    cat("Size of C :")
+    print(object.size(r$C), unit = "GB")
     
-    ## Construction of W
-    cat("Constructing W\n")
-    pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
-    
-    indices <- matrix(0, nrow = length(sentence), ncol = 2)
-    for(i.sentence in seq(sentence)){    
-        word <- sentence[i.sentence]
-
-        if(word != 0){
-            indices[i.sentence, ] <- c(i.sentence, word)
-        }
-
-        setTxtProgressBar(pb, i.sentence)
-    }
-    
-    indices <- indices[rowSums(indices) > 0, ]
-    W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
-                      x = rep(1, times = nrow(indices)),
-                      dims = c(n.train.words, n.vocab))
-    
-    ## Construction of C
-    cat("\nConstructing C\n")
-    pb <- txtProgressBar(min = 1, max = length(sentence), style = 3)
-    
-    indices <- matrix(0, nrow = 2*window.size*length(sentence), ncol = 2)
-    offsets <- sort(c(seq(window.size), -seq(window.size)), decreasing = TRUE)
-    for(i.sentence in seq(sentence)){
-        word <- sentence[i.sentence]
-
-        if(word != 0){
-            for(i.context in seq(offsets)){
-                offset <- offsets[i.context]
-                
-                i <- offset + i.sentence
-                j <- word + n.vocab*(i.context - 1)
-                
-                if(i >= 1 && i <= n.train.words){
-                    indices[(i.sentence - 1)*(2*window.size) + i.context, ] <- c(i, j)
-                }
-            }
-        }
-        setTxtProgressBar(pb, i.sentence)
-    }
-
-    indices <- indices[rowSums(indices) > 0, ]
-    C <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
-                      x = rep(1, times = nrow(indices)),
-                      dims = c(n.train.words, 2*window.size*n.vocab))
-
-    cat("\n\nSize of W :", format(object.size(W), unit = "auto"))
-    cat("\nSize of C :", format(object.size(C), unit = "auto"))
-    cat("\n\n")
-
     ## Execute CCA
     if (mode == "oscca") { # One-step CCA
-        cat("Calculate OSCCA...\n\n")
-        results.redsvd <- cca.eigenwords(W, C, dim.internal)
+      cat("Calculate OSCCA...\n\n")
+      results.redsvd <- OSCCA(r$W, r$C, dim.internal)
+      
     } else if (mode == "tscca") { # Two-Step CCA
-        cat("Calculate TSCCA...\n\n")
-        L <- C[ , 1:(window.size*n.vocab)]
-        R <- C[ , (window.size*n.vocab+1):(2*window.size*n.vocab)]
-        redsvd.LR <- cca.eigenwords(L, R, dim.internal)
-
-        S <- cbind(L %*% redsvd.LR$U, R %*% redsvd.LR$V)
-        results.redsvd <- cca.eigenwords(W, S, dim.internal, sparse = FALSE)
+      cat("Calculate TSCCA...\n\n")
+      results.redsvd <- TSCCA(r$W, r$C, dim.internal)
     }
-
-    return.list <- list()
-    return.list$svd <- results.redsvd
-    return.list$vocab.words <- vocab.words
-
-    diff.time <- Sys.time() - time.start
-    print(diff.time)
     
-    return(return.list)
+  }
+  
+  return.list <- list()
+  return.list$svd <- results.redsvd
+  return.list$vocab.words <- c("<OOV>", vocab.words)
+  
+  diff.time <- Sys.time() - time.start
+  print(diff.time)
+  
+  return(return.list)
 }
 
 
-most.similar <- function(res.eigenwords, positive = NULL, negative = NULL,
-                         topn = 10, normalize = FALSE, format = "euclid"){
-    vocab <- res.eigenwords$vocab.words
-    rep.vocab <- res.eigenwords$svd$U
-
-    if (normalize){
-        rep.vocab <- rep.vocab/sqrt(rowSums(rep.vocab**2))
-    }
-
-    queries.info <- list(list(positive, 1), list(negative, -1))
-    rep.query <- rep(0, times=ncol(rep.vocab))
-
-    for (q in queries.info) {
-        queries <- q[[1]]
-        pm <- q[[2]]
+MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
+                        topn = 10, distance = "euclid", print.error = TRUE) {
+  
+  rownames(U) <- vocab
+  
+  if (distance == "cosine") {
+    U <- U/sqrt(rowSums(U**2))
+  }
+  
+  queries.info <- list(list(positive, 1), list(negative, -1))
+  rep.query <- rep(0, times=ncol(U))
+  
+  for (q in queries.info) {
+    queries <- q[[1]]
+    pm <- q[[2]]
+    
+    if (!is.null(queries)) {
+      for (query in queries) {
         
-        if (!is.null(queries)) {
-            for (query in queries) {
-                
-                if (!query %in% vocab) {
-                    print(paste0("Error: `", query, "` is not in vocaburary."))
-                    return(FALSE)
-                }
-                
-                index.query <- which(vocab == query)
-                rep.query <- rep.query + pm * rep.vocab[index.query, ]
-            }
+        if (!query %in% vocab) {
+          if (print.error) {
+            print(paste0("Error: `", query, "` is not in vocaburary."))
+          }
+          return(FALSE)
         }
-    }
-
-    if (normalize){
-        rep.query <- rep.query/sqrt(sum(rep.query**2))
-    }
-
-    if (format == "euclid") {
-        rep.query.matrix <- matrix(rep.query, nrow=length(vocab), ncol=length(rep.query), byrow=TRUE)
-        distances <- sqrt(rowSums((rep.vocab - rep.query.matrix)**2))
-        names(distances) <- vocab
-
-        return(sort(distances)[1:topn])
         
-    } else if (format == "cosine") {
-        distances <- rep.vocab %*% rep.query
-        names(distances) <- vocab
-
-        return(sort(distances, decreasing = TRUE)[1:topn])
-
+        rep.query <- rep.query + pm * U[query, ]
+      }
     }
+  }
+  
+  if (distance == "cosine") {
+    rep.query <- rep.query/sqrt(sum(rep.query**2))
+  }
+  
+  # Ignore query words
+  query.words <- c(positive, negative)
+  index.vocab.reduced <- which(!vocab %in% query.words)
+  U <- U[index.vocab.reduced, ]
+  vocab <- vocab[index.vocab.reduced]
+    
+  if (distance == "euclid") {
+    rep.query.matrix <- matrix(rep.query, nrow=nrow(U), ncol=ncol(U), byrow=TRUE)
+    distances <- sqrt(rowSums((U - rep.query.matrix)**2))
+    return(distances[order(distances)[1:topn]])
+    
+  } else if (distance == "cosine") {
+    similarities <- drop(U %*% rep.query)
+    return(similarities[order(-similarities)[1:topn]])
+  }
+}
+
+
+TestGoogleTasks <- function (U, vocab, path = "test/questions-words.txt", n.cores = 1) {
+  
+  time.start <- Sys.time()
+  
+  ## Calcurate accuracy of Google analogy task
+  queries <- read.csv(path, header = FALSE, sep = " ", comment.char = ":")
+  n.tasks <- nrow(queries)
+  queries <- as.character(unlist(t(queries)))
+  
+  rownames(U) <- vocab
+  U <- U/sqrt(rowSums(U**2))
+
+  cl <- makeCluster(n.cores)
+  registerDoParallel(cl)
+  on.exit(stopCluster(cl)) 
+  
+  results <- foreach (i = seq(n.tasks), .combine = c) %dopar% {
+    q <- queries[(4*(i-1) + 1):(4*i)]
+    #q <- tolower(q)
+    
+    if (all(q %in% vocab)) {
+      q3 <- U[q[2], ] - U[q[1], ] + U[q[3], ]
+      
+      similarities <- drop(U %*% q3)[!vocab %in% q[1:3]]
+      most.similar.word <- names(which.max(similarities))
+      
+      tolower(most.similar.word) == tolower(q[4])
+    } else {
+      NULL
+    }
+  }
+  print(Sys.time() - time.start)
+  
+  cat("accuracy = ", sum(results), "/", length(results), "=", mean(results), "\n\n")
+}
+
+
+TestWordsim353 <- function (vectors, vocab, path = "test/combined.csv") {
+  
+  cosine.similarity <- function (w1, w2) {
+    v1 <- vectors[w1, ]
+    v2 <- vectors[w2, ]
+    
+    (v1 %*% v2) / sqrt((v1 %*% v1) * (v2 %*% v2))
+  }
+  
+  
+  ## Calculate similarities and correlation
+  rownames(vectors) <- vocab
+  
+  wordsims <- read.csv(path, header = 1)
+  
+  n.tests <- nrow(wordsims)
+  similarity.eigenwords <- rep(NULL, times = n.tests)
+  
+  for(i in seq(n.tests)) {
+    w1 <- as.character(wordsims[i, 1])
+    w2 <- as.character(wordsims[i, 2])
+    
+    if (w1 %in% vocab && w2 %in% vocab) {
+      similarity.eigenwords[i] <- cosine.similarity(w1, w2)
+    }
+  }
+  similarity.human <- wordsims[ , 3]
+  
+  percent.used <- mean(!is.na(similarity.eigenwords))
+  
+  similarity.human <- similarity.human[!is.na(similarity.eigenwords)]
+  similarity.eigenwords <- similarity.eigenwords[!is.na(similarity.eigenwords)]
+  
+  spearman.cor <- cor(similarity.human, similarity.eigenwords, method = "spearman")
+  
+  cat("Spearman cor.   = ", spearman.cor, "\n")
+  cat("% of used pairs = ", percent.used, "\n")
+  
+  plot(similarity.human, similarity.eigenwords)
 }
