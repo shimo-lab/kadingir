@@ -228,15 +228,15 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     // Release memory
     tLL.resize(0, 0);
     tRR.resize(0, 0);
+    VectorXreal tSS_h(2*k);
     
-    VectorXreal tSS_h(2*window_size*k);
     tSS_h << tSS_h1, tSS_h2;
     realSparseMatrix tSS_h_diag(tSS_h.size(), tSS_h.size());
     for (int i = 0; i < tSS_h.size(); i++) {
       tSS_h_diag.insert(i, i) = tSS_h(i);
     }
 
-    MatrixXreal tWS(vocab_size, 2*window_size*k);
+    MatrixXreal tWS(vocab_size, 2*k);
     tWS << tWC.topLeftCorner(vocab_size, lr_col_size).cast <real> ().cwiseSqrt() * phi_l, tWC.topRightCorner(vocab_size, lr_col_size).cast <real> ().cwiseSqrt() * phi_r;
 
     MatrixXreal a(tWW_h_diag * tWS * tSS_h_diag);
