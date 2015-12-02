@@ -112,15 +112,19 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
             if ((i_word2 >= 0) && (i_word2 < sentence_size)) {
               unsigned long long word2 = sentence[i_word2] + vocab_size * i_offset2;
               
-              if ((word1 < lr_col_size) && (word2 < lr_col_size) && (word1 <= word2)) {
+              bool word1_in_left_context = word1 < lr_col_size;
+              bool word2_in_left_context = word2 < lr_col_size;
+              bool is_upper_triangular = word1 <= word2;
+              
+              if (word1_in_left_context && word2_in_left_context && is_upper_triangular) {
                 // (word1, word2) is an element of upper-triangular part of tLL
                 tLL_tripletList.push_back(Triplet(word1, word2, 1));
-              }
-              if ((word1 < lr_col_size) && (word2 >= lr_col_size)) {
+                
+              } else if (word1_in_left_context && !word2_in_left_context) {
                 // (word1, word2) is an element of tLR
                 tLR_tripletList.push_back(Triplet(word1, word2 - lr_col_size, 1));
-              }
-              if ((word1 >= lr_col_size) && (word2 >= lr_col_size) && (word1 <= word2)) {
+                
+              } else if (!word1_in_left_context && !word2_in_left_context && is_upper_triangular) {
                 // (word1, word2) is an element of upper-triangular part of tRR
                 tRR_tripletList.push_back(Triplet(word1 - lr_col_size, word2 - lr_col_size, 1));
               }
