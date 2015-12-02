@@ -5,6 +5,7 @@
  *  - sentence の要素で 0 となっている要素は <OOV> (Out of Vocabulary, vocabulary に入っていない単語) に対応する．
  *  - v.asDiagonal() は疎行列ではなく密行列を返すため，仕方なく同様の処理をベタ書きしている箇所がある．
  *  - tWC のような表記は，行列 W, C の crossprod (Rでいうところの t(W) %*% C) を表す．
+ *  - `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
  */
 
 #include <Rcpp.h>
@@ -165,7 +166,6 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   std::cout << std::endl;
 
 
-  // `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
   VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
