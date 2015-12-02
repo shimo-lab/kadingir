@@ -98,11 +98,11 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     for (int i_offset1 = 0; i_offset1 < 2*window_size; i_offset1++) {
       long long i_word1 = i_sentence + offsets[i_offset1];
       if ((i_word1 >= 0) && (i_word1 < sentence_size)) {
-        unsigned long long j = sentence[i_word1] + vocab_size * i_offset1;
+        unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
         
         if (mode_oscca) {
           // One Step CCA
-          tCC_diag(j) += 1;
+          tCC_diag(word1) += 1;
 
         } else {
           // Two step CCA
@@ -110,25 +110,25 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
             long long i_word2 = i_sentence + offsets[i_offset2];
             
             if ((i_word2 >= 0) && (i_word2 < sentence_size)) {
-              unsigned long long j2 = sentence[i_word2] + vocab_size * i_offset2;
+              unsigned long long word2 = sentence[i_word2] + vocab_size * i_offset2;
               
-              if ((j < lr_col_size) && (j2 < lr_col_size) && (j <= j2)) {
-                // (j, j2) is an element of upper-triangular part of tLL
-                tLL_tripletList.push_back(Triplet(j, j2, 1));
+              if ((word1 < lr_col_size) && (word2 < lr_col_size) && (word1 <= word2)) {
+                // (word1, word2) is an element of upper-triangular part of tLL
+                tLL_tripletList.push_back(Triplet(word1, word2, 1));
               }
-              if ((j < lr_col_size) && (j2 >= lr_col_size)) {
-                // (j, j2) is an element of tLR
-                tLR_tripletList.push_back(Triplet(j, j2 - lr_col_size, 1));
+              if ((word1 < lr_col_size) && (word2 >= lr_col_size)) {
+                // (word1, word2) is an element of tLR
+                tLR_tripletList.push_back(Triplet(word1, word2 - lr_col_size, 1));
               }
-              if ((j >= lr_col_size) && (j2 >= lr_col_size) && (j <= j2)) {
-                // (j, j2) is an element of upper-triangular part of tRR
-                tRR_tripletList.push_back(Triplet(j - lr_col_size, j2 - lr_col_size, 1));
+              if ((word1 >= lr_col_size) && (word2 >= lr_col_size) && (word1 <= word2)) {
+                // (word1, word2) is an element of upper-triangular part of tRR
+                tRR_tripletList.push_back(Triplet(word1 - lr_col_size, word2 - lr_col_size, 1));
               }
             }
           }
         }
         
-        tWC_tripletList.push_back(Triplet(i, j, 1));
+        tWC_tripletList.push_back(Triplet(i, word1, 1));
       }
     }
     
