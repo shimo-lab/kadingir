@@ -92,49 +92,49 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   unsigned long long n_pushed_triplets = 0;
 
   for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
-    
     unsigned long long i = sentence[i_sentence];
     tWW_diag(i) += 1;
     
-    for (int i_offset1 = 0; i_offset1 < 2*window_size; i_offset1++) {
+    for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
       long long i_word1 = i_sentence + offsets[i_offset1];
-      if ((i_word1 >= 0) && (i_word1 < sentence_size)) {
-        unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
+      
+      // If `i_word1` is out of indices of sentence
+      if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
+      
+      unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
+      
+      if (mode_oscca) {
+        // One Step CCA
+        tCC_diag(word1) += 1;
         
-        if (mode_oscca) {
-          // One Step CCA
-          tCC_diag(word1) += 1;
-
-        } else {
-          // Two step CCA
-          for (int i_offset2 = 0; i_offset2 < 2*window_size; i_offset2++) {
-            long long i_word2 = i_sentence + offsets[i_offset2];
-            
-            if ((i_word2 >= 0) && (i_word2 < sentence_size)) {
-              unsigned long long word2 = sentence[i_word2] + vocab_size * i_offset2;
-              
-              bool word1_in_left_context = word1 < lr_col_size;
-              bool word2_in_left_context = word2 < lr_col_size;
-              bool is_upper_triangular = word1 <= word2;
-              
-              if (word1_in_left_context && word2_in_left_context && is_upper_triangular) {
-                // (word1, word2) is an element of upper-triangular part of tLL
-                tLL_tripletList.push_back(Triplet(word1, word2, 1));
-                
-              } else if (word1_in_left_context && !word2_in_left_context) {
-                // (word1, word2) is an element of tLR
-                tLR_tripletList.push_back(Triplet(word1, word2 - lr_col_size, 1));
-                
-              } else if (!word1_in_left_context && !word2_in_left_context && is_upper_triangular) {
-                // (word1, word2) is an element of upper-triangular part of tRR
-                tRR_tripletList.push_back(Triplet(word1 - lr_col_size, word2 - lr_col_size, 1));
-              }
-            }
-          }
+      } else {
+        // Two step CCA
+        for (int i_offset2 = 0; i_offset2 < 2 * window_size; i_offset2++) {
+          long long i_word2 = i_sentence + offsets[i_offset2];
+          
+          // If `i_word2` is out of indices of sentence
+          if ((i_word2 < 0) || (i_word2 >= sentence_size)) continue;
+          
+          unsigned long long word2 = sentence[i_word2] + vocab_size * i_offset2;
+          
+          bool word1_in_left_context = word1 < lr_col_size;
+          bool word2_in_left_context = word2 < lr_col_size;
+          bool is_upper_triangular = word1 <= word2;
+          
+          if (word1_in_left_context && word2_in_left_context && is_upper_triangular) {
+            // (word1, word2) is an element of upper-triangular part of tLL
+            tLL_tripletList.push_back(Triplet(word1, word2, 1));
+          } else if (word1_in_left_context && !word2_in_left_context) {
+            // (word1, word2) is an element of tLR
+            tLR_tripletList.push_back(Triplet(word1, word2 - lr_col_size, 1));
+          } else if (!word1_in_left_context && !word2_in_left_context && is_upper_triangular) {
+            // (word1, word2) is an element of upper-triangular part of tRR
+            tRR_tripletList.push_back(Triplet(word1 - lr_col_size, word2 - lr_col_size, 1));
+          }  
         }
-        
-        tWC_tripletList.push_back(Triplet(i, word1, 1));
       }
+      
+      tWC_tripletList.push_back(Triplet(i, word1, 1));
     }
     
     n_pushed_triplets++;
