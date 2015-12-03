@@ -171,19 +171,6 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
   const unsigned long long c_col_size = 2 * lr_col_size;
   
-  std::cout << "mode          = ";
-  if (mode_oscca) {
-    std::cout << "OSCCA" << std::endl;
-  } else {
-    std::cout << "TSCCA" << std::endl;
-  }
-  std::cout << "window size   = " << window_size     << std::endl;
-  std::cout << "vocab size    = " << vocab_size      << std::endl;
-  std::cout << "dim of output = " << k               << std::endl;
-  std::cout << "sentence size = " << sentence.size() << std::endl;
-  std::cout << "c_col_size    = " << c_col_size      << std::endl;
-  std::cout << std::endl;
-  
   
   // Construct crossprod matrices
   Eigen::VectorXi tWW_diag(vocab_size);
