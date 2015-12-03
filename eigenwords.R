@@ -135,8 +135,11 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   lines <- readLines(con = f, -1)
   close(f)
   
-  sentence.orig <- unlist(strsplit(lines, " "))
+  lines.splited <- strsplit(lines, " ")
+  sentence.orig <- unlist(lines.splited)
+  document.id <- rep(seq(lines.splited), sapply(lines.splited, length))
   rm(lines)
+  rm(lines.splited)
   
   if (!mode %in% c("oscca", "tscca")) {
     cat(paste0("mode is invalid: ", mode))
