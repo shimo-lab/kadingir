@@ -21,7 +21,6 @@ make.matrices <- function(sentence, document.id, window.size) {
   
   ## Construction of W
   indices <- cbind(seq(sentence), sentence, document.id)
-  indices <- indices[indices[ , 2] > 0, ]
 
   W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                     x = rep(1, times = nrow(indices)),
@@ -41,7 +40,6 @@ make.matrices <- function(sentence, document.id, window.size) {
 
     # Ignore invalid indices and indices of null words
     indices.temp <- indices.temp[(indices.temp[ , 1] > 0) & (indices.temp[ , 1] <= n.train.words), ]
-    indices.temp <- indices.temp[indices.temp[ , 2] > 0, ]
 
     C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2],
                            x = rep(1, times = nrow(indices.temp)),
