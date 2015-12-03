@@ -136,7 +136,7 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   close(f)
   
   lines.splited <- strsplit(lines, " ")
-  sentence.orig <- unlist(lines.splited)
+  sentence.str <- unlist(lines.splited)
   document.id <- rep(seq(lines.splited), sapply(lines.splited, length))
   rm(lines)
   rm(lines.splited)
@@ -145,9 +145,10 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
     cat(paste0("mode is invalid: ", mode))
   }
   
-  d.table <- table(sentence.orig)
+  d.table <- table(sentence.str)
   vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(max.vocabulary)])
-  sentence <- match(sentence.orig, vocab.words, nomatch = 0)
+  sentence <- match(sentence.str, vocab.words, nomatch = 0)
+  rm(sentence.str)
   n.vocab <- max.vocabulary + 1  # For out-of-vocabulary word, +1
   
   cat("\n\n")
