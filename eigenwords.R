@@ -11,21 +11,25 @@ library(doParallel)
 sourceCpp("rcppeigenwords.cpp", rebuild = TRUE, verbose = TRUE)
 
 
-make.matrices <- function(sentence, window.size) {
+make.matrices <- function(sentence, document.id, window.size) {
 
   sentence <- sentence + 1L  # To make min(sentence) == 1 for R indexing
-
+  document.id <- document.id + 1L  # To make min(document.id) == 1 for R indexing
+  
   n.train.words <- length(sentence)
   n.vocab <- max(sentence)
   
   ## Construction of W
-  indices <- cbind(seq(sentence), sentence)
-  indices <- indices[indices[ , 2] > 0, ]
+  indices <- cbind(seq(sentence), sentence, document.id)
 
   W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                     x = rep(1, times = nrow(indices)),
                     dims = c(n.train.words, n.vocab))
 
+  D <- sparseMatrix(i = indices[ , 1], j = indices[ , 3],
+                    x = rep(1, times = nrow(indices)),
+                    dims = c(n.train.words, max(document.id)))
+  
   ## Construction of C
   offsets <- c(-window.size:-1, 1:window.size)
   C <- Matrix(F, nrow = n.train.words, ncol = 0)
@@ -36,7 +40,6 @@ make.matrices <- function(sentence, window.size) {
 
     # Ignore invalid indices and indices of null words
     indices.temp <- indices.temp[(indices.temp[ , 1] > 0) & (indices.temp[ , 1] <= n.train.words), ]
-    indices.temp <- indices.temp[indices.temp[ , 2] > 0, ]
 
     C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2],
                            x = rep(1, times = nrow(indices.temp)),
@@ -44,7 +47,7 @@ make.matrices <- function(sentence, window.size) {
     C <- cbind2(C, C.temp)
   }
 
-  return(list(W = W, C = C))
+  return(list(W = W, C = C, D = D))
 }
 
 TruncatedSVD <- function(A, k, sparse) {
@@ -125,8 +128,40 @@ TSCCA <- function(W, C, k) {
 }
 
 
+Eigendocs <- function(r, k) {
+  W <- r$W
+  C <- r$C
+  D <- r$D
+  
+  tWC <- crossprod(W, C)
+  tWD <- crossprod(W, D)
+  tCD <- crossprod(C, D)
+  
+  p1 <- nrow(tWC)
+  p2 <- nrow(tCD)
+  p3 <- ncol(tWD)
+  p <- p1 + p2 + p3
+  
+  G.sqrt.inv <- Diagonal(x = c(diag(crossprod(W))^(-1/2), diag(crossprod(C))^(-1/2), diag(crossprod(D))^(-1/2)))
+  H <- Matrix(0, p, p)
+  
+  H[1:p1, (p1+1):(p1+p2)] <- tWC
+  H[1:p1, (p1+p2+1):p] <- tWD
+  H[(p1+1):(p1+p2), (p1+p2+1):p] <- tCD
+  H <- H + t(H)
+  
+  S <- G.sqrt.inv %*% H %*% G.sqrt.inv
+  eigen.S <- eigen(S)
+  
+  word_vector <- eigen.S$vectors[1:p1, 1:k]
+  document_vector <- eigen.S$vectors[(p1+p2+1):p, 1:k]
+
+  return(list(word_vector = word_vector, document_vector = document_vector))
+}
+
+
 Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
-                       window.size = 2, mode = "oscca", use.eigen = TRUE) {
+                       window.size = 2, mode = "oscca", use.eigen = TRUE, mode.eigendocs = FALSE) {
   
   time.start <- Sys.time()
   
@@ -135,21 +170,26 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   lines <- readLines(con = f, -1)
   close(f)
   
-  sentence.orig <- unlist(strsplit(lines, " "))
+  lines.splited <- strsplit(lines, " ")
+  sentence.str <- unlist(lines.splited)
+  document.id <- rep(seq(lines.splited), sapply(lines.splited, length)) - 1L
   rm(lines)
+  rm(lines.splited)
   
   if (!mode %in% c("oscca", "tscca")) {
     cat(paste0("mode is invalid: ", mode))
   }
   
-  d.table <- table(sentence.orig)
+  d.table <- table(sentence.str)
   vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(max.vocabulary)])
-  sentence <- match(sentence.orig, vocab.words, nomatch = 0)
+  sentence <- match(sentence.str, vocab.words, nomatch = 0)  # Fill zero for out-of-vocabulary words
+  rm(sentence.str)
   n.vocab <- max.vocabulary + 1  # For out-of-vocabulary word, +1
   
   cat("\n\n")
   cat("Corpus             :", path.corpus, "\n")
   cat("Size of sentence   :", length(sentence), "\n")
+  cat("# of documents     :", max(document.id), "\n")
   cat("dim.internal       :", dim.internal, "\n")
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", n.vocab, "\n")
@@ -161,23 +201,30 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
     results.redsvd <- EigenwordsRedSVD(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
     
   } else {
-    r <- make.matrices(sentence, window.size)
+    r <- make.matrices(sentence, document.id, window.size)
 
     cat("Size of W :")
-    print(object.size(r$W), unit = "GB")
+    print(object.size(r$W), unit = "MB")
     cat("Size of C :")
-    print(object.size(r$C), unit = "GB")
+    print(object.size(r$C), unit = "MB")
+    cat("Size of D :")
+    print(object.size(r$D), unit = "MB")
+    
     
     ## Execute CCA
-    if (mode == "oscca") { # One-step CCA
-      cat("Calculate OSCCA...\n\n")
-      results.redsvd <- OSCCA(r$W, r$C, dim.internal)
-      
-    } else if (mode == "tscca") { # Two-Step CCA
-      cat("Calculate TSCCA...\n\n")
-      results.redsvd <- TSCCA(r$W, r$C, dim.internal)
-    }
-    
+    if (mode.eigendocs) {
+      cat("Calculate Eigendocs...\n\n")
+      results.redsvd <- Eigendocs(r, dim.internal)
+    } else {
+      if (mode == "oscca") { # One-step CCA
+        cat("Calculate OSCCA...\n\n")
+        results.redsvd <- OSCCA(r$W, r$C, dim.internal)
+        
+      } else if (mode == "tscca") { # Two-Step CCA
+        cat("Calculate TSCCA...\n\n")
+        results.redsvd <- TSCCA(r$W, r$C, dim.internal)
+      }
+    }    
   }
   
   return.list <- list()
