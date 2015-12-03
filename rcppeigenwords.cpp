@@ -36,6 +36,17 @@ void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
   tXX_temp.setZero();
 }
 
+void fill_offset_table (int offsets[], int window_size) {
+  int i_offset1 = 0;
+  for (int offset = -window_size; offset <= window_size; offset++){
+    if (offset != 0) {
+      offsets[i_offset1] = offset;
+      i_offset1++;
+    }
+  }
+}
+
+
 // [[Rcpp::export]]
 Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
                             const int vocab_size, const int k, const bool mode_oscca) {
@@ -77,17 +88,8 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   
   // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
   int offsets[2*window_size];
-
-  {
-    int i_offset1 = 0;
-    for (int offset = -window_size; offset <= window_size; offset++){
-      if (offset != 0) {
-        offsets[i_offset1] = offset;
-        i_offset1++;
-      }
-    }
-  }
-  
+  fill_offset_table(offsets, window_size);
+    
   // Construct crossprod matrices
   unsigned long long n_pushed_triplets = 0;
 
