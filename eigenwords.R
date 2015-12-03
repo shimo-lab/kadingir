@@ -142,7 +142,7 @@ Eigendocs <- function(r, k) {
   p3 <- ncol(tWD)
   p <- p1 + p2 + p3
   
-  G.sqrt.inv <- Diagonal(x = c(diag(crossprod(W))^(-1/2), diag(crossprod(C))^(-1/2), diag(crossprod(D))^(-1/2)))
+  G.sqrt.inv <- 1/sqrt(2) * Diagonal(x = c(diag(crossprod(W))^(-1/2), diag(crossprod(C))^(-1/2), diag(crossprod(D))^(-1/2)))
   H <- Matrix(0, p, p)
   
   H[1:p1, (p1+1):(p1+p2)] <- tWC
