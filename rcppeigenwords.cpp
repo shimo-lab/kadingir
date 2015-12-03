@@ -154,6 +154,16 @@ void construct_crossprod_matrices (const MapVectorXi& sentence,
 }
 
 
+void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h_diag)
+{
+  VectorXreal tXX_h(tXX_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  
+  for (int i = 0; i < tXX_h.size(); i++) {
+    tXX_h_diag.insert(i, i) = tXX_h(i);
+  }
+}
+
+
 // [[Rcpp::export]]
 Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
                             const int vocab_size, const int k, const bool mode_oscca)
@@ -189,23 +199,15 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
 
 
   // Construct the matrices for CCA and execute CCA
-  VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-  VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-  realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
-  realSparseMatrix tCC_h_diag(tCC_h.size(), tCC_h.size());
-
-  for (int i = 0; i < tWW_h.size(); i++) {
-    tWW_h_diag.insert(i, i) = tWW_h(i);
-  }
-  if (mode_oscca) {
-    for (int i = 0; i < tCC_h.size(); i++) {
-      tCC_h_diag.insert(i, i) = tCC_h(i);
-    }
-  }
+  realSparseMatrix tWW_h_diag(vocab_size, vocab_size);
+  construct_h_diag_matrix(tWW_diag, tWW_h_diag);
 
   if (mode_oscca) {
     // Execute One Step CCA
     std::cout << "Calculate OSCCA..." << std::endl;
+    
+    realSparseMatrix tCC_h_diag(c_col_size, c_col_size);
+    construct_h_diag_matrix(tCC_diag, tCC_h_diag);
     
     realSparseMatrix a(tWW_h_diag * (tWC.cast <real> ().eval().cwiseSqrt()) * tCC_h_diag);
    
@@ -230,9 +232,15 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     std::cout << "Calculate TSCCA..." << std::endl;
     
     // Two Step CCA : Step 1
-    VectorXreal tLL_h(tLL.diagonal().cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-    VectorXreal tRR_h(tRR.diagonal().cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-    realSparseMatrix b(tLL_h.asDiagonal() * (tLR.cast <real> ().eval().cwiseSqrt()) * tRR_h.asDiagonal());
+    Eigen::VectorXi tLL_diag = tLL.diagonal();
+    Eigen::VectorXi tRR_diag = tRR.diagonal();
+    realSparseMatrix tLL_h_diag(lr_col_size, lr_col_size);
+    realSparseMatrix tRR_h_diag(lr_col_size, lr_col_size);
+    
+    construct_h_diag_matrix(tLL_diag, tLL_h_diag);
+    construct_h_diag_matrix(tRR_diag, tRR_h_diag);
+    realSparseMatrix b(tLL_h_diag * (tLR.cast <real> ().eval().cwiseSqrt()) * tRR_h_diag);
+    
     std::cout << "# of nonzero,  # of rows,  # of cols = " << b.nonZeros() << ",  " << b.rows() << ",  " << b.cols() << std::endl;
     
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
