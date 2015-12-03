@@ -172,11 +172,11 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
     r <- make.matrices(sentence, document.id, window.size)
 
     cat("Size of W :")
-    print(object.size(r$W), unit = "GB")
+    print(object.size(r$W), unit = "MB")
     cat("Size of C :")
-    print(object.size(r$C), unit = "GB")
+    print(object.size(r$C), unit = "MB")
     cat("Size of D :")
-    print(object.size(r$D), unit = "GB")
+    print(object.size(r$D), unit = "MB")
     
     ## Execute CCA
     if (mode == "oscca") { # One-step CCA
