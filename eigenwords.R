@@ -132,11 +132,11 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   ## Making train data
   f <- file(path.corpus, "r")
-  line <- readLines(con = f, -1)
+  lines <- readLines(con = f, -1)
   close(f)
   
-  sentence.orig <- unlist(strsplit(line, " "))
-  rm(line)
+  sentence.orig <- unlist(strsplit(lines, " "))
+  rm(lines)
   
   if (!mode %in% c("oscca", "tscca")) {
     cat(paste0("mode is invalid: ", mode))
