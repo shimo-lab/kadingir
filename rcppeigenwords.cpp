@@ -28,15 +28,16 @@ const int TRIPLET_VECTOR_SIZE = 10000000;
 
 // Update crossprod matrix using triplets
 void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
-                              iSparseMatrix &tXX_temp, iSparseMatrix &tXX) {
-
+                              iSparseMatrix &tXX_temp, iSparseMatrix &tXX)
+{
   tXX_temp.setFromTriplets(tXX_tripletList.begin(), tXX_tripletList.end());
   tXX_tripletList.clear();
   tXX += tXX_temp;
   tXX_temp.setZero();
 }
 
-void fill_offset_table (int offsets[], int window_size) {
+void fill_offset_table (int offsets[], int window_size)
+{
   int i_offset1 = 0;
   for (int offset = -window_size; offset <= window_size; offset++){
     if (offset != 0) {
@@ -49,8 +50,8 @@ void fill_offset_table (int offsets[], int window_size) {
 
 // [[Rcpp::export]]
 Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
-                            const int vocab_size, const int k, const bool mode_oscca) {
-  
+                            const int vocab_size, const int k, const bool mode_oscca)
+{  
   const unsigned long long sentence_size = sentence.size();
   const unsigned long long lr_col_size = (unsigned long long)window_size*(unsigned long long)vocab_size;
   const unsigned long long c_col_size = 2*lr_col_size;
