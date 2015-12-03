@@ -230,6 +230,8 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   if (use.eigen) {
     results.redsvd <- EigendocsRedSVD(as.integer(sentence), as.integer(document.id), window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
+    word_vector <- results.redsvd$word_vector
+    document_vector <- results.redsvd$document_vector
     
   } else {
     r <- make.matrices(sentence, document.id, window.size)
