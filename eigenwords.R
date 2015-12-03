@@ -129,7 +129,7 @@ TSCCA <- function(W, C, k) {
 
 
 Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
-                       window.size = 2, mode = "oscca", use.eigen = TRUE) {
+                       window.size = 2, mode = "oscca", use.eigen = TRUE, mode.eigendocs = FALSE) {
   
   time.start <- Sys.time()
   
@@ -178,16 +178,21 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
     cat("Size of D :")
     print(object.size(r$D), unit = "MB")
     
-    ## Execute CCA
-    if (mode == "oscca") { # One-step CCA
-      cat("Calculate OSCCA...\n\n")
-      results.redsvd <- OSCCA(r$W, r$C, dim.internal)
-      
-    } else if (mode == "tscca") { # Two-Step CCA
-      cat("Calculate TSCCA...\n\n")
-      results.redsvd <- TSCCA(r$W, r$C, dim.internal)
-    }
     
+    ## Execute CCA
+    if (mode.eigendocs) {
+      cat("Calculate Eigendocs...\n\n")
+      results.redsvd <- Eigendocs(r, dim.internal)
+    } else {
+      if (mode == "oscca") { # One-step CCA
+        cat("Calculate OSCCA...\n\n")
+        results.redsvd <- OSCCA(r$W, r$C, dim.internal)
+        
+      } else if (mode == "tscca") { # Two-Step CCA
+        cat("Calculate TSCCA...\n\n")
+        results.redsvd <- TSCCA(r$W, r$C, dim.internal)
+      }
+    }    
   }
   
   return.list <- list()
