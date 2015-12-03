@@ -13,7 +13,7 @@ path.corpus <- "data/reuters/reuters_rcv1_text.csv"
 #path.corpus <- "data/text8"
 
 
-res.eigenwords <- Eigenwords(path.corpus, n.vocabulary, dim.internal, window.size, , mode = mode)
+res.eigenwords <- Eigenwords(path.corpus, n.vocabulary, dim.internal, window.size, mode = mode)
 save(res.eigenwords, file = "res_eigenwords.Rdata")
 
 

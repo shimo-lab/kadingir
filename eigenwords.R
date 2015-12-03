@@ -128,40 +128,8 @@ TSCCA <- function(W, C, k) {
 }
 
 
-Eigendocs <- function(r, k) {
-  W <- r$W
-  C <- r$C
-  D <- r$D
-  
-  tWC <- crossprod(W, C)
-  tWD <- crossprod(W, D)
-  tCD <- crossprod(C, D)
-  
-  p1 <- nrow(tWC)
-  p2 <- nrow(tCD)
-  p3 <- ncol(tWD)
-  p <- p1 + p2 + p3
-  
-  G.sqrt.inv <- 1/sqrt(2) * Diagonal(x = c(diag(crossprod(W))^(-1/2), diag(crossprod(C))^(-1/2), diag(crossprod(D))^(-1/2)))
-  H <- Matrix(0, p, p)
-  
-  H[1:p1, (p1+1):(p1+p2)] <- tWC
-  H[1:p1, (p1+p2+1):p] <- tWD
-  H[(p1+1):(p1+p2), (p1+p2+1):p] <- tCD
-  H <- H + t(H)
-  
-  S <- G.sqrt.inv %*% H %*% G.sqrt.inv
-  eigen.S <- eigen(S)
-  
-  word_vector <- eigen.S$vectors[1:p1, 1:k]
-  document_vector <- eigen.S$vectors[(p1+p2+1):p, 1:k]
-
-  return(list(word_vector = word_vector, document_vector = document_vector))
-}
-
-
 Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
-                       window.size = 2, mode = "oscca", use.eigen = TRUE, mode.eigendocs = FALSE) {
+                       window.size = 2, mode = "oscca", use.eigen = TRUE) {
   
   time.start <- Sys.time()
   
@@ -172,7 +140,6 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   lines.splited <- strsplit(lines, " ")
   sentence.str <- unlist(lines.splited)
-  document.id <- rep(seq(lines.splited), sapply(lines.splited, length)) - 1L
   rm(lines)
   rm(lines.splited)
   
@@ -189,7 +156,6 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   cat("\n\n")
   cat("Corpus             :", path.corpus, "\n")
   cat("Size of sentence   :", length(sentence), "\n")
-  cat("# of documents     :", max(document.id), "\n")
   cat("dim.internal       :", dim.internal, "\n")
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", n.vocab, "\n")
@@ -207,30 +173,98 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
     print(object.size(r$W), unit = "MB")
     cat("Size of C :")
     print(object.size(r$C), unit = "MB")
-    cat("Size of D :")
-    print(object.size(r$D), unit = "MB")
-    
     
     ## Execute CCA
-    if (mode.eigendocs) {
-      cat("Calculate Eigendocs...\n\n")
-      results.redsvd <- Eigendocs(r, dim.internal)
-    } else {
-      if (mode == "oscca") { # One-step CCA
-        cat("Calculate OSCCA...\n\n")
-        results.redsvd <- OSCCA(r$W, r$C, dim.internal)
-        
-      } else if (mode == "tscca") { # Two-Step CCA
-        cat("Calculate TSCCA...\n\n")
-        results.redsvd <- TSCCA(r$W, r$C, dim.internal)
-      }
-    }    
+    if (mode == "oscca") { # One-step CCA
+      cat("Calculate OSCCA...\n\n")
+      results.redsvd <- OSCCA(r$W, r$C, dim.internal)
+      
+    } else if (mode == "tscca") { # Two-Step CCA
+      cat("Calculate TSCCA...\n\n")
+      results.redsvd <- TSCCA(r$W, r$C, dim.internal)
+    }
   }
   
   return.list <- list()
   return.list$svd <- results.redsvd
   return.list$vocab.words <- c("<OOV>", vocab.words)
   
+  diff.time <- Sys.time() - time.start
+  print(diff.time)
+  
+  return(return.list)
+}
+
+
+Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
+                      window.size = 2, mode = "oscca", use.eigen = TRUE) {
+  
+  time.start <- Sys.time()
+  
+  ## Making train data
+  f <- file(path.corpus, "r")
+  lines <- readLines(con = f, -1)
+  close(f)
+  
+  lines.splited <- strsplit(lines, " ")
+  sentence.str <- unlist(lines.splited)
+  document.id <- rep(seq(lines.splited), sapply(lines.splited, length)) - 1L
+  rm(lines)
+  
+  d.table <- table(sentence.str)
+  vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(max.vocabulary)])
+  sentence <- match(sentence.str, vocab.words, nomatch = 0)  # Fill zero for out-of-vocabulary words
+  rm(sentence.str)
+  n.vocab <- max.vocabulary + 1  # For out-of-vocabulary word, +1
+  
+  cat("\n\n")
+  cat("Corpus             :", path.corpus, "\n")
+  cat("Size of sentence   :", length(sentence), "\n")
+  cat("# of documents     :", max(document.id), "\n")
+  cat("dim.internal       :", dim.internal, "\n")
+  cat("window.size        :", window.size, "\n")
+  cat("Size of vocab      :", n.vocab, "\n")
+  cat("mode               :", mode, "\n\n")
+  
+  cat("Calculate Eigendocs...\n\n")
+  
+  r <- make.matrices(sentence, document.id, window.size)
+
+  cat("Size of W :")
+  print(object.size(r$W), unit = "MB")
+  cat("Size of C :")
+  print(object.size(r$C), unit = "MB")
+  cat("Size of D :")
+  print(object.size(r$D), unit = "MB")
+  
+  tWC <- crossprod(r$W, r$C)
+  tWD <- crossprod(r$W, r$D)
+  tCD <- crossprod(r$C, r$D)
+  
+  p1 <- nrow(tWC)
+  p2 <- nrow(tCD)
+  p3 <- ncol(tWD)
+  p <- p1 + p2 + p3
+  
+  G.sqrt.inv <- 1/sqrt(2) * Diagonal(x = c(diag(crossprod(r$W))^(-1/2), diag(crossprod(r$C))^(-1/2), diag(crossprod(r$D))^(-1/2)))
+  H <- Matrix(0, p, p)
+  
+  H[1:p1, (p1+1):(p1+p2)] <- tWC
+  H[1:p1, (p1+p2+1):p] <- tWD
+  H[(p1+1):(p1+p2), (p1+p2+1):p] <- tCD
+  H <- H + t(H)
+  
+  S <- G.sqrt.inv %*% H %*% G.sqrt.inv
+  eigen.S <- eigen(S)
+  
+  word_vector <- eigen.S$vectors[1:p1, 1:dim.internal]
+  document_vector <- eigen.S$vectors[(p1+p2+1):p, 1:dim.internal]
+  
+  return.list <- list()
+  return.list$svd <- list(word_vector = word_vector, document_vector = document_vector)
+  return.list$vocab.words <- c("<OOV>", vocab.words)
+  return.list$document_id <- seq(nrow(document_vector))
+
   diff.time <- Sys.time() - time.start
   print(diff.time)
   
