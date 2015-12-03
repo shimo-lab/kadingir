@@ -55,24 +55,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   const unsigned long long lr_col_size = (unsigned long long)window_size*(unsigned long long)vocab_size;
   const unsigned long long c_col_size = 2*lr_col_size;
   
-  iSparseMatrix tWC(vocab_size, c_col_size), tWC_temp(vocab_size, c_col_size);
-  iSparseMatrix tLL(lr_col_size, lr_col_size), tLL_temp(lr_col_size, lr_col_size);
-  iSparseMatrix tLR(lr_col_size, lr_col_size), tLR_temp(lr_col_size, lr_col_size);
-  iSparseMatrix tRR(lr_col_size, lr_col_size), tRR_temp(lr_col_size, lr_col_size);
-  MatrixXreal phi_l, phi_r;
-  
-  Eigen::VectorXi tWW_diag(vocab_size);
-  Eigen::VectorXi tCC_diag(c_col_size);
-  tWW_diag.setZero();
-  tCC_diag.setZero();
-  
-  std::vector<Triplet> tWC_tripletList, tLL_tripletList, tLR_tripletList, tRR_tripletList;
-  tWC_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tLL_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tLR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tRR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  
-  
+
   std::cout << "mode          = ";
   if (mode_oscca) {
     std::cout << "OSCCA" << std::endl;
@@ -89,9 +72,27 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
   int offsets[2*window_size];
   fill_offset_table(offsets, window_size);
-    
+  
+  
   // Construct crossprod matrices
   unsigned long long n_pushed_triplets = 0;
+  
+  Eigen::VectorXi tWW_diag(vocab_size);
+  Eigen::VectorXi tCC_diag(c_col_size);
+  tWW_diag.setZero();
+  tCC_diag.setZero();
+  
+  std::vector<Triplet> tWC_tripletList, tLL_tripletList, tLR_tripletList, tRR_tripletList;
+  tWC_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tLL_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tLR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tRR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  
+  iSparseMatrix tWC(vocab_size, c_col_size), tWC_temp(vocab_size, c_col_size);
+  iSparseMatrix tLL(lr_col_size, lr_col_size), tLL_temp(lr_col_size, lr_col_size);
+  iSparseMatrix tLR(lr_col_size, lr_col_size), tLR_temp(lr_col_size, lr_col_size);
+  iSparseMatrix tRR(lr_col_size, lr_col_size), tRR_temp(lr_col_size, lr_col_size);
+
 
   for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
     unsigned long long i = sentence[i_sentence];
@@ -132,7 +133,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
           } else if (!word1_in_left_context && !word2_in_left_context && is_upper_triangular) {
             // (word1, word2) is an element of upper-triangular part of tRR
             tRR_tripletList.push_back(Triplet(word1 - lr_col_size, word2 - lr_col_size, 1));
-          }  
+          }
         }
       }
       
@@ -219,7 +220,8 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdB(b, k, 20);
     b.resize(0, 0);  // Release memory
-
+    
+    MatrixXreal phi_l, phi_r;
     phi_l = svdB.matrixU();
     phi_r = svdB.matrixV();
     
