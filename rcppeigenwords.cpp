@@ -63,11 +63,11 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   } else {
     std::cout << "TSCCA" << std::endl;
   }
-  std::cout << "window size   = " << window_size   << std::endl;
-  std::cout << "vocab size    = " << vocab_size    << std::endl;
-  std::cout << "dim of output = " << k             << std::endl;
-  std::cout << "sentence size = " << sentence_size << std::endl;
-  std::cout << "c_col_size    = " << c_col_size    << std::endl;
+  std::cout << "window size   = " << window_size     << std::endl;
+  std::cout << "vocab size    = " << vocab_size      << std::endl;
+  std::cout << "dim of output = " << k               << std::endl;
+  std::cout << "sentence size = " << sentence.size() << std::endl;
+  std::cout << "c_col_size    = " << c_col_size      << std::endl;
   std::cout << std::endl;
   
   // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
