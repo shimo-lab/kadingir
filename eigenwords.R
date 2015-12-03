@@ -128,6 +128,38 @@ TSCCA <- function(W, C, k) {
 }
 
 
+Eigendocs <- function(r, k) {
+  W <- r$W
+  C <- r$C
+  D <- r$D
+  
+  tWC <- crossprod(W, C)
+  tWD <- crossprod(W, D)
+  tCD <- crossprod(C, D)
+  
+  p1 <- nrow(tWC)
+  p2 <- nrow(tCD)
+  p3 <- ncol(tWD)
+  p <- p1 + p2 + p3
+  
+  G.sqrt.inv <- Diagonal(x = c(diag(crossprod(W))^(-1/2), diag(crossprod(C))^(-1/2), diag(crossprod(D))^(-1/2)))
+  H <- Matrix(0, p, p)
+  
+  H[1:p1, (p1+1):(p1+p2)] <- tWC
+  H[1:p1, (p1+p2+1):p] <- tWD
+  H[(p1+1):(p1+p2), (p1+p2+1):p] <- tCD
+  H <- H + t(H)
+  
+  S <- G.sqrt.inv %*% H %*% G.sqrt.inv
+  eigen.S <- eigen(S)
+  
+  word_vector <- eigen.S$vectors[1:p1, 1:k]
+  document_vector <- eigen.S$vectors[(p1+p2+1):p, 1:k]
+
+  return(list(word_vector = word_vector, document_vector = document_vector))
+}
+
+
 Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
                        window.size = 2, mode = "oscca", use.eigen = TRUE, mode.eigendocs = FALSE) {
   
