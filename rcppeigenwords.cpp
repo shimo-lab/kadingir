@@ -47,54 +47,37 @@ void fill_offset_table (int offsets[], int window_size)
   }
 }
 
-
-// [[Rcpp::export]]
-Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
-                            const int vocab_size, const int k, const bool mode_oscca)
-{  
+void construct_crossprod_matrices (const MapVectorXi& sentence,
+                                   Eigen::VectorXi &tWW_diag, Eigen::VectorXi &tCC_diag,
+                                   iSparseMatrix &tWC, iSparseMatrix &tLL,
+                                   iSparseMatrix &tLR, iSparseMatrix &tRR,
+                                   const int window_size, const int vocab_size,
+                                   const bool mode_oscca)
+{
+  const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
+  const unsigned long long c_col_size = 2 * lr_col_size;
   const unsigned long long sentence_size = sentence.size();
-  const unsigned long long lr_col_size = (unsigned long long)window_size*(unsigned long long)vocab_size;
-  const unsigned long long c_col_size = 2*lr_col_size;
-  
-
-  std::cout << "mode          = ";
-  if (mode_oscca) {
-    std::cout << "OSCCA" << std::endl;
-  } else {
-    std::cout << "TSCCA" << std::endl;
-  }
-  std::cout << "window size   = " << window_size     << std::endl;
-  std::cout << "vocab size    = " << vocab_size      << std::endl;
-  std::cout << "dim of output = " << k               << std::endl;
-  std::cout << "sentence size = " << sentence.size() << std::endl;
-  std::cout << "c_col_size    = " << c_col_size      << std::endl;
-  std::cout << std::endl;
-  
-  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
-  int offsets[2*window_size];
-  fill_offset_table(offsets, window_size);
-  
-  
-  // Construct crossprod matrices
   unsigned long long n_pushed_triplets = 0;
-  
-  Eigen::VectorXi tWW_diag(vocab_size);
-  Eigen::VectorXi tCC_diag(c_col_size);
-  tWW_diag.setZero();
-  tCC_diag.setZero();
-  
+
   std::vector<Triplet> tWC_tripletList, tLL_tripletList, tLR_tripletList, tRR_tripletList;
   tWC_tripletList.reserve(TRIPLET_VECTOR_SIZE);
   tLL_tripletList.reserve(TRIPLET_VECTOR_SIZE);
   tLR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
   tRR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+
+  iSparseMatrix tWC_temp(vocab_size, c_col_size);
+  iSparseMatrix tLL_temp(lr_col_size, lr_col_size);
+  iSparseMatrix tLR_temp(lr_col_size, lr_col_size);
+  iSparseMatrix tRR_temp(lr_col_size, lr_col_size);
+
+  tWW_diag.setZero();
+  tCC_diag.setZero();
+
+  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
+  int offsets[2*window_size];
+  fill_offset_table(offsets, window_size);
   
-  iSparseMatrix tWC(vocab_size, c_col_size), tWC_temp(vocab_size, c_col_size);
-  iSparseMatrix tLL(lr_col_size, lr_col_size), tLL_temp(lr_col_size, lr_col_size);
-  iSparseMatrix tLR(lr_col_size, lr_col_size), tLR_temp(lr_col_size, lr_col_size);
-  iSparseMatrix tRR(lr_col_size, lr_col_size), tRR_temp(lr_col_size, lr_col_size);
-
-
+  
   for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
     unsigned long long i = sentence[i_sentence];
     tWW_diag(i) += 1;
@@ -168,8 +151,44 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
   std::cout << "tLR,  " << tLR.nonZeros() << ",  " << tLR.rows() << ",  " << tLR.cols() << std::endl;
   std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
   std::cout << std::endl;
+}
 
 
+// [[Rcpp::export]]
+Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
+                            const int vocab_size, const int k, const bool mode_oscca)
+{
+  const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
+  const unsigned long long c_col_size = 2 * lr_col_size;
+  
+  std::cout << "mode          = ";
+  if (mode_oscca) {
+    std::cout << "OSCCA" << std::endl;
+  } else {
+    std::cout << "TSCCA" << std::endl;
+  }
+  std::cout << "window size   = " << window_size     << std::endl;
+  std::cout << "vocab size    = " << vocab_size      << std::endl;
+  std::cout << "dim of output = " << k               << std::endl;
+  std::cout << "sentence size = " << sentence.size() << std::endl;
+  std::cout << "c_col_size    = " << c_col_size      << std::endl;
+  std::cout << std::endl;
+  
+  
+  // Construct crossprod matrices
+  Eigen::VectorXi tWW_diag(vocab_size);
+  Eigen::VectorXi tCC_diag(c_col_size);
+  iSparseMatrix tWC(vocab_size, c_col_size);
+  iSparseMatrix tLL(lr_col_size, lr_col_size);
+  iSparseMatrix tLR(lr_col_size, lr_col_size);
+  iSparseMatrix tRR(lr_col_size, lr_col_size);
+
+  construct_crossprod_matrices(sentence, tWW_diag, tCC_diag,
+                               tWC, tLL, tLR, tRR,
+                               window_size, vocab_size, mode_oscca);
+
+
+  // Construct the matrices for CCA and execute CCA
   VectorXreal tWW_h(tWW_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   VectorXreal tCC_h(tCC_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   realSparseMatrix tWW_h_diag(tWW_h.size(), tWW_h.size());
@@ -184,8 +203,6 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     }
   }
 
-
-  // Construct the matrices for CCA and execute CCA
   if (mode_oscca) {
     // Execute One Step CCA
     std::cout << "Calculate OSCCA..." << std::endl;
