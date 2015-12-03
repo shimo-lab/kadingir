@@ -11,21 +11,26 @@ library(doParallel)
 sourceCpp("rcppeigenwords.cpp", rebuild = TRUE, verbose = TRUE)
 
 
-make.matrices <- function(sentence, window.size) {
+make.matrices <- function(sentence, document.id, window.size) {
 
   sentence <- sentence + 1L  # To make min(sentence) == 1 for R indexing
-
+  document.id <- document.id + 1L  # To make min(document.id) == 1 for R indexing
+  
   n.train.words <- length(sentence)
   n.vocab <- max(sentence)
   
   ## Construction of W
-  indices <- cbind(seq(sentence), sentence)
+  indices <- cbind(seq(sentence), sentence, document.id)
   indices <- indices[indices[ , 2] > 0, ]
 
   W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
                     x = rep(1, times = nrow(indices)),
                     dims = c(n.train.words, n.vocab))
 
+  D <- sparseMatrix(i = indices[ , 1], j = indices[ , 3],
+                    x = rep(1, times = nrow(indices)),
+                    dims = c(n.train.words, max(document.id)))
+  
   ## Construction of C
   offsets <- c(-window.size:-1, 1:window.size)
   C <- Matrix(F, nrow = n.train.words, ncol = 0)
@@ -44,7 +49,7 @@ make.matrices <- function(sentence, window.size) {
     C <- cbind2(C, C.temp)
   }
 
-  return(list(W = W, C = C))
+  return(list(W = W, C = C, D = D))
 }
 
 TruncatedSVD <- function(A, k, sparse) {
@@ -137,7 +142,7 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   lines.splited <- strsplit(lines, " ")
   sentence.str <- unlist(lines.splited)
-  document.id <- rep(seq(lines.splited), sapply(lines.splited, length))
+  document.id <- rep(seq(lines.splited), sapply(lines.splited, length)) - 1L
   rm(lines)
   rm(lines.splited)
   
@@ -147,13 +152,14 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   d.table <- table(sentence.str)
   vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(max.vocabulary)])
-  sentence <- match(sentence.str, vocab.words, nomatch = 0)
+  sentence <- match(sentence.str, vocab.words, nomatch = 0)  # Fill zero for out-of-vocabulary words
   rm(sentence.str)
   n.vocab <- max.vocabulary + 1  # For out-of-vocabulary word, +1
   
   cat("\n\n")
   cat("Corpus             :", path.corpus, "\n")
   cat("Size of sentence   :", length(sentence), "\n")
+  cat("# of documents     :", max(document.id), "\n")
   cat("dim.internal       :", dim.internal, "\n")
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", n.vocab, "\n")
@@ -165,12 +171,14 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
     results.redsvd <- EigenwordsRedSVD(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
     
   } else {
-    r <- make.matrices(sentence, window.size)
+    r <- make.matrices(sentence, document.id, window.size)
 
     cat("Size of W :")
     print(object.size(r$W), unit = "GB")
     cat("Size of C :")
     print(object.size(r$C), unit = "GB")
+    cat("Size of D :")
+    print(object.size(r$D), unit = "GB")
     
     ## Execute CCA
     if (mode == "oscca") { # One-step CCA
