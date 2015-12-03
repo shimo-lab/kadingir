@@ -209,7 +209,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     realSparseMatrix tCC_h_diag(c_col_size, c_col_size);
     construct_h_diag_matrix(tCC_diag, tCC_h_diag);
     
-    realSparseMatrix a(tWW_h_diag * (tWC.cast <real> ().eval().cwiseSqrt()) * tCC_h_diag);
+    realSparseMatrix a = tWW_h_diag * (tWC.cast <real> ().eval().cwiseSqrt()) * tCC_h_diag;
    
     std::cout << "Calculate Randomized SVD..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
@@ -236,7 +236,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     
     construct_h_diag_matrix(tLL_diag, tLL_h_diag);
     construct_h_diag_matrix(tRR_diag, tRR_h_diag);
-    realSparseMatrix b(tLL_h_diag * (tLR.cast <real> ().eval().cwiseSqrt()) * tRR_h_diag);
+    realSparseMatrix b = tLL_h_diag * (tLR.cast <real> ().eval().cwiseSqrt()) * tRR_h_diag;
     
     std::cout << "# of nonzero,  # of rows,  # of cols = " << b.nonZeros() << ",  " << b.rows() << ",  " << b.cols() << std::endl;
     
@@ -244,19 +244,18 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     RedSVD::RedSVD<realSparseMatrix> svdB(b, k, 20);
     b.resize(0, 0);  // Release memory
     
-    MatrixXreal phi_l, phi_r;
-    phi_l = svdB.matrixU();
-    phi_r = svdB.matrixV();
+    MatrixXreal phi_l = svdB.matrixU();
+    MatrixXreal phi_r = svdB.matrixV();
     
     // Two Step CCA : Step 2
-    VectorXreal tSS_h1((phi_l.transpose() * (tLL.cast <real> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt());
-    VectorXreal tSS_h2((phi_r.transpose() * (tRR.cast <real> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt());
+    VectorXreal tSS_h1 = (phi_l.transpose() * (tLL.cast <real> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt();
+    VectorXreal tSS_h2 = (phi_r.transpose() * (tRR.cast <real> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt();
     
     // Release memory
     tLL.resize(0, 0);
     tRR.resize(0, 0);
-    VectorXreal tSS_h(2*k);
     
+    VectorXreal tSS_h(2*k);
     tSS_h << tSS_h1, tSS_h2;
     realSparseMatrix tSS_h_diag(tSS_h.size(), tSS_h.size());
     for (int i = 0; i < tSS_h.size(); i++) {
@@ -266,7 +265,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
     MatrixXreal tWS(vocab_size, 2*k);
     tWS << tWC.topLeftCorner(vocab_size, lr_col_size).cast <real> ().cwiseSqrt() * phi_l, tWC.topRightCorner(vocab_size, lr_col_size).cast <real> ().cwiseSqrt() * phi_r;
 
-    MatrixXreal a(tWW_h_diag * tWS * tSS_h_diag);
+    MatrixXreal a = tWW_h_diag * tWS * tSS_h_diag;
     
     std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
     RedSVD::RedSVD<MatrixXreal> svdA(a, k, 20);
