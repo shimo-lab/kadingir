@@ -229,9 +229,9 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   cat("Calculate Eigendocs...\n\n")
   
   if (use.eigen) {
-    results.redsvd <- EigendocsRedSVD(as.integer(sentence), as.integer(document.id), window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
-    word_vector <- results.redsvd$word_vector
-    document_vector <- results.redsvd$document_vector
+    results.redsvd <- EigendocsRedSVD(as.integer(sentence), as.integer(document.id),
+                                      window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"),
+                                      1, 0)
     
   } else {
     r <- make.matrices(sentence, document.id, window.size)
@@ -262,15 +262,15 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
     
     S <- G.sqrt.inv %*% H %*% G.sqrt.inv
     eigen.S <- eigen(S)
-    
-    word_vector <- eigen.S$vectors[1:p1, 1:dim.internal]
-    document_vector <- eigen.S$vectors[(p1+p2+1):p, 1:dim.internal]
+
+    results.redsvd <- list(word_vector     = eigen.S$vectors[1:p1, 1:dim.internal],
+                           document_vector = eigen.S$vectors[(p1+p2+1):p, 1:dim.internal])
   }
   
   return.list <- list()
-  return.list$svd <- list(word_vector = word_vector, document_vector = document_vector)
+  return.list$svd <- results.redsvd
   return.list$vocab.words <- c("<OOV>", vocab.words)
-  return.list$document_id <- seq(nrow(document_vector))
+  return.list$document_id <- seq(nrow(results.redsvd$document_vector))
 
   diff.time <- Sys.time() - time.start
   print(diff.time)
