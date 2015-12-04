@@ -308,7 +308,7 @@ namespace RedSVD
 			compute(A, rank);
 		}  
 		
-		void compute(const DenseMatrix& A, const Index rank)
+                void compute(const MatrixType& A, const Index rank, const int l)
 		{
 			RedSVD<MatrixType> redsvd(A, rank);
 			
