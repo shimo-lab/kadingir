@@ -154,6 +154,71 @@ void construct_crossprod_matrices (const MapVectorXi& sentence,
 }
 
 
+void construct_crossprod_matrices_documents (const MapVectorXi& sentence, const MapVectorXi& document_id,
+                                             Eigen::VectorXi &tWW_diag, Eigen::VectorXi &tCC_diag,
+                                             Eigen::VectorXi &tDD_diag, iSparseMatrix &H,
+                                             const int window_size, const int vocab_size)
+{
+  const unsigned long long sentence_size = sentence.size();
+  const unsigned long long c_col_size = 2 * (unsigned long long)window_size * vocab_size;
+  const unsigned long long n_documents = document_id.maxCoeff() + 1;
+  const unsigned long long p_cumsum[4] = {1, vocab_size, vocab_size + c_col_size, vocab_size + c_col_size + n_documents};
+
+  unsigned long long n_pushed_triplets = 0;
+
+  std::vector<Triplet> H_tripletList;
+  H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+
+  iSparseMatrix H_temp(p_cumsum[3], p_cumsum[3]);
+
+  tWW_diag.setZero();
+  tCC_diag.setZero();
+  tDD_diag.setZero();
+
+  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
+  int offsets[2*window_size];
+  fill_offset_table(offsets, window_size);
+    
+  for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
+    unsigned long long w_id = sentence[i_sentence];
+    unsigned long long d_id = document_id[i_sentence];
+
+    tWW_diag(w_id) += 1;
+    tDD_diag(d_id) += 1;
+    H_tripletList.push_back(Triplet(p_cumsum[0] + w_id - 1,  p_cumsum[2] + d_id - 1,  1));  // Element of tWD
+    
+    for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
+      long long i_word1 = i_sentence + offsets[i_offset1];
+      
+      // If `i_word1` is out of indices of sentence
+      if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
+      
+      unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
+
+      tCC_diag(word1) += 1;
+
+      H_tripletList.push_back(Triplet(p_cumsum[0] + w_id  - 1, p_cumsum[1] + word1 - 1, 1));  // Element of tWC
+      H_tripletList.push_back(Triplet(p_cumsum[1] + word1 - 1, p_cumsum[2] + d_id  - 1, 1));  // Element of tCD
+    }
+    
+    n_pushed_triplets += 2*window_size + 1;
+    
+    // Commit temporary matrices
+    if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
+      update_crossprod_matrix(H_tripletList, H_temp, H);
+
+      n_pushed_triplets = 0;
+    }
+  }
+
+  H.makeCompressed();
+
+  std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
+  std::cout << "H,  " << H.nonZeros() << ",  " << H.rows() << ",  " << H.cols() << std::endl;
+  std::cout << std::endl;
+}
+
+
 void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h_diag)
 {
   VectorXreal tXX_h(tXX_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
@@ -272,65 +337,51 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
 
 // [[Rcpp::export]]
 Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence, const MapVectorXi& document_id, const int window_size,
-                            const int vocab_size, const int k, const bool mode_oscca)
+                           const int vocab_size, const int k, const bool mode_oscca,
+                           const real gamma_G, const real gamma_H)
 {
+  const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
   const unsigned long long c_col_size = 2 * lr_col_size;
-  const unsigned long long n_documents = document_id.maxCoeff();
+  const unsigned long long n_documents = document_id.maxCoeff() + 1;
+  const unsigned long long p[4] = {0, vocab_size, c_col_size, n_documents};
+  const unsigned long long p_cumsum[4] = {1, vocab_size, vocab_size + c_col_size, vocab_size + c_col_size + n_documents};
+  const unsigned long long p_sum = vocab_size + c_col_size + n_documents;
 
-  
+
   // Construct crossprod matrices
   Eigen::VectorXi tWW_diag(vocab_size);
   Eigen::VectorXi tCC_diag(c_col_size);
   Eigen::VectorXi tDD_diag(n_documents);
-  iSparseMatrix tWC(vocab_size, c_col_size);
-  iSparseMatrix tWD(vocab_size, n_ducuments);
-  iSparseMatrix tCD(c_col_size, n_documents);
-  iSparseMatrix tLL(lr_col_size, lr_col_size);
-  iSparseMatrix tLR(lr_col_size, lr_col_size);
-  iSparseMatrix tRR(lr_col_size, lr_col_size);
+  iSparseMatrix H(p_sum, p_sum);
 
-  construct_crossprod_matrices(sentence, tWW_diag, tCC_diag,
-                               tWC, tLL, tLR, tRR,
-                               window_size, vocab_size, mode_oscca);
+  construct_crossprod_matrices_documents (sentence, document_id,
+                                          tWW_diag, tCC_diag, tDD_diag, H,
+                                          window_size, vocab_size);
 
 
   // Construct the matrices for CCA and execute CCA
-  realSparseMatrix tWW_h_diag(vocab_size, vocab_size);
-  construct_h_diag_matrix(tWW_diag, tWW_h_diag);
-  realSparseMatrix tDD_h_diag(n_documents, n_documents);
-  construct_h_diag_matrix(tDD_diag, tDD_h_diag);
-  
-  // Execute One Step CCA
   std::cout << "Calculate OSCCA..." << std::endl;
   
-  realSparseMatrix tCC_h_diag(c_col_size, c_col_size);
-  construct_h_diag_matrix(tCC_diag, tCC_h_diag);
-  
-  const int p[4] = {0, vocab_size, vocab_size + c_col_size, vocab_size + c_col_size + n_documents};
-  
-  realSparseMatrix G_inv_sqrt(p[3], p[3]);
-  G_inv_sqrt.block(p[0], p[0], p[1], p[1]) = 1/sqrt(2) * tWW_h_diag;
-  G_inv_sqrt.block(p[1], p[1], p[2], p[2]) = 1/sqrt(2) * tCC_h_diag;
-  G_inv_sqrt.block(p[2], p[2], p[3], p[3]) = 1/sqrt(2) * tDD_h_diag;
-  
-  // Fill only upper-triangular element and use selfadjointView
-  realSparseMatrix H(p[3], p[3]);
-  H.block(p[0], p[1], p[1], p[2]) = tWC.cast <real> ().eval().cwiseSqrt();
-  H.block(p[0], p[1], p[2], p[3]) = tWD.cast <real> ().eval().cwiseSqrt();
-  H.block(p[1], p[2], p[2], p[3]) = tCD.cast <real> ().eval().cwiseSqrt();
-    
-  realSparseMatrix a = G_inv_sqrt * H.selfadjointView<Eigen::Upper>() * G_inv_sqrt;
- 
+  Eigen::VectorXi G_diag(p_sum);
+  G_diag << tWW_diag, tCC_diag, tDD_diag;
+  G_diag += gamma_G * Eigen::VectorXi::Ones(p_sum);  // Regularization for G
+
+  realSparseMatrix G_inv_sqrt(p_sum, p_sum);
+  construct_h_diag_matrix(G_diag, G_inv_sqrt);
+  G_inv_sqrt /= sqrt(2);
+
+  realSparseMatrix H_reg(p_sum, p_sum);
+  H_reg.setIdentity();
+  H_reg *= gamma_H;
+
+  realSparseMatrix A = (G_inv_sqrt * ((H.cast <real> ().cwiseSqrt() + H_reg).selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
+
   std::cout << "Calculate Randomized SVD..." << std::endl;
-  RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
+  RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
+  MatrixXreal principal_components = svdA.matrixV();
+  MatrixXreal word_vector     = G_inv_sqrt.block(p_cumsum[0] - 1, p_cumsum[0] - 1, p[1], p[1]) * principal_components.block(p_cumsum[0] - 1, p_cumsum[0] - 1, p[1], k);
+  MatrixXreal document_vector = G_inv_sqrt.block(p_cumsum[2] - 1, p_cumsum[2] - 1, p[3], p[3]) * principal_components.block(p_cumsum[2] - 1, p_cumsum[0] - 1, p[2], k);
   
-  return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
-                            // Rcpp::Named("tWC") = Rcpp::wrap(tWC.cast <real> ()),
-                            // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
-                            // Rcpp::Named("tCC_h") = Rcpp::wrap(tCC_h),
-                            // Rcpp::Named("A") = Rcpp::wrap(a),
-                            // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-                            // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-                             Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues())
-                            );
+  return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(word_vector),
+                            Rcpp::Named("document_vector") = Rcpp::wrap(document_vector));
 }
