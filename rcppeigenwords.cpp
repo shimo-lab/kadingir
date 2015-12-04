@@ -268,3 +268,69 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
                               );
   }
 }
+
+
+// [[Rcpp::export]]
+Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence, const MapVectorXi& document_id, const int window_size,
+                            const int vocab_size, const int k, const bool mode_oscca)
+{
+  const unsigned long long c_col_size = 2 * lr_col_size;
+  const unsigned long long n_documents = document_id.maxCoeff();
+
+  
+  // Construct crossprod matrices
+  Eigen::VectorXi tWW_diag(vocab_size);
+  Eigen::VectorXi tCC_diag(c_col_size);
+  Eigen::VectorXi tDD_diag(n_documents);
+  iSparseMatrix tWC(vocab_size, c_col_size);
+  iSparseMatrix tWD(vocab_size, n_ducuments);
+  iSparseMatrix tCD(c_col_size, n_documents);
+  iSparseMatrix tLL(lr_col_size, lr_col_size);
+  iSparseMatrix tLR(lr_col_size, lr_col_size);
+  iSparseMatrix tRR(lr_col_size, lr_col_size);
+
+  construct_crossprod_matrices(sentence, tWW_diag, tCC_diag,
+                               tWC, tLL, tLR, tRR,
+                               window_size, vocab_size, mode_oscca);
+
+
+  // Construct the matrices for CCA and execute CCA
+  realSparseMatrix tWW_h_diag(vocab_size, vocab_size);
+  construct_h_diag_matrix(tWW_diag, tWW_h_diag);
+  realSparseMatrix tDD_h_diag(n_documents, n_documents);
+  construct_h_diag_matrix(tDD_diag, tDD_h_diag);
+  
+  // Execute One Step CCA
+  std::cout << "Calculate OSCCA..." << std::endl;
+  
+  realSparseMatrix tCC_h_diag(c_col_size, c_col_size);
+  construct_h_diag_matrix(tCC_diag, tCC_h_diag);
+  
+  const int p[4] = {0, vocab_size, vocab_size + c_col_size, vocab_size + c_col_size + n_documents};
+  
+  realSparseMatrix G_inv_sqrt(p[3], p[3]);
+  G_inv_sqrt.block(p[0], p[0], p[1], p[1]) = 1/sqrt(2) * tWW_h_diag;
+  G_inv_sqrt.block(p[1], p[1], p[2], p[2]) = 1/sqrt(2) * tCC_h_diag;
+  G_inv_sqrt.block(p[2], p[2], p[3], p[3]) = 1/sqrt(2) * tDD_h_diag;
+  
+  // Fill only upper-triangular element and use selfadjointView
+  realSparseMatrix H(p[3], p[3]);
+  H.block(p[0], p[1], p[1], p[2]) = tWC.cast <real> ().eval().cwiseSqrt();
+  H.block(p[0], p[1], p[2], p[3]) = tWD.cast <real> ().eval().cwiseSqrt();
+  H.block(p[1], p[2], p[2], p[3]) = tCD.cast <real> ().eval().cwiseSqrt();
+    
+  realSparseMatrix a = G_inv_sqrt * H.selfadjointView<Eigen::Upper>() * G_inv_sqrt;
+ 
+  std::cout << "Calculate Randomized SVD..." << std::endl;
+  RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
+  
+  return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
+                            // Rcpp::Named("tWC") = Rcpp::wrap(tWC.cast <real> ()),
+                            // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
+                            // Rcpp::Named("tCC_h") = Rcpp::wrap(tCC_h),
+                            // Rcpp::Named("A") = Rcpp::wrap(a),
+                            // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
+                            // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+                             Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues())
+                            );
+}
