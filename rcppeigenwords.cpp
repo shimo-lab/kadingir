@@ -381,7 +381,7 @@ Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence, const MapVectorXi& docum
   RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
   MatrixXreal principal_components = svdA.matrixV();
   MatrixXreal word_vector     = G_inv_sqrt.block(p_cumsum[0] - 1, p_cumsum[0] - 1, p[1], p[1]) * principal_components.block(p_cumsum[0] - 1, p_cumsum[0] - 1, p[1], k);
-  MatrixXreal document_vector = G_inv_sqrt.block(p_cumsum[2] - 1, p_cumsum[2] - 1, p[3], p[3]) * principal_components.block(p_cumsum[2] - 1, p_cumsum[0] - 1, p[2], k);
+  MatrixXreal document_vector = G_inv_sqrt.block(p_cumsum[2] - 1, p_cumsum[2] - 1, p[3], p[3]) * principal_components.block(p_cumsum[2] - 1, p_cumsum[0] - 1, p[3], k);
   
   return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(word_vector),
                             Rcpp::Named("document_vector") = Rcpp::wrap(document_vector));
