@@ -222,6 +222,7 @@ void construct_crossprod_matrices_documents (const MapVectorXi& sentence, const 
 void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h_diag)
 {
   VectorXreal tXX_h(tXX_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  tXX_h_diag.reserve(tXX_diag.size());
   
   for (int i = 0; i < tXX_h.size(); i++) {
     tXX_h_diag.insert(i, i) = tXX_h(i);
