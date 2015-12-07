@@ -79,8 +79,8 @@ void construct_crossprod_matrices (const MapVectorXi& sentence,
   
   
   for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
-    unsigned long long i = sentence[i_sentence];
-    tWW_diag(i) += 1;
+    unsigned long long word0 = sentence[i_sentence];
+    tWW_diag(word0) += 1;
     
     for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
       long long i_word1 = i_sentence + offsets[i_offset1];
@@ -121,7 +121,7 @@ void construct_crossprod_matrices (const MapVectorXi& sentence,
         }
       }
       
-      tWC_tripletList.push_back(Triplet(i, word1, 1));
+      tWC_tripletList.push_back(Triplet(word0, word1, 1));
     }
     
     n_pushed_triplets++;
@@ -180,12 +180,12 @@ void construct_crossprod_matrices_documents (const MapVectorXi& sentence, const 
   fill_offset_table(offsets, window_size);
     
   for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
-    unsigned long long w_id = sentence[i_sentence];
+    unsigned long long word0 = sentence[i_sentence];
     unsigned long long d_id = document_id[i_sentence];
 
-    tWW_diag(w_id) += 1;
+    tWW_diag(word0) += 1;
     tDD_diag(d_id) += 1;
-    H_tripletList.push_back(Triplet(p_cumsum[0] + w_id - 1,  p_cumsum[2] + d_id - 1,  1));  // Element of tWD
+    H_tripletList.push_back(Triplet(p_cumsum[0] + word0 - 1,  p_cumsum[2] + d_id - 1,  1));  // Element of tWD
     
     for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
       long long i_word1 = i_sentence + offsets[i_offset1];
@@ -197,7 +197,7 @@ void construct_crossprod_matrices_documents (const MapVectorXi& sentence, const 
 
       tCC_diag(word1) += 1;
 
-      H_tripletList.push_back(Triplet(p_cumsum[0] + w_id  - 1, p_cumsum[1] + word1 - 1, 1));  // Element of tWC
+      H_tripletList.push_back(Triplet(p_cumsum[0] + word0 - 1, p_cumsum[1] + word1 - 1, 1));  // Element of tWC
       H_tripletList.push_back(Triplet(p_cumsum[1] + word1 - 1, p_cumsum[2] + d_id  - 1, 1));  // Element of tCD
     }
     
