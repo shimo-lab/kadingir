@@ -7,8 +7,8 @@ source("eigenwords.R")
 ## Tuning parameters
 n.vocabulary <- 100000 # 語彙に含める単語数
 dim.internal <- 200   # 共通空間の次元
-window.size <- 10      # 前後何個の単語をcontextとするか
-mode <- "tscca"
+window.size <- 4      # 前後何個の単語をcontextとするか
+mode <- "oscca"
 path.corpus <- "data/reuters/reuters_rcv1_text.csv"
 #path.corpus <- "data/text8"
 
