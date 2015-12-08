@@ -365,7 +365,6 @@ Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence, const MapVectorXi& docum
   
   Eigen::VectorXi G_diag(p_sum);
   G_diag << tWW_diag, tCC_diag, tDD_diag;
-  G_diag += gamma_G * Eigen::VectorXi::Ones(p_sum);  // Regularization for G
 
   realSparseMatrix G_inv_sqrt(p_sum, p_sum);
   construct_h_diag_matrix(G_diag, G_inv_sqrt);
