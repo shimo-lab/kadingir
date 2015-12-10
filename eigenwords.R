@@ -148,10 +148,14 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   }
   
   d.table <- table(sentence.str)
-  vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(max.vocabulary)])
+  d.table.sorted <- sort(d.table, decreasing = TRUE)
+  vocab.words <- names(d.table.sorted[seq(max.vocabulary)])
   sentence <- match(sentence.str, vocab.words, nomatch = 0)  # Fill zero for out-of-vocabulary words
   rm(sentence.str)
   n.vocab <- max.vocabulary + 1  # For out-of-vocabulary word, +1
+  
+  plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
+  abline(v = max.vocabulary)
   
   cat("\n\n")
   cat("Corpus             :", path.corpus, "\n")
@@ -208,13 +212,23 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   lines.splited <- strsplit(lines, " ")
   sentence.str <- unlist(lines.splited)
-  document.id <- rep(seq(lines.splited), sapply(lines.splited, length)) - 1L
+  lines.splited.lengths <- sapply(lines.splited, length)
+  document.id <- rep(seq(lines.splited), lines.splited.lengths) - 1L
+  
+  hist(lines.splited.lengths, breaks = 100)
   rm(lines)
   
   d.table <- table(sentence.str)
-  vocab.words <- names(sort(d.table, decreasing = TRUE)[seq(max.vocabulary)])
+  d.table.sorted <- sort(d.table, decreasing = TRUE)
+  vocab.words <- names(d.table.sorted[seq(max.vocabulary)])
   sentence <- match(sentence.str, vocab.words, nomatch = 0)  # Fill zero for out-of-vocabulary words
   rm(sentence.str)
+  
+  plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
+  abline(v = max.vocabulary)
+  rm(d.table)
+  rm(d.table.sorted)
+  
   n.vocab <- max.vocabulary + 1  # For out-of-vocabulary word, +1
   
   cat("\n\n")
