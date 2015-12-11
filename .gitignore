@@ -8,3 +8,5 @@ data
 output_*.csv
 *.pdf
 *.html
+figure/
+experiment_*.md
