@@ -16,7 +16,7 @@ print(date())
 ```{r, include = FALSE}
 set.seed(0)
 
-source("eigenwords.R")
+source("./../eigenwords.R", chdir=TRUE)
 
 
 ## Tuning parameters
@@ -49,7 +49,7 @@ TestGoogleTasks(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words, n.core
 ## Sentiment analysis using IMDb dataset 1 : unregularized
 ```{r}
 vectors <- res.eigendocs$svd$document_vector
-csv <- read.csv("~/workspace/wordvector/eigendocs-imdb/imdb_id_rate.csv")
+csv <- read.csv("/home/oshikiri/workspace/wordvector/eigendocs-imdb/imdb_id_rate.csv")
 
 df <- data.frame(cbind(csv, vectors))
 df <- df[df[ , "rate"] != 0, ]  # Remove unsup
