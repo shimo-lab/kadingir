@@ -16,13 +16,13 @@ path.corpus <- "data/reuters/reuters_rcv1_text100000.csv"
 res.eigendocs <- Eigendocs(path.corpus, n.vocabulary, dim.internal, window.size, mode = mode)
 save(res.eigendocs, file = "res_eigendocs.Rdata")
 
-## Check vector representations
-id <- res.eigendocs$document_id
-MostSimilar(res.eigendocs$svd$document_vector, id,
-            positive=c(id[103]), distance = "cosine", topn = 3)
+## Check vector representations of documents
+document.id <- 999
+infos <- read.csv("data/reuters/reuters_rcv1_infos.csv")
+MostSimilarDocs(document.id, res.eigendocs$svd$document_vector, titles = infos$title)
 
 
-## Check vector representations
+## Check vector representations of words
 MostSimilar(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words,
             positive=c("man"), distance = "cosine")
 MostSimilar(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words,

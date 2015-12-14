@@ -351,6 +351,21 @@ MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
 }
 
 
+MostSimilarDocs <- function (document.id, document_vector, titles, topn = 10) {
+  
+  cat("QUERY :\t\t", as.character(titles[document.id]), "\n\n")
+  
+  rownames(document_vector) <- titles
+  document_vector <- document_vector/sqrt(rowSums(document_vector**2))
+  similarities <- drop(document_vector %*% document_vector[document.id, ])
+  
+  most_similar <- similarities[order(similarities, decreasing = TRUE)[2:(topn+1)]]
+  for (i in seq(most_similar)) {
+    cat(most_similar[i], "\t", names(most_similar)[i], "\n")
+  }
+}
+
+
 TestGoogleTasks <- function (U, vocab, path = "test/questions-words.txt", n.cores = 1) {
   
   time.start <- Sys.time()
