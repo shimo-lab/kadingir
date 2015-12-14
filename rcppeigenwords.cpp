@@ -157,7 +157,8 @@ void construct_crossprod_matrices (const MapVectorXi& sentence,
 void construct_crossprod_matrices_documents (const MapVectorXi& sentence, const MapVectorXi& document_id,
                                              Eigen::VectorXi &tWW_diag, Eigen::VectorXi &tCC_diag,
                                              Eigen::VectorXi &tDD_diag, iSparseMatrix &H,
-                                             const int window_size, const int vocab_size)
+                                             const int window_size, const int vocab_size,
+                                             const bool link_w_d, const bool link_c_d)
 {
   const unsigned long long sentence_size = sentence.size();
   const unsigned long long c_col_size = 2 * (unsigned long long)window_size * vocab_size;
@@ -185,7 +186,10 @@ void construct_crossprod_matrices_documents (const MapVectorXi& sentence, const 
 
     tWW_diag(word0) += 1;
     tDD_diag(d_id) += 1;
-    H_tripletList.push_back(Triplet(p_cumsum[0] + word0 - 1,  p_cumsum[2] + d_id - 1,  1));  // Element of tWD
+    
+    if (link_w_d) {
+      H_tripletList.push_back(Triplet(p_cumsum[0] + word0 - 1,  p_cumsum[2] + d_id - 1,  1));  // Element of tWD
+    }
     
     for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
       long long i_word1 = i_sentence + offsets[i_offset1];
@@ -198,7 +202,9 @@ void construct_crossprod_matrices_documents (const MapVectorXi& sentence, const 
       tCC_diag(word1) += 1;
 
       H_tripletList.push_back(Triplet(p_cumsum[0] + word0 - 1, p_cumsum[1] + word1 - 1, 1));  // Element of tWC
-      H_tripletList.push_back(Triplet(p_cumsum[1] + word1 - 1, p_cumsum[2] + d_id  - 1, 1));  // Element of tCD
+      if (link_c_d) {
+        H_tripletList.push_back(Triplet(p_cumsum[1] + word1 - 1, p_cumsum[2] + d_id  - 1, 1));  // Element of tCD
+      }
     }
     
     n_pushed_triplets += 2*window_size + 1;
@@ -339,7 +345,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
 // [[Rcpp::export]]
 Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence, const MapVectorXi& document_id, const int window_size,
                            const int vocab_size, const int k, const bool mode_oscca,
-                           const real gamma_G, const real gamma_H)
+                           const real gamma_G, const real gamma_H, const bool link_w_d, const bool link_c_d)
 {
   const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
   const unsigned long long c_col_size = 2 * lr_col_size;
@@ -357,14 +363,21 @@ Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence, const MapVectorXi& docum
 
   construct_crossprod_matrices_documents (sentence, document_id,
                                           tWW_diag, tCC_diag, tDD_diag, H,
-                                          window_size, vocab_size);
+                                          window_size, vocab_size, link_w_d, link_c_d);
 
 
   // Construct the matrices for CCA and execute CCA
   std::cout << "Calculate OSCCA..." << std::endl;
   
   Eigen::VectorXi G_diag(p_sum);
-  G_diag << tWW_diag, tCC_diag, tDD_diag;
+  
+  if (link_w_d && link_c_d) {
+    G_diag << 2*tWW_diag, 2*tCC_diag, 2*tDD_diag;
+  } else if (!link_w_d) {
+    G_diag <<   tWW_diag, 2*tCC_diag,   tDD_diag;
+  } else {
+    G_diag << 2*tWW_diag,   tCC_diag,   tDD_diag;
+  }
 
   realSparseMatrix G_inv_sqrt(p_sum, p_sum);
   construct_h_diag_matrix(G_diag, G_inv_sqrt);

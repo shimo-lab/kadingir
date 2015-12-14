@@ -203,6 +203,9 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
                       window.size = 2, mode = "oscca", use.eigen = TRUE) {
   
+  link_w_d <- TRUE
+  link_c_d <- TRUE
+  
   time.start <- Sys.time()
   
   ## Making train data
@@ -238,6 +241,8 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   cat("dim.internal       :", dim.internal, "\n")
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", n.vocab, "\n")
+  cat("Link: W - D        :", link_w_d, "\n")
+  cat("Link: C - D        :", link_c_d, "\n")
   cat("mode               :", mode, "\n\n")
   
   cat("Calculate Eigendocs...\n\n")
@@ -245,7 +250,7 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   if (use.eigen) {
     results.redsvd <- EigendocsRedSVD(as.integer(sentence), as.integer(document.id),
                                       window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"),
-                                      1, 0)
+                                      gamma_G = 0, gamma_H = 0, link_w_d = link_w_d, link_c_d = link_c_d)
     
   } else {
     r <- make.matrices(sentence, document.id, window.size)
