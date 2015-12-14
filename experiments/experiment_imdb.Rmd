@@ -37,11 +37,14 @@ save(res.eigendocs, file = "res_eigendocs_imdb.Rdata")
 MostSimilar(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words,
             positive=c("man"), distance = "cosine")
 MostSimilar(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words,
-            positive=c("american"), distance = "cosine")
+            positive=c("American"), distance = "cosine")
 ```
 
 # Task
-## (For word vector) Test Google analogy tasks
+## Test Google analogy tasks
+
+一応，単語ベクトルの評価を行う．
+
 ```{r}
 TestGoogleTasks(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words, n.cores = 24)
 ```
@@ -59,7 +62,7 @@ df.test  <- df[df[ , "type"] == "test" , c(-1, -2, -3)]  # Test set
 
 
 glm.df.train <- glm(positive ~ ., data=df.train, family=binomial(link="logit"))
-summary(glm.df.train)
+glm.df.train$coefficients
 ```
 
 明らかに過学習してるっぽいのに，予測誤差が悪くならない
