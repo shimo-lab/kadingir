@@ -32,14 +32,7 @@ res.eigendocs <- Eigendocs(path.corpus, n.vocabulary, dim.internal, window.size,
 save(res.eigendocs, file = "res_eigendocs_imdb.Rdata")
 ```
 
-```{r}
-## Check vector representations
-id <- res.eigendocs$document_id
-MostSimilar(res.eigendocs$svd$document_vector, id,
-            positive=c(id[103]), distance = "cosine", topn = 3)
-```
-
-## Check vector representations
+## Check vector representations of words
 ```{r}
 MostSimilar(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words,
             positive=c("man"), distance = "cosine")
