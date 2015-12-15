@@ -1,4 +1,4 @@
-### Implementation of Eigenwords
+### Implementation of Eigenwords and its extensions
 
 library(Matrix)
 library(RRedsvd)
