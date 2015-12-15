@@ -8,7 +8,7 @@ library(RcppEigen)
 library(foreach)
 library(doParallel)
 
-sourceCpp("rcppeigenwords.cpp", rebuild = TRUE, verbose = TRUE)
+sourceCpp("kadingir_core.cpp", rebuild = TRUE, verbose = TRUE)
 
 
 make.matrices <- function(sentence, document.id, window.size) {
