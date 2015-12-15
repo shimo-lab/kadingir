@@ -16,7 +16,7 @@ print(date())
 ```{r, include = FALSE}
 set.seed(0)
 
-source("./../eigenwords.R", chdir=TRUE)
+source("./../kadingir.R", chdir=TRUE)
 
 
 ## Tuning parameters

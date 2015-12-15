@@ -1,7 +1,7 @@
 
 set.seed(0)
 
-source("eigenwords.R")
+source("kadingir.R")
 
 
 ## Tuning parameters
