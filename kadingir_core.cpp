@@ -1,5 +1,5 @@
 /*
- * rcppeigenwords.cpp
+ * kadingir_core.cpp
  *
  * memo :
  *  - sentence の要素で 0 となっている要素は <OOV> (Out of Vocabulary, vocabulary に入っていない単語) に対応する．
@@ -388,6 +388,76 @@ Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence, const MapVectorXi& docum
   H_reg *= gamma_H;
 
   realSparseMatrix A = (G_inv_sqrt * ((H.cast <real> ().cwiseSqrt() + H_reg).selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
+
+  std::cout << "Calculate Randomized SVD..." << std::endl;
+  RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
+  MatrixXreal principal_components = svdA.matrixV();
+  MatrixXreal word_vector     = G_inv_sqrt.block(p_cumsum[0] - 1, p_cumsum[0] - 1, p[1], p[1]) * principal_components.block(p_cumsum[0] - 1, p_cumsum[0] - 1, p[1], k);
+  MatrixXreal document_vector = G_inv_sqrt.block(p_cumsum[2] - 1, p_cumsum[2] - 1, p[3], p[3]) * principal_components.block(p_cumsum[2] - 1, p_cumsum[0] - 1, p[3], k);
+  
+  return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(word_vector),
+                            Rcpp::Named("document_vector") = Rcpp::wrap(document_vector));
+}
+
+
+// [[Rcpp::export]]
+Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated, const MapVectorXi& document_id_concated,
+                             const MapVectorXi& window_sizes, const MapVectorXi& vocab_sizes,
+                             const int k,
+                             const real gamma_G, const real gamma_H, const bool link_w_d, const bool link_c_d)
+{
+  
+  if (window_sizes.size() != vocab_sizes.size()) {
+    std::cout << "window_sizes.size() != vocab_sizes.size()" << std::endl;
+    return(-1);
+  }
+  const int n_languages = window_sizes.size();
+  
+  const unsigned long long lr_col_sizes[n_languages];
+  const unsigned long long  c_col_sizes[n_languages];
+  for (int i = 0; i < n_languages; i++) {
+    lr_col_sizes[i] = (unsigned long long)window_size(i) * vocab_size(i);
+    c_col_sizes[i] = 2 * lr_col_size[i];
+  }
+
+  const unsigned long long n_documents = max(document_id1.maxCoeff() + 1, document_id2.maxCoeff() + 1);
+  const unsigned long long p[4] = {0, vocab_size, c_col_size, n_documents};
+  const unsigned long long p_cumsum[4] = {1, vocab_size, vocab_size + c_col_size, vocab_size + c_col_size + n_documents};
+  const unsigned long long p_sum = vocab_size + c_col_size + n_documents;
+
+
+  // Construct crossprod matrices
+  Eigen::VectorXi tWW_diag(vocab_size);
+  Eigen::VectorXi tCC_diag(c_col_size);
+  Eigen::VectorXi tDD_diag(n_documents);
+  iSparseMatrix H(p_sum, p_sum);
+
+  construct_matrices_mceigendocs (sentence_concated, document_id_concated, G, H,
+                                  window_sizes, vocab_sizes, link_w_d, link_c_d);
+
+
+  // Construct the matrices for CCA and execute CCA
+  std::cout << "Calculate OSCCA..." << std::endl;
+  
+  Eigen::VectorXi G_diag(p_sum);
+  
+  if (link_w_d && link_c_d) {
+    G_diag << 2*tWW_diag, 2*tCC_diag, 2*tDD_diag;
+  } else if (!link_w_d) {
+    G_diag <<   tWW_diag, 2*tCC_diag,   tDD_diag;
+  } else {
+    G_diag << 2*tWW_diag,   tCC_diag,   tDD_diag;
+  }
+
+  realSparseMatrix G_inv_sqrt(p_sum, p_sum);
+  construct_h_diag_matrix(G_diag, G_inv_sqrt);
+  G_inv_sqrt /= sqrt(2);
+
+  realSparseMatrix H_reg(p_sum, p_sum);
+  H_reg.setIdentity();
+  H_reg *= gamma_H;
+
+  realSparseMatrix A = (G_inv_sqrt * (H.cast <real> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
 
   std::cout << "Calculate Randomized SVD..." << std::endl;
   RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
