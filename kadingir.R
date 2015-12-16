@@ -129,7 +129,7 @@ TSCCA <- function(W, C, k) {
 
 
 Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
-                       window.size = 2, mode = "oscca", use.eigen = TRUE) {
+                       window.size = 2, mode = "oscca", use.eigen = TRUE, plot = FALSE) {
   
   time.start <- Sys.time()
   
@@ -154,8 +154,10 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   rm(sentence.str)
   n.vocab <- max.vocabulary + 1  # For out-of-vocabulary word, +1
   
-  plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
-  abline(v = max.vocabulary)
+  if (plot) {
+    plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
+    abline(v = max.vocabulary)    
+  }
   
   cat("\n\n")
   cat("Corpus             :", path.corpus, "\n")
@@ -201,7 +203,7 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 
 
 Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
-                      window.size = 2, mode = "oscca", use.eigen = TRUE) {
+                      window.size = 2, mode = "oscca", use.eigen = TRUE, plot = FALSE) {
   
   link_w_d <- TRUE
   link_c_d <- TRUE
@@ -218,7 +220,9 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   lines.splited.lengths <- sapply(lines.splited, length)
   document.id <- rep(seq(lines.splited), lines.splited.lengths) - 1L
   
-  hist(lines.splited.lengths, breaks = 100)
+  if (plot) {
+    hist(lines.splited.lengths, breaks = 100)    
+  }
   rm(lines)
   
   d.table <- table(sentence.str)
@@ -227,8 +231,10 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   sentence <- match(sentence.str, vocab.words, nomatch = 0)  # Fill zero for out-of-vocabulary words
   rm(sentence.str)
   
-  plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
-  abline(v = max.vocabulary)
+  if (plot) {
+    plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
+    abline(v = max.vocabulary)    
+  }
   rm(d.table)
   rm(d.table.sorted)
   
@@ -284,6 +290,10 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 
     results.redsvd <- list(word_vector     = eigen.S$vectors[1:p1, 1:dim.internal],
                            document_vector = eigen.S$vectors[(p1+p2+1):p, 1:dim.internal])
+  }
+  
+  if (plot) {
+    plot(results.redsvd$singular_values, log = "y", main = "Singular Values")
   }
   
   return.list <- list()

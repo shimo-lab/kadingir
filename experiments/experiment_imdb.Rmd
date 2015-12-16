@@ -28,7 +28,7 @@ path.corpus <- "/home/oshikiri/workspace/wordvector/eigendocs-imdb/imdb_reviews.
 ```
 
 ```{r}
-res.eigendocs <- Eigendocs(path.corpus, n.vocabulary, dim.internal, window.size, mode = mode)
+res.eigendocs <- Eigendocs(path.corpus, n.vocabulary, dim.internal, window.size, mode = mode, plot = TRUE)
 save(res.eigendocs, file = "res_eigendocs_imdb.Rdata")
 ```
 
