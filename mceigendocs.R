@@ -1,15 +1,22 @@
+
+library(Rcpp)
+library(RcppEigen)
+
+sourceCpp("kadingir_core.cpp", rebuild = TRUE, verbose = TRUE)
+
 MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
-                        window.sizes = NULL, aliases = NULL) {
+                        window.sizes = NULL, aliases = NULL, plot = FALSE) {
   
   link_w_d <- TRUE
   link_c_d <- TRUE
   
   time.start <- Sys.time()
   
-  ## Making train data
+  ## Preprocess training data
   sentences <- list()
   n.vocab <- c()
   document.id <- list()
+  vocab.words <- list()
   
   for (i in seq(paths.corpus)) {
     path.corpus <- paths.corpus[i]
@@ -24,18 +31,24 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
     sentence.str <- unlist(lines.splited)
     lines.splited.lengths <- sapply(lines.splited, length)
     document.id[[i]] <- rep(seq(lines.splited), lines.splited.lengths) - 1L
+
+    if (plot) {
+      hist(lines.splited.lengths, breaks = 100)
+    }
     
-    hist(lines.splited.lengths, breaks = 100)
     rm(lines)
     
     d.table <- table(sentence.str)
     d.table.sorted <- sort(d.table, decreasing = TRUE)
-    vocab.words <- names(d.table.sorted[seq(max.vocabulary)])
-    sentences[[i]] <- match(sentence.str, vocab.words, nomatch = 0)  # Fill zero for out-of-vocabulary words
+    vocab.words[[i]] <- names(d.table.sorted[seq(max.vocabulary)])
+    sentences[[i]] <- match(sentence.str, vocab.words[[i]], nomatch = 0)  # Fill zero for out-of-vocabulary words
     rm(sentence.str)
+
+    if (plot) {
+      plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
+      abline(v = max.vocabulary)
+    }
     
-    #     plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
-    #     abline(v = max.vocabulary)
     rm(d.table)
     rm(d.table.sorted)
     
@@ -60,20 +73,30 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   
   cat("Calculate MCEigendocs...\n\n")
+    
+  corpus.concated <- as.integer(c(sentences[[1]], sentences[[2]]))
+  document.id.concated <- as.integer(c(document.id[[1]], document.id[[2]]))
+  window.sizes <- as.integer(window.sizes)
+  n.vocab <- as.integer(n.vocab)
+  sentence.lengths <- lengths(sentences)
+  n.languages <- length(paths.corpus)
   
-  browser()
-  
-  # とりあえず2言語で．n言語にするの難しそう...
-  results.redsvd <- MCEigendocsRedSVD(as.integer(sentences[1]), as.integer(document.id[1]), window.sizes[1], n.vocab[1],
-                                      as.integer(sentences[2]), as.integer(document.id[2]), window.sizes[2], n.vocab[2],
-                                      dim.internal,
-                                      gamma_G = 0, gamma_H = 0, link_w_d = link_w_d, link_c_d = link_c_d)
-  
+  results.redsvd <- MCEigendocsRedSVD(corpus.concated, document.id.concated,
+                                      window.sizes, n.vocab, sentence.lengths,
+                                      dim.internal, gamma_G = 0, gamma_H = 0,
+                                      link_w_d = link_w_d, link_c_d = link_c_d)
   
   return.list <- list()
   return.list$svd <- results.redsvd
-  return.list$vocab.words <- c("<OOV>", vocab.words)
+
+
+  return.list$vocab.words <- list()
+  for (i in seq(n.languages)) {
+    return.list$vocab.words <- c(return.list$vocab.words, list(c("<OOV>", vocab.words[[i]])))
+  }
+
   return.list$document_id <- seq(nrow(results.redsvd$document_vector))
+  return.list$n.domain <- length(sentence.lengths)
   
   diff.time <- Sys.time() - time.start
   print(diff.time)
