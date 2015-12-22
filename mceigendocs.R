@@ -14,7 +14,7 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   ## Preprocess training data
   sentences <- list()
-  n.vocab <- c()
+  vocab.sizes <- c()
   document.id <- list()
   vocab.words <- list()
   
@@ -52,7 +52,7 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
     rm(d.table)
     rm(d.table.sorted)
     
-    n.vocab[i] <- max.vocabulary + 1  # For out-of-vocabulary word, +1
+    vocab.sizes[i] <- max.vocabulary + 1  # For out-of-vocabulary word, +1
   }
   
   cat("\n\n")
@@ -68,7 +68,7 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
     cat("Size of sentence   :", length(sentences[[i]]), "\n")
     cat("# of documents     :", max(document.id[[i]]), "\n")
     cat("window.size        :", window.sizes[i], "\n")
-    cat("Size of vocab      :", n.vocab[i], "\n\n")
+    cat("Size of vocab      :", vocab.sizes[i], "\n\n")
   }
   
   
@@ -77,12 +77,12 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   corpus.concated <- as.integer(c(sentences[[1]], sentences[[2]]))
   document.id.concated <- as.integer(c(document.id[[1]], document.id[[2]]))
   window.sizes <- as.integer(window.sizes)
-  n.vocab <- as.integer(n.vocab)
+  vocab.sizes <- as.integer(vocab.sizes)
   sentence.lengths <- lengths(sentences)
   n.languages <- length(paths.corpus)
   
   results.redsvd <- MCEigendocsRedSVD(corpus.concated, document.id.concated,
-                                      window.sizes, n.vocab, sentence.lengths,
+                                      window.sizes, vocab.sizes, sentence.lengths,
                                       dim.internal, gamma_G = 0, gamma_H = 0,
                                       link_w_d = link_w_d, link_c_d = link_c_d)
   
@@ -96,7 +96,10 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   }
 
   return.list$document_id <- seq(nrow(results.redsvd$document_vector))
-  return.list$n.domain <- length(sentence.lengths)
+  return.list$n.languages <- length(sentence.lengths)
+  return.list$sentence.lengths <- sentence.lengths
+  return.list$vocab.sizes <- vocab.sizes
+  
   
   diff.time <- Sys.time() - time.start
   print(diff.time)
