@@ -17,7 +17,7 @@ save(res.eigendocs, file = "res_eigendocs.Rdata")
 
 ## Check vector representations of documents
 document.id <- 999
-infos <- read.csv("data/reuters_rcv1_infos.csv")
+infos <- read.csv("data/reuters_rcv1_infos10000.csv")
 MostSimilarDocs(document.id, res.eigendocs$svd$document_vector, titles = infos$title)
 
 
