@@ -375,7 +375,7 @@ MostSimilarDocs <- function (document.id, document_vector, titles, topn = 10) {
 }
 
 
-TestGoogleTasks <- function (U, vocab, path = "./../test/questions-words.txt", n.cores = 1) {
+TestGoogleTasks <- function (U, vocab, path = "test/questions-words.txt", n.cores = 1) {
   
   time.start <- Sys.time()
   
@@ -412,7 +412,7 @@ TestGoogleTasks <- function (U, vocab, path = "./../test/questions-words.txt", n
 }
 
 
-TestWordsim353 <- function (vectors, vocab, path = "./../test/combined.csv") {
+TestWordsim353 <- function (vectors, vocab, path = "test/combined.csv") {
   
   cosine.similarity <- function (w1, w2) {
     v1 <- vectors[w1, ]
