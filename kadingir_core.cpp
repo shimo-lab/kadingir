@@ -21,7 +21,7 @@ typedef Eigen::MatrixXd MatrixXreal;
 typedef Eigen::Map<Eigen::VectorXi> MapVectorXi;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> iSparseMatrix;
 typedef Eigen::SparseMatrix<real, Eigen::RowMajor, std::ptrdiff_t> realSparseMatrix;
-typedef Eigen::Triplet<int> Triplet;
+typedef Eigen::Triplet<real> Triplet;
 
 const int TRIPLET_VECTOR_SIZE = 10000000;
 
@@ -36,6 +36,7 @@ template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX
   tXX_temp.setZero();
 }
 
+
 void fill_offset_table (int offsets[], int window_size)
 {
   int i_offset1 = 0;
@@ -46,6 +47,7 @@ void fill_offset_table (int offsets[], int window_size)
     }
   }
 }
+
 
 void construct_crossprod_matrices (const MapVectorXi& sentence,
                                    Eigen::VectorXi &tWW_diag, Eigen::VectorXi &tCC_diag,
@@ -227,13 +229,14 @@ void construct_crossprod_matrices_documents (const MapVectorXi& sentence, const 
 
 
 void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const MapVectorXi& document_id_concated,
-                                      Eigen::VectorXi &G_diag, iSparseMatrix &H,
-                                      const Rcpp::NumericVector window_sizes,
-                                      const Rcpp::NumericVector vocab_sizes,
-                                      const Rcpp::NumericVector sentence_lengths,
-                                      const unsigned long long p_cumsum[],
-                                      const unsigned long long n_domain,
-                                      const bool link_w_d, const bool link_c_d)
+                                     const VectorXreal& inverse_word_count_table,
+                                     VectorXreal &G_diag, realSparseMatrix &H,
+                                     const Rcpp::IntegerVector window_sizes,
+                                     const Rcpp::IntegerVector vocab_sizes,
+                                     const Rcpp::IntegerVector sentence_lengths,
+                                     const unsigned long long p_cumsum[],
+                                     const unsigned long long n_domain,
+                                     const bool link_w_d, const bool link_c_d)
 {
   const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
   const unsigned long long p = p_cumsum[n_domain - 1];
@@ -241,13 +244,26 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
   std::vector<Triplet> H_tripletList;
   H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
 
-  iSparseMatrix H_temp(p, p);
+  realSparseMatrix H_temp(p, p);
 
   G_diag.setZero();
 
 
   unsigned long long i_sentence_concated = 0;
   unsigned long long n_pushed_triplets = 0;
+
+  unsigned long long n = 0;
+  for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
+    n += sentence_lengths[i_languages];
+  }
+  n += n_documents;
+
+  unsigned long long size_M = sentence_lengths[0];
+  VectorXreal M_diag(size_M);
+  for (unsigned long long i = 0; i < size_M; i++) {
+    M_diag(i) = 1 + inverse_word_count_table(document_id_concated[i]);
+  }
+
 
   // For each languages
   for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
@@ -270,10 +286,10 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
       const unsigned long long word0 = sentence_concated[i_sentence_concated];
       const unsigned long long docid = document_id_concated[i_sentence_concated];
 
-      G_diag(word0 + p_v - 1) += 1;
+      G_diag(word0 + p_v - 1) += M_diag[i_sentence];
       G_diag(docid + p_d - 1) += 1;
 
-      H_tripletList.push_back(Triplet(word0 + p_v - 1,  docid + p_d - 1,  1));  // Element of t(Wi) %*% Ji
+      H_tripletList.push_back(Triplet(word0 + p_v - 1,  docid + p_d - 1,  inverse_word_count_table(docid)));  // Element of t(Wi) %*% Ji
 
       // For each words of context window
       for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
@@ -283,12 +299,12 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
         // If `i_word1` is out of indices of sentence
         if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
         
-        const unsigned long long word1 = sentence_concated[i_word1] + vocab_size * i_offset1;
+        const unsigned long long word1 = sentence_concated[i_word1_concated] + vocab_size * i_offset1;
         
-        G_diag(word1 + p_c - 1) += 1;
+        G_diag(word1 + p_c - 1) += M_diag[i_word1_concated];
         
-        H_tripletList.push_back(Triplet(word0 + p_v - 1, word1 + p_c - 1, 1));  // Element of t(Wi) %*% Ci
-        H_tripletList.push_back(Triplet(word1 + p_c - 1, docid + p_d - 1, 1));  // Element of t(Ci) %*% Ji
+        H_tripletList.push_back(Triplet(word0 + p_v - 1, word1 + p_c - 1, 1.0));  // Element of t(Wi) %*% Ci
+        H_tripletList.push_back(Triplet(word1 + p_c - 1, docid + p_d - 1, inverse_word_count_table(docid)));  // Element of t(Ci) %*% Ji
       }
       
       n_pushed_triplets += 2*window_size + 1;
@@ -323,6 +339,18 @@ void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h
     tXX_h_diag.insert(i, i) = tXX_h(i);
   }
 }
+
+// TODO
+void construct_h_diag_matrix (VectorXreal &tXX_diag, realSparseMatrix &tXX_h_diag)
+{
+  VectorXreal tXX_h(tXX_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  tXX_h_diag.reserve(tXX_diag.size());
+  
+  for (int i = 0; i < tXX_h.size(); i++) {
+    tXX_h_diag.insert(i, i) = tXX_h(i);
+  }
+}
+
 
 
 // [[Rcpp::export]]
@@ -493,11 +521,12 @@ Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence, const MapVectorXi& docum
 // [[Rcpp::export]]
 Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
                              const MapVectorXi& document_id_concated,
-                             const Rcpp::NumericVector window_sizes,
-                             const Rcpp::NumericVector vocab_sizes,
-                             const Rcpp::NumericVector sentence_lengths,
+                             const Rcpp::IntegerVector window_sizes,
+                             const Rcpp::IntegerVector vocab_sizes,
+                             const Rcpp::IntegerVector sentence_lengths,
                              const int k,
-                             const real gamma_G, const real gamma_H, const bool link_w_d, const bool link_c_d)
+                             const real gamma_G, const real gamma_H,
+                             const bool link_w_d, const bool link_c_d)
 {
   
   if (window_sizes.length() != vocab_sizes.length()) {
@@ -540,11 +569,32 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
   const unsigned long long p = p_cumsum[n_domain - 1];  // dimension of concated vectors
 
 
-  // Construct crossprod matrices
-  Eigen::VectorXi G_diag(p);
-  iSparseMatrix H(p, p);
+  // Construct count table of words of each documents
+  int l = 0;  //todo
+  VectorXreal inverse_word_count_table(n_documents);
 
-  construct_matrices_mceigendocs(sentence_concated, document_id_concated,
+  {
+    Eigen::VectorXi word_count_table(n_documents);
+    
+    // Initialization
+    for (unsigned long long i = 0; i < n_documents; i++) {
+      word_count_table(i) = 0;
+    }
+    
+    for (unsigned long long i = 0; i < sentence_lengths[l]; i++) {
+      word_count_table(document_id_concated[i]) += 1;
+    }
+    
+    for (unsigned long long i = 0; i < n_documents; i++) {
+      inverse_word_count_table(i) = 1.0 / (real)word_count_table(i);
+    }
+  }
+
+  // Construct crossprod matrices
+  VectorXreal G_diag(p);
+  realSparseMatrix H(p, p);
+
+  construct_matrices_mceigendocs(sentence_concated, document_id_concated, inverse_word_count_table,
                                  G_diag, H,
                                  window_sizes, vocab_sizes, sentence_lengths,
                                  p_cumsum, n_domain,
