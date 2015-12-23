@@ -432,7 +432,7 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
 
 // [[Rcpp::export]]
 Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence, const MapVectorXi& document_id, const int window_size,
-                           const int vocab_size, const int k, const bool mode_oscca,
+                           const int vocab_size, const int k,
                            const real gamma_G, const real gamma_H, const bool link_w_d, const bool link_c_d)
 {
   const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;

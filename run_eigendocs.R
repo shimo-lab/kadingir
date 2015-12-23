@@ -12,7 +12,7 @@ path.corpus <- "data/reuters_rcv1_text10000.csv"
 #path.corpus <- "data/train.txt"
 
 
-res.eigendocs <- Eigendocs(path.corpus, n.vocabulary, dim.internal, window.size, mode = mode)
+res.eigendocs <- Eigendocs(path.corpus, n.vocabulary, dim.internal, window.size)
 save(res.eigendocs, file = "res_eigendocs.Rdata")
 
 ## Check vector representations of documents
