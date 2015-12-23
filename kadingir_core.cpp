@@ -27,8 +27,8 @@ const int TRIPLET_VECTOR_SIZE = 10000000;
 
 
 // Update crossprod matrix using triplets
-void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
-                              iSparseMatrix &tXX_temp, iSparseMatrix &tXX)
+template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
+                                                       MatrixX &tXX_temp, MatrixX &tXX)
 {
   tXX_temp.setFromTriplets(tXX_tripletList.begin(), tXX_tripletList.end());
   tXX_tripletList.clear();
