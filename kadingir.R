@@ -428,7 +428,7 @@ TestWordsim353 <- function (vectors, vocab, path = "test/combined.csv") {
   wordsims <- read.csv(path, header = 1)
   
   n.tests <- nrow(wordsims)
-  similarity.eigenwords <- rep(NULL, times = n.tests)
+  similarity.eigenwords <- rep(NA, times = n.tests)
   
   for(i in seq(n.tests)) {
     w1 <- as.character(wordsims[i, 1])
