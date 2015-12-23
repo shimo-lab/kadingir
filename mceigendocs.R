@@ -74,8 +74,8 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   cat("Calculate MCEigendocs...\n\n")
     
-  corpus.concated <- as.integer(c(sentences[[1]], sentences[[2]]))
-  document.id.concated <- as.integer(c(document.id[[1]], document.id[[2]]))
+  corpus.concated <- as.integer(unlist(sentences))
+  document.id.concated <- as.integer(unlist(document.id))
   window.sizes <- as.integer(window.sizes)
   vocab.sizes <- as.integer(vocab.sizes)
   sentence.lengths <- lengths(sentences)
