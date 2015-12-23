@@ -277,7 +277,8 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
 
       // For each words of context window
       for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
-        const long long i_word1 = i_sentence_concated + offsets[i_offset1];
+        const long long i_word1 = i_sentence + offsets[i_offset1];
+        const long long i_word1_concated = i_sentence_concated + offsets[i_offset1];
       
         // If `i_word1` is out of indices of sentence
         if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
