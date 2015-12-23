@@ -425,7 +425,6 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
                               // Rcpp::Named("A") = Rcpp::wrap(a),
                               // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
                               // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-                               Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues())
                               );
   }
 }
