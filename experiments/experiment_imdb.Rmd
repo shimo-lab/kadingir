@@ -17,26 +17,25 @@ print(date())
 set.seed(0)
 
 source("./../kadingir.R", chdir=TRUE)
-
-
-## Tuning parameters
-n.vocabulary <- 10000 # 語彙に含める単語数
-dim.internal <- 200   # 共通空間の次元
-window.size <- 2      # 前後何個の単語をcontextとするか
-mode <- "oscca"
-path.corpus <- "/home/oshikiri/workspace/wordvector/eigendocs-imdb/imdb_reviews.txt"
+source("./../mceigendocs.R", chdir=TRUE)
 ```
 
 ```{r}
-res.eigendocs <- Eigendocs(path.corpus, n.vocabulary, dim.internal, window.size, mode = mode, plot = TRUE)
-save(res.eigendocs, file = "res_eigendocs_imdb.Rdata")
+paths.corpus <- c("./../data/corpus/movie_imdb/imdb_reviews.txt")
+res.eigendocs <- MCEigendocs(paths.corpus, max.vocabulary=10000, dim.internal=50,
+                             window.sizes = c(4), aliases=c("en"), plot = TRUE)
+save(res.eigendocs, file = "./../res_eigendocs_imdb.Rdata")
 ```
 
 ## Check vector representations of words
 ```{r}
-MostSimilar(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words,
+p_cumsum <- res.eigendocs$svd$p_cumsum
+word_vector <- res.eigendocs$svd$V[p_cumsum[1]:p_cumsum[2], ]
+vocab_words <- unlist(res.eigendocs$vocab.words)
+
+MostSimilar(word_vector, vocab_words,
             positive=c("man"), distance = "cosine")
-MostSimilar(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words,
+MostSimilar(word_vector, vocab_words,
             positive=c("American"), distance = "cosine")
 ```
 
@@ -46,13 +45,19 @@ MostSimilar(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words,
 一応，単語ベクトルの評価を行う．
 
 ```{r}
-TestGoogleTasks(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words, n.cores = 24)
+TestGoogleTasks(word_vector, vocab_words, path = "./../test/questions-words.txt", n.cores = 10)
 ```
+
+## wordsim353
+```{r}
+TestWordsim353(word_vector, vocab_words, path = "./../test/combined.csv")
+```
+
 
 ## Sentiment analysis using IMDb dataset 1 : unregularized
 ```{r}
-vectors <- res.eigendocs$svd$document_vector
-csv <- read.csv("/home/oshikiri/workspace/wordvector/eigendocs-imdb/imdb_id_rate.csv")
+vectors <- res.eigendocs$svd$V[(p_cumsum[3]+1):p_cumsum[4], ]
+csv <- read.csv("./../data/corpus/movie_imdb/imdb_id_rate.csv")
 
 df <- data.frame(cbind(csv, vectors))
 df <- df[df[ , "rate"] != 0, ]  # Remove unsup
