@@ -4,12 +4,11 @@ library(RcppEigen)
 
 sourceCpp("kadingir_core.cpp", rebuild = TRUE, verbose = TRUE)
 
+
 MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
-                        window.sizes = NULL, aliases = NULL, plot = FALSE) {
-  
-  link_w_d <- TRUE
-  link_c_d <- TRUE
-  
+                        window.sizes = NULL, aliases = NULL, plot = FALSE,
+                        link_w_d = TRUE, link_c_d = TRUE)
+{  
   time.start <- Sys.time()
   
   ## Preprocess training data
