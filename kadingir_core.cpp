@@ -236,7 +236,8 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
                                      const Rcpp::IntegerVector sentence_lengths,
                                      const unsigned long long p_cumsum[],
                                      const unsigned long long n_domain,
-                                     const bool link_w_d, const bool link_c_d)
+                                     const bool link_w_d, const bool link_c_d,
+                                     const bool doc_weighting)
 {
   const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
   const unsigned long long p = p_cumsum[n_domain - 1];
@@ -261,7 +262,11 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
   unsigned long long size_M = sentence_lengths[0];
   VectorXreal M_diag(size_M);
   for (unsigned long long i = 0; i < size_M; i++) {
-    M_diag(i) = 1 + inverse_word_count_table(document_id_concated[i]);
+    if (doc_weighting) {
+      M_diag(i) = 1 + inverse_word_count_table(document_id_concated[i]);
+    } else {
+      M_diag(i) = 2;
+    }
   }
 
 
@@ -285,11 +290,18 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
 
       const unsigned long long word0 = sentence_concated[i_sentence_concated];
       const unsigned long long docid = document_id_concated[i_sentence_concated];
+      real H_ij;
+
+      if (doc_weighting) {
+        H_ij = inverse_word_count_table(docid);
+      } else {
+        H_ij = 1;
+      }
 
       G_diag(word0 + p_v - 1) += M_diag[i_sentence];
       G_diag(docid + p_d - 1) += 1;
 
-      H_tripletList.push_back(Triplet(word0 + p_v - 1,  docid + p_d - 1,  inverse_word_count_table(docid)));  // Element of t(Wi) %*% Ji
+      H_tripletList.push_back(Triplet(word0 + p_v - 1,  docid + p_d - 1,  H_ij));  // Element of t(Wi) %*% Ji
 
       // For each words of context window
       for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
@@ -303,8 +315,8 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
         
         G_diag(word1 + p_c - 1) += M_diag[i_word1_concated];
         
-        H_tripletList.push_back(Triplet(word0 + p_v - 1, word1 + p_c - 1, 1.0));  // Element of t(Wi) %*% Ci
-        H_tripletList.push_back(Triplet(word1 + p_c - 1, docid + p_d - 1, inverse_word_count_table(docid)));  // Element of t(Ci) %*% Ji
+        H_tripletList.push_back(Triplet(word0 + p_v - 1, word1 + p_c - 1, 1.0));   // Element of t(Wi) %*% Ci
+        H_tripletList.push_back(Triplet(word1 + p_c - 1, docid + p_d - 1, H_ij));  // Element of t(Ci) %*% Ji
       }
       
       n_pushed_triplets += 2*window_size + 1;
@@ -321,7 +333,6 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
   }
 
 
-  G_diag = 2 * G_diag;
   H.makeCompressed();
 
   std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
@@ -526,7 +537,8 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
                              const Rcpp::IntegerVector sentence_lengths,
                              const int k,
                              const real gamma_G, const real gamma_H,
-                             const bool link_w_d, const bool link_c_d)
+                             const bool link_w_d, const bool link_c_d,
+                             const bool doc_weighting)
 {
   
   if (window_sizes.length() != vocab_sizes.length()) {
@@ -598,7 +610,7 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
                                  G_diag, H,
                                  window_sizes, vocab_sizes, sentence_lengths,
                                  p_cumsum, n_domain,
-                                 link_w_d, link_c_d);
+                                 link_w_d, link_c_d, doc_weighting);
 
   // Construct the matrices for CCA and execute CCA
   std::cout << "Calculate CDMCA..." << std::endl;

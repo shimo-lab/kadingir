@@ -84,7 +84,7 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   results.redsvd <- MCEigendocsRedSVD(corpus.concated, document.id.concated,
                                       window.sizes, vocab.sizes, sentence.lengths,
                                       dim.internal, gamma_G = 0, gamma_H = 0,
-                                      link_w_d = link_w_d, link_c_d = link_c_d)
+                                      link_w_d = link_w_d, link_c_d = link_c_d, doc_weighting = TRUE)
   
   return.list <- list()
   return.list$svd <- results.redsvd
