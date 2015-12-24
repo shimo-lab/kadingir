@@ -268,9 +268,9 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
   // For each languages
   for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
       
-    const unsigned long long p_v = p_cumsum[2 * i_languages];     // begin of Vi
-    const unsigned long long p_c = p_cumsum[2 * i_languages + 1]; // begin of Ci
-    const unsigned long long p_d = p_cumsum[n_domain - 2];        // begin of D
+    const unsigned long long p_v = p_cumsum[2 * i_languages];     // Head of Vi
+    const unsigned long long p_c = p_cumsum[2 * i_languages + 1]; // Head of Ci
+    const unsigned long long p_d = p_cumsum[n_domain - 2];        // Head of D
     const unsigned long long window_size = window_sizes[i_languages];
     const unsigned long long vocab_size = vocab_sizes[i_languages];
     const unsigned long long sentence_size = sentence_lengths[i_languages];
