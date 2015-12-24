@@ -234,13 +234,13 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
                                      const Rcpp::IntegerVector window_sizes,
                                      const Rcpp::IntegerVector vocab_sizes,
                                      const Rcpp::IntegerVector sentence_lengths,
-                                     const unsigned long long p_cumsum[],
+                                     const unsigned long long p_head_domains[],
                                      const unsigned long long n_domain,
                                      const bool link_w_d, const bool link_c_d,
                                      const bool doc_weighting)
 {
   const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
-  const unsigned long long p = p_cumsum[n_domain - 1];
+  const unsigned long long p = p_head_domains[n_domain - 1] + n_documents;
 
   std::vector<Triplet> H_tripletList;
   H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
@@ -259,6 +259,7 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
   }
   n += n_documents;
 
+  // todo
   unsigned long long size_M = sentence_lengths[0];
   VectorXreal M_diag(size_M);
   for (unsigned long long i = 0; i < size_M; i++) {
@@ -273,9 +274,9 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
   // For each languages
   for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
       
-    const unsigned long long p_v = p_cumsum[2 * i_languages];     // Head of Vi
-    const unsigned long long p_c = p_cumsum[2 * i_languages + 1]; // Head of Ci
-    const unsigned long long p_d = p_cumsum[n_domain - 2];        // Head of D
+    const unsigned long long p_v = p_head_domains[2 * i_languages];     // Head of Vi
+    const unsigned long long p_c = p_head_domains[2 * i_languages + 1]; // Head of Ci
+    const unsigned long long p_d = p_head_domains[n_domain - 1];        // Head of D
     const unsigned long long window_size = window_sizes[i_languages];
     const unsigned long long vocab_size = vocab_sizes[i_languages];
     const unsigned long long sentence_size = sentence_lengths[i_languages];
@@ -298,10 +299,10 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
         H_ij = 1;
       }
 
-      G_diag(word0 + p_v - 1) += M_diag[i_sentence];
-      G_diag(docid + p_d - 1) += 1;
+      G_diag(word0 + p_v) += M_diag(i_sentence);
+      G_diag(docid + p_d) += 1;
 
-      H_tripletList.push_back(Triplet(word0 + p_v - 1,  docid + p_d - 1,  H_ij));  // Element of t(Wi) %*% Ji
+      H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij));  // Element of t(Wi) %*% Ji
 
       // For each words of context window
       for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
@@ -313,10 +314,10 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
         
         const unsigned long long word1 = sentence_concated[i_word1_concated] + vocab_size * i_offset1;
         
-        G_diag(word1 + p_c - 1) += M_diag[i_word1_concated];
+        G_diag(word1 + p_c) += M_diag[i_word1_concated];
         
-        H_tripletList.push_back(Triplet(word0 + p_v - 1, word1 + p_c - 1, 1.0));   // Element of t(Wi) %*% Ci
-        H_tripletList.push_back(Triplet(word1 + p_c - 1, docid + p_d - 1, H_ij));  // Element of t(Ci) %*% Ji
+        H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(Wi) %*% Ci
+        H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij));  // Element of t(Ci) %*% Ji
       }
       
       n_pushed_triplets += 2*window_size + 1;
@@ -557,14 +558,13 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
   }
 
   const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
-  const unsigned long long n_domain = 2 * n_languages + 2;  // `+ 2` <- document & sum of dimension
-  unsigned long long p_indices[n_domain];  // dimensions of each domain
-  unsigned long long p_cumsum[n_domain];   // cunsum of dimensions of each domain
+  const unsigned long long n_domain = 2 * n_languages + 1;  // 2 * languages + document
+  unsigned long long p_indices[n_domain];        // dimensions of each domain
+  unsigned long long p_head_domains[n_domain];   // head of indices of each domain
 
-  p_indices[0] = 0;
-  for (int i = 1; i < n_domain - 1; i++) {
-    int i_domain = (i - 1) / 2;
-    if (i % 2 == 1) {
+  for (int i = 0; i < n_domain - 1; i++) {
+    int i_domain = i / 2;
+    if (i % 2 == 0) {
       p_indices[i] = vocab_sizes[i_domain];
     } else {
       p_indices[i] = c_col_sizes[i_domain];
@@ -572,13 +572,12 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
   }
   p_indices[n_domain - 1] = n_documents;
   
-  p_cumsum[0] = 0;
+  p_head_domains[0] = 0;
   for (int i = 1; i < n_domain; i++) {
-    p_cumsum[i] = p_cumsum[i-1] + p_indices[i];
+    p_head_domains[i] = p_head_domains[i - 1] + p_indices[i - 1];
   }
-  p_cumsum[0] = 1;
 
-  const unsigned long long p = p_cumsum[n_domain - 1];  // dimension of concated vectors
+  const unsigned long long p = p_head_domains[n_domain - 1] + n_documents;  // dimension of concated vectors
 
 
   // Construct count table of words of each documents
@@ -609,7 +608,7 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
   construct_matrices_mceigendocs(sentence_concated, document_id_concated, inverse_word_count_table,
                                  G_diag, H,
                                  window_sizes, vocab_sizes, sentence_lengths,
-                                 p_cumsum, n_domain,
+                                 p_head_domains, n_domain,
                                  link_w_d, link_c_d, doc_weighting);
 
   // Construct the matrices for CCA and execute CCA
@@ -625,12 +624,12 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
   MatrixXreal principal_components = svdA.matrixV();
   MatrixXreal vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
 
-  Rcpp::NumericVector p_cumsum_return(n_domain);
+  Rcpp::NumericVector p_head_domains_return(n_domain);
   for (int i = 0; i < n_domain; i++){
-    p_cumsum_return[i] = p_cumsum[i];
+    p_head_domains_return[i] = p_head_domains[i];
   }
 
   return Rcpp::List::create(Rcpp::Named("V") = Rcpp::wrap(vector_representations),
-                            Rcpp::Named("p_cumsum") = p_cumsum_return,
+                            Rcpp::Named("p_head_domains") = p_head_domains_return,
                             Rcpp::Named("p") = (double)p);
 }

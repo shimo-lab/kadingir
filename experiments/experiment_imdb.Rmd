@@ -29,8 +29,8 @@ save(res.eigendocs, file = "./../res_eigendocs_imdb.Rdata")
 
 ## Check vector representations of words
 ```{r}
-p_cumsum <- res.eigendocs$svd$p_cumsum
-word_vector <- res.eigendocs$svd$V[p_cumsum[1]:p_cumsum[2], ]
+p <- res.eigendocs$svd$p_head_domains
+word_vector <- res.eigendocs$svd$V[(p[1]+1):p[2], ]
 vocab_words <- unlist(res.eigendocs$vocab.words)
 
 MostSimilar(word_vector, vocab_words,
