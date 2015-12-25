@@ -14,16 +14,6 @@
 const int TRIPLET_VECTOR_SIZE = 10000000;
 
 
-EigenwordsResults::EigenwordsResults (MatrixXreal _word_vectors,
-                                      MatrixXreal _context_vectors,
-                                      VectorXreal _singular_values)
-{
-  word_vectors = _word_vectors;
-  context_vectors = _context_vectors;
-  singular_values = _singular_values;
-}
-
-
 // Update crossprod matrix using triplets
 template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
                                                        MatrixX &tXX_temp,
@@ -48,16 +38,23 @@ void fill_offset_table (int offsets[], int window_size)
 }
 
 
-void construct_crossprod_matrices (const MapVectorXi& sentence,
-                                   Eigen::VectorXi &tWW_diag,
-                                   Eigen::VectorXi &tCC_diag,
-                                   iSparseMatrix &tWC,
-                                   iSparseMatrix &tLL,
-                                   iSparseMatrix &tLR,
-                                   iSparseMatrix &tRR,
-                                   const int window_size,
-                                   const int vocab_size,
-                                   const bool mode_oscca)
+Eigenwords::Eigenwords (const MapVectorXi& _sentence,
+                        const int _window_size,
+                        const int _vocab_size,
+                        const int _k,
+                        const bool _mode_oscca
+                        ) : sentence(_sentence),
+                            window_size(_window_size),
+                            vocab_size(_vocab_size),
+                            k(_k),
+                            mode_oscca(_mode_oscca) {}
+
+void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
+                                     Eigen::VectorXi &tCC_diag,
+                                     iSparseMatrix &tWC,
+                                     iSparseMatrix &tLL,
+                                     iSparseMatrix &tLR,
+                                     iSparseMatrix &tRR)
 {
   const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
   const unsigned long long c_col_size = 2 * lr_col_size;
@@ -379,11 +376,7 @@ void construct_h_diag_matrix (VectorXreal &tXX_diag, realSparseMatrix &tXX_h_dia
 
 
 
-EigenwordsResults EigenwordsRedSVD_cpp(const MapVectorXi& sentence,
-                                       const int window_size,
-                                       const int vocab_size,
-                                       const int k,
-                                       const bool mode_oscca)
+void Eigenwords::compute()
 {
   const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
   const unsigned long long c_col_size = 2 * lr_col_size;
@@ -397,9 +390,7 @@ EigenwordsResults EigenwordsRedSVD_cpp(const MapVectorXi& sentence,
   iSparseMatrix tLR(lr_col_size, lr_col_size);
   iSparseMatrix tRR(lr_col_size, lr_col_size);
 
-  construct_crossprod_matrices(sentence, tWW_diag, tCC_diag,
-                               tWC, tLL, tLR, tRR,
-                               window_size, vocab_size, mode_oscca);
+  construct_matrices(tWW_diag, tCC_diag, tWC, tLL, tLR, tRR);
 
 
   // Construct the matrices for CCA and execute CCA
@@ -418,8 +409,9 @@ EigenwordsResults EigenwordsRedSVD_cpp(const MapVectorXi& sentence,
     std::cout << "Calculate Randomized SVD..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
 
-    return EigenwordsResults(tWW_h_diag * svdA.matrixU(), tCC_h_diag * svdA.matrixV(), svdA.singularValues());
-
+    word_vectors = tWW_h_diag * svdA.matrixU();
+    context_vectors = tCC_h_diag * svdA.matrixV();
+    singular_values = svdA.singularValues();
 
   } else {
     // Execute Two Step CCA

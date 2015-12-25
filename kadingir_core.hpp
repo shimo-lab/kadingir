@@ -14,18 +14,35 @@ typedef Eigen::SparseMatrix<real, Eigen::RowMajor, std::ptrdiff_t> realSparseMat
 typedef Eigen::Triplet<real> Triplet;
 
 
-class EigenwordsResults
+class Eigenwords
 {
 private:
+  MapVectorXi sentence;
+  int window_size;
+  int vocab_size;
+  int k;
+  bool mode_oscca;
   MatrixXreal word_vectors;
   MatrixXreal context_vectors;
   VectorXreal singular_values;
 
+  void construct_matrices (Eigen::VectorXi &tWW_diag,
+                           Eigen::VectorXi &tCC_diag,
+                           iSparseMatrix &tWC,
+                           iSparseMatrix &tLL,
+                           iSparseMatrix &tLR,
+                           iSparseMatrix &tRR);
+
 public:
-  EigenwordsResults(MatrixXreal _word_vectors, MatrixXreal _context_vectors, VectorXreal _singular_values);
+  Eigenwords(const MapVectorXi& _sentence,
+             const int _window_size,
+             const int _vocab_size,
+             const int _k,
+             const bool _mode_oscca);
   MatrixXreal get_word_vectors() { return word_vectors; }
   MatrixXreal get_context_vectors() { return context_vectors; }
   VectorXreal get_singular_values() { return singular_values; }
+  void compute();
 };
 
 
@@ -33,20 +50,5 @@ template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX
                                                        MatrixX &tXX_temp,
                                                        MatrixX &tXX);
 void fill_offset_table (int offsets[], int window_size);
-void construct_crossprod_matrices (const MapVectorXi& sentence,
-                                   Eigen::VectorXi &tWW_diag,
-                                   Eigen::VectorXi &tCC_diag,
-                                   iSparseMatrix &tWC,
-                                   iSparseMatrix &tLL,
-                                   iSparseMatrix &tLR,
-                                   iSparseMatrix &tRR,
-                                   const int window_size,
-                                   const int vocab_size,
-                                   const bool mode_oscca);
 void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h_diag);
-EigenwordsResults EigenwordsRedSVD_cpp(const MapVectorXi& sentence,
-                                       const int window_size,
-                                       const int vocab_size,
-                                       const int k,
-                                       const bool mode_oscca);
 

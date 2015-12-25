@@ -20,7 +20,8 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence,
                             const int k,
                             const bool mode_oscca)
 {
-  EigenwordsResults eigenwords = EigenwordsRedSVD_cpp(sentence, window_size, vocab_size, k, mode_oscca);
+  Eigenwords eigenwords = Eigenwords(sentence, window_size, vocab_size, k, mode_oscca);
+  eigenwords.compute();
 
   return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(eigenwords.get_word_vectors()),
                             Rcpp::Named("context_vector") = Rcpp::wrap(eigenwords.get_context_vectors()),
