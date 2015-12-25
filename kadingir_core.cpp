@@ -8,22 +8,20 @@
  *  - `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
  */
 
-#include <Rcpp.h>
-#include <RcppEigen.h>
-#include "redsvd.hpp"
 
-// [[Rcpp::depends(RcppEigen)]]
-// [[Rcpp::plugins(openmp)]]
-
-typedef double real;
-typedef Eigen::VectorXd VectorXreal;
-typedef Eigen::MatrixXd MatrixXreal;
-typedef Eigen::Map<Eigen::VectorXi> MapVectorXi;
-typedef Eigen::SparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> iSparseMatrix;
-typedef Eigen::SparseMatrix<real, Eigen::RowMajor, std::ptrdiff_t> realSparseMatrix;
-typedef Eigen::Triplet<real> Triplet;
+#include "kadingir_core.hpp"
 
 const int TRIPLET_VECTOR_SIZE = 10000000;
+
+
+EigenwordsResults::EigenwordsResults (MatrixXreal _word_vectors,
+                                      MatrixXreal _context_vectors,
+                                      VectorXreal _singular_values)
+{
+  word_vectors = _word_vectors;
+  context_vectors = _context_vectors;
+  singular_values = _singular_values;
+}
 
 
 // Update crossprod matrix using triplets
@@ -161,201 +159,201 @@ void construct_crossprod_matrices (const MapVectorXi& sentence,
 }
 
 
-void construct_crossprod_matrices_documents (const MapVectorXi& sentence,
-                                             const MapVectorXi& document_id,
-                                             Eigen::VectorXi &tWW_diag,
-                                             Eigen::VectorXi &tCC_diag,
-                                             Eigen::VectorXi &tDD_diag,
-                                             iSparseMatrix &H,
-                                             const int window_size,
-                                             const int vocab_size,
-                                             const bool link_w_d,
-                                             const bool link_c_d)
-{
-  const unsigned long long sentence_size = sentence.size();
-  const unsigned long long c_col_size = 2 * (unsigned long long)window_size * vocab_size;
-  const unsigned long long n_documents = document_id.maxCoeff() + 1;
-  const unsigned long long p_cumsum[4] = {1, vocab_size, vocab_size + c_col_size, vocab_size + c_col_size + n_documents};
+// void construct_crossprod_matrices_documents (const MapVectorXi& sentence,
+//                                              const MapVectorXi& document_id,
+//                                              Eigen::VectorXi &tWW_diag,
+//                                              Eigen::VectorXi &tCC_diag,
+//                                              Eigen::VectorXi &tDD_diag,
+//                                              iSparseMatrix &H,
+//                                              const int window_size,
+//                                              const int vocab_size,
+//                                              const bool link_w_d,
+//                                              const bool link_c_d)
+// {
+//   const unsigned long long sentence_size = sentence.size();
+//   const unsigned long long c_col_size = 2 * (unsigned long long)window_size * vocab_size;
+//   const unsigned long long n_documents = document_id.maxCoeff() + 1;
+//   const unsigned long long p_cumsum[4] = {1, vocab_size, vocab_size + c_col_size, vocab_size + c_col_size + n_documents};
 
-  unsigned long long n_pushed_triplets = 0;
+//   unsigned long long n_pushed_triplets = 0;
 
-  std::vector<Triplet> H_tripletList;
-  H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+//   std::vector<Triplet> H_tripletList;
+//   H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
 
-  iSparseMatrix H_temp(p_cumsum[3], p_cumsum[3]);
+//   iSparseMatrix H_temp(p_cumsum[3], p_cumsum[3]);
 
-  tWW_diag.setZero();
-  tCC_diag.setZero();
-  tDD_diag.setZero();
+//   tWW_diag.setZero();
+//   tCC_diag.setZero();
+//   tDD_diag.setZero();
 
-  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
-  int offsets[2*window_size];
-  fill_offset_table(offsets, window_size);
+//   // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
+//   int offsets[2*window_size];
+//   fill_offset_table(offsets, window_size);
     
-  for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
-    unsigned long long word0 = sentence[i_sentence];
-    unsigned long long d_id = document_id[i_sentence];
+//   for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
+//     unsigned long long word0 = sentence[i_sentence];
+//     unsigned long long d_id = document_id[i_sentence];
 
-    tWW_diag(word0) += 1;
-    tDD_diag(d_id) += 1;
+//     tWW_diag(word0) += 1;
+//     tDD_diag(d_id) += 1;
     
-    if (link_w_d) {
-      H_tripletList.push_back(Triplet(p_cumsum[0] + word0 - 1,  p_cumsum[2] + d_id - 1,  1));  // Element of tWD
-    }
+//     if (link_w_d) {
+//       H_tripletList.push_back(Triplet(p_cumsum[0] + word0 - 1,  p_cumsum[2] + d_id - 1,  1));  // Element of tWD
+//     }
     
-    for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
-      long long i_word1 = i_sentence + offsets[i_offset1];
+//     for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
+//       long long i_word1 = i_sentence + offsets[i_offset1];
       
-      // If `i_word1` is out of indices of sentence
-      if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
+//       // If `i_word1` is out of indices of sentence
+//       if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
       
-      unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
+//       unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
 
-      tCC_diag(word1) += 1;
+//       tCC_diag(word1) += 1;
 
-      H_tripletList.push_back(Triplet(p_cumsum[0] + word0 - 1, p_cumsum[1] + word1 - 1, 1));  // Element of tWC
-      if (link_c_d) {
-        H_tripletList.push_back(Triplet(p_cumsum[1] + word1 - 1, p_cumsum[2] + d_id  - 1, 1));  // Element of tCD
-      }
-    }
+//       H_tripletList.push_back(Triplet(p_cumsum[0] + word0 - 1, p_cumsum[1] + word1 - 1, 1));  // Element of tWC
+//       if (link_c_d) {
+//         H_tripletList.push_back(Triplet(p_cumsum[1] + word1 - 1, p_cumsum[2] + d_id  - 1, 1));  // Element of tCD
+//       }
+//     }
     
-    n_pushed_triplets += 2*window_size + 1;
+//     n_pushed_triplets += 2*window_size + 1;
     
-    // Commit temporary matrices
-    if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
-      update_crossprod_matrix(H_tripletList, H_temp, H);
+//     // Commit temporary matrices
+//     if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
+//       update_crossprod_matrix(H_tripletList, H_temp, H);
 
-      n_pushed_triplets = 0;
-    }
-  }
+//       n_pushed_triplets = 0;
+//     }
+//   }
 
-  H.makeCompressed();
+//   H.makeCompressed();
 
-  std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
-  std::cout << "H,  " << H.nonZeros() << ",  " << H.rows() << ",  " << H.cols() << std::endl;
-  std::cout << std::endl;
-}
-
-
-
-void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated,
-                                     const MapVectorXi& document_id_concated,
-                                     const VectorXreal& inverse_word_count_table,
-                                     VectorXreal &G_diag,
-                                     realSparseMatrix &H,
-                                     const Rcpp::IntegerVector window_sizes,
-                                     const Rcpp::IntegerVector vocab_sizes,
-                                     const Rcpp::IntegerVector sentence_lengths,
-                                     const unsigned long long p_head_domains[],
-                                     const unsigned long long n_domain,
-                                     const bool link_w_d,
-                                     const bool link_c_d,
-                                     const bool doc_weighting,
-                                     const real weight_doc_vs_vc)
-{
-  const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
-  const unsigned long long p = p_head_domains[n_domain - 1] + n_documents;
-
-  std::vector<Triplet> H_tripletList;
-  H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-
-  realSparseMatrix H_temp(p, p);
-
-  G_diag.setZero();
+//   std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
+//   std::cout << "H,  " << H.nonZeros() << ",  " << H.rows() << ",  " << H.cols() << std::endl;
+//   std::cout << std::endl;
+// }
 
 
-  unsigned long long i_sentence_concated = 0;
-  unsigned long long n_pushed_triplets = 0;
 
-  unsigned long long n = 0;  // number of data
-  for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
-    n += sentence_lengths[i_languages];
-  }
-  n += n_documents;
+// void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated,
+//                                      const MapVectorXi& document_id_concated,
+//                                      const VectorXreal& inverse_word_count_table,
+//                                      VectorXreal &G_diag,
+//                                      realSparseMatrix &H,
+//                                      const Rcpp::IntegerVector window_sizes,
+//                                      const Rcpp::IntegerVector vocab_sizes,
+//                                      const Rcpp::IntegerVector sentence_lengths,
+//                                      const unsigned long long p_head_domains[],
+//                                      const unsigned long long n_domain,
+//                                      const bool link_w_d,
+//                                      const bool link_c_d,
+//                                      const bool doc_weighting,
+//                                      const real weight_doc_vs_vc)
+// {
+//   const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
+//   const unsigned long long p = p_head_domains[n_domain - 1] + n_documents;
 
-  // todo
-  unsigned long long size_M = sentence_lengths[0];
-  VectorXreal M_diag(size_M);
-  for (unsigned long long i = 0; i < size_M; i++) {
-    if (doc_weighting) {
-      M_diag(i) = 1 + inverse_word_count_table(document_id_concated[i]);
-    } else {
-      M_diag(i) = 2;
-    }
-    M_diag(i) *= weight_doc_vs_vc;
-  }
+//   std::vector<Triplet> H_tripletList;
+//   H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+
+//   realSparseMatrix H_temp(p, p);
+
+//   G_diag.setZero();
 
 
-  // For each languages
-  for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
+//   unsigned long long i_sentence_concated = 0;
+//   unsigned long long n_pushed_triplets = 0;
+
+//   unsigned long long n = 0;  // number of data
+//   for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
+//     n += sentence_lengths[i_languages];
+//   }
+//   n += n_documents;
+
+//   // todo
+//   unsigned long long size_M = sentence_lengths[0];
+//   VectorXreal M_diag(size_M);
+//   for (unsigned long long i = 0; i < size_M; i++) {
+//     if (doc_weighting) {
+//       M_diag(i) = 1 + inverse_word_count_table(document_id_concated[i]);
+//     } else {
+//       M_diag(i) = 2;
+//     }
+//     M_diag(i) *= weight_doc_vs_vc;
+//   }
+
+
+//   // For each languages
+//   for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
       
-    const unsigned long long p_v = p_head_domains[2 * i_languages];     // Head of Vi
-    const unsigned long long p_c = p_head_domains[2 * i_languages + 1]; // Head of Ci
-    const unsigned long long p_d = p_head_domains[n_domain - 1];        // Head of D
-    const unsigned long long window_size = window_sizes[i_languages];
-    const unsigned long long vocab_size = vocab_sizes[i_languages];
-    const unsigned long long sentence_size = sentence_lengths[i_languages];
+//     const unsigned long long p_v = p_head_domains[2 * i_languages];     // Head of Vi
+//     const unsigned long long p_c = p_head_domains[2 * i_languages + 1]; // Head of Ci
+//     const unsigned long long p_d = p_head_domains[n_domain - 1];        // Head of D
+//     const unsigned long long window_size = window_sizes[i_languages];
+//     const unsigned long long vocab_size = vocab_sizes[i_languages];
+//     const unsigned long long sentence_size = sentence_lengths[i_languages];
 
 
-    // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
-    int offsets[2 * window_size];
-    fill_offset_table(offsets, window_size);
+//     // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
+//     int offsets[2 * window_size];
+//     fill_offset_table(offsets, window_size);
 
-    // For tokens of each languages
-    for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
+//     // For tokens of each languages
+//     for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
 
-      const unsigned long long word0 = sentence_concated[i_sentence_concated];
-      const unsigned long long docid = document_id_concated[i_sentence_concated];
-      real H_ij;
+//       const unsigned long long word0 = sentence_concated[i_sentence_concated];
+//       const unsigned long long docid = document_id_concated[i_sentence_concated];
+//       real H_ij;
 
-      if (doc_weighting) {
-        H_ij = inverse_word_count_table(docid);
-      } else {
-        H_ij = 1;
-      }
-      H_ij *= weight_doc_vs_vc;
+//       if (doc_weighting) {
+//         H_ij = inverse_word_count_table(docid);
+//       } else {
+//         H_ij = 1;
+//       }
+//       H_ij *= weight_doc_vs_vc;
 
-      G_diag(word0 + p_v) += M_diag(i_sentence);
-      G_diag(docid + p_d) += 1;
+//       G_diag(word0 + p_v) += M_diag(i_sentence);
+//       G_diag(docid + p_d) += 1;
 
-      H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij));  // Element of t(Wi) %*% Ji
+//       H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij));  // Element of t(Wi) %*% Ji
 
-      // For each words of context window
-      for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
-        const long long i_word1 = i_sentence + offsets[i_offset1];
-        const long long i_word1_concated = i_sentence_concated + offsets[i_offset1];
+//       // For each words of context window
+//       for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
+//         const long long i_word1 = i_sentence + offsets[i_offset1];
+//         const long long i_word1_concated = i_sentence_concated + offsets[i_offset1];
       
-        // If `i_word1` is out of indices of sentence
-        if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
+//         // If `i_word1` is out of indices of sentence
+//         if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
         
-        const unsigned long long word1 = sentence_concated[i_word1_concated] + vocab_size * i_offset1;
+//         const unsigned long long word1 = sentence_concated[i_word1_concated] + vocab_size * i_offset1;
         
-        G_diag(word1 + p_c) += M_diag[i_word1_concated];
+//         G_diag(word1 + p_c) += M_diag[i_word1_concated];
         
-        H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(Wi) %*% Ci
-        H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij));  // Element of t(Ci) %*% Ji
-      }
+//         H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(Wi) %*% Ci
+//         H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij));  // Element of t(Ci) %*% Ji
+//       }
       
-      n_pushed_triplets += 2*window_size + 1;
+//       n_pushed_triplets += 2*window_size + 1;
       
-      // Commit temporary matrices
-      if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
-        update_crossprod_matrix(H_tripletList, H_temp, H);
+//       // Commit temporary matrices
+//       if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
+//         update_crossprod_matrix(H_tripletList, H_temp, H);
         
-        n_pushed_triplets = 0;
-      }
+//         n_pushed_triplets = 0;
+//       }
 
-      i_sentence_concated++;
-    }
-  }
+//       i_sentence_concated++;
+//     }
+//   }
 
 
-  H.makeCompressed();
+//   H.makeCompressed();
 
-  std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
-  std::cout << "H,  " << H.nonZeros() << ",  " << H.rows() << ",  " << H.cols() << std::endl;
-  std::cout << std::endl;
-}
+//   std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
+//   std::cout << "H,  " << H.nonZeros() << ",  " << H.rows() << ",  " << H.cols() << std::endl;
+//   std::cout << std::endl;
+// }
 
 
 void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h_diag)
@@ -381,12 +379,11 @@ void construct_h_diag_matrix (VectorXreal &tXX_diag, realSparseMatrix &tXX_h_dia
 
 
 
-// [[Rcpp::export]]
-Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence,
-                            const int window_size,
-                            const int vocab_size,
-                            const int k,
-                            const bool mode_oscca)
+EigenwordsResults EigenwordsRedSVD_cpp(const MapVectorXi& sentence,
+                                       const int window_size,
+                                       const int vocab_size,
+                                       const int k,
+                                       const bool mode_oscca)
 {
   const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
   const unsigned long long c_col_size = 2 * lr_col_size;
@@ -420,16 +417,9 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence,
    
     std::cout << "Calculate Randomized SVD..." << std::endl;
     RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
-    
-    return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
-                              // Rcpp::Named("tWC") = Rcpp::wrap(tWC.cast <real> ()),
-                              // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
-                              // Rcpp::Named("tCC_h") = Rcpp::wrap(tCC_h),
-                              // Rcpp::Named("A") = Rcpp::wrap(a),
-                              // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-                              // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-                               Rcpp::Named("D") = Rcpp::wrap(svdA.singularValues())
-                              );
+
+    return EigenwordsResults(tWW_h_diag * svdA.matrixU(), tCC_h_diag * svdA.matrixV(), svdA.singularValues());
+
 
   } else {
     // Execute Two Step CCA
@@ -477,189 +467,189 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence,
     std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
     RedSVD::RedSVD<MatrixXreal> svdA(a, k, 20);
     
-    return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
-                              Rcpp::Named("singular_values") = Rcpp::wrap(svdA.singularValues())
-                              // Rcpp::Named("tWS") = Rcpp::wrap(tWS),
-                              // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
-                              // Rcpp::Named("tSS_h") = Rcpp::wrap(tSS_h),
-                              // Rcpp::Named("A") = Rcpp::wrap(a),
-                              // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-                              // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-                              );
+    // return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
+    //                           Rcpp::Named("singular_values") = Rcpp::wrap(svdA.singularValues())
+    //                           // Rcpp::Named("tWS") = Rcpp::wrap(tWS),
+    //                           // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
+    //                           // Rcpp::Named("tSS_h") = Rcpp::wrap(tSS_h),
+    //                           // Rcpp::Named("A") = Rcpp::wrap(a),
+    //                           // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
+    //                           // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
+    //                           );
   }
 }
 
 
-// [[Rcpp::export]]
-Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
-                           const MapVectorXi& document_id,
-                           const int window_size,
-                           const int vocab_size,
-                           const int k,
-                           const real gamma_G,
-                           const real gamma_H,
-                           const bool link_w_d,
-                           const bool link_c_d)
-{
-  const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
-  const unsigned long long c_col_size = 2 * lr_col_size;
-  const unsigned long long n_documents = document_id.maxCoeff() + 1;
-  const unsigned long long p[4] = {0, vocab_size, c_col_size, n_documents};
-  const unsigned long long p_cumsum[4] = {1, vocab_size, vocab_size + c_col_size, vocab_size + c_col_size + n_documents};
-  const unsigned long long p_sum = vocab_size + c_col_size + n_documents;
+// // [[Rcpp::export]]
+// Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
+//                            const MapVectorXi& document_id,
+//                            const int window_size,
+//                            const int vocab_size,
+//                            const int k,
+//                            const real gamma_G,
+//                            const real gamma_H,
+//                            const bool link_w_d,
+//                            const bool link_c_d)
+// {
+//   const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
+//   const unsigned long long c_col_size = 2 * lr_col_size;
+//   const unsigned long long n_documents = document_id.maxCoeff() + 1;
+//   const unsigned long long p[4] = {0, vocab_size, c_col_size, n_documents};
+//   const unsigned long long p_cumsum[4] = {1, vocab_size, vocab_size + c_col_size, vocab_size + c_col_size + n_documents};
+//   const unsigned long long p_sum = vocab_size + c_col_size + n_documents;
 
 
-  // Construct crossprod matrices
-  Eigen::VectorXi tWW_diag(vocab_size);
-  Eigen::VectorXi tCC_diag(c_col_size);
-  Eigen::VectorXi tDD_diag(n_documents);
-  iSparseMatrix H(p_sum, p_sum);
+//   // Construct crossprod matrices
+//   Eigen::VectorXi tWW_diag(vocab_size);
+//   Eigen::VectorXi tCC_diag(c_col_size);
+//   Eigen::VectorXi tDD_diag(n_documents);
+//   iSparseMatrix H(p_sum, p_sum);
 
-  construct_crossprod_matrices_documents (sentence, document_id,
-                                          tWW_diag, tCC_diag, tDD_diag, H,
-                                          window_size, vocab_size, link_w_d, link_c_d);
+//   construct_crossprod_matrices_documents (sentence, document_id,
+//                                           tWW_diag, tCC_diag, tDD_diag, H,
+//                                           window_size, vocab_size, link_w_d, link_c_d);
 
 
-  // Construct the matrices for CCA and execute CCA
-  std::cout << "Calculate OSCCA..." << std::endl;
+//   // Construct the matrices for CCA and execute CCA
+//   std::cout << "Calculate OSCCA..." << std::endl;
   
-  Eigen::VectorXi G_diag(p_sum);
+//   Eigen::VectorXi G_diag(p_sum);
   
-  if (link_w_d && link_c_d) {
-    G_diag << 2*tWW_diag, 2*tCC_diag, 2*tDD_diag;
-  } else if (!link_w_d) {
-    G_diag <<   tWW_diag, 2*tCC_diag,   tDD_diag;
-  } else {
-    G_diag << 2*tWW_diag,   tCC_diag,   tDD_diag;
-  }
+//   if (link_w_d && link_c_d) {
+//     G_diag << 2*tWW_diag, 2*tCC_diag, 2*tDD_diag;
+//   } else if (!link_w_d) {
+//     G_diag <<   tWW_diag, 2*tCC_diag,   tDD_diag;
+//   } else {
+//     G_diag << 2*tWW_diag,   tCC_diag,   tDD_diag;
+//   }
 
-  realSparseMatrix G_inv_sqrt(p_sum, p_sum);
-  construct_h_diag_matrix(G_diag, G_inv_sqrt);
-  G_inv_sqrt /= sqrt(2);
+//   realSparseMatrix G_inv_sqrt(p_sum, p_sum);
+//   construct_h_diag_matrix(G_diag, G_inv_sqrt);
+//   G_inv_sqrt /= sqrt(2);
 
-  realSparseMatrix H_reg(p_sum, p_sum);
-  H_reg.setIdentity();
-  H_reg *= gamma_H;
+//   realSparseMatrix H_reg(p_sum, p_sum);
+//   H_reg.setIdentity();
+//   H_reg *= gamma_H;
 
-  realSparseMatrix A = (G_inv_sqrt * ((H.cast <real> ().cwiseSqrt() + H_reg).selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
+//   realSparseMatrix A = (G_inv_sqrt * ((H.cast <real> ().cwiseSqrt() + H_reg).selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
 
-  std::cout << "Calculate Randomized SVD..." << std::endl;
-  RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
-  MatrixXreal principal_components = svdA.matrixV();
-  MatrixXreal word_vector     = G_inv_sqrt.block(p_cumsum[0] - 1, p_cumsum[0] - 1, p[1], p[1]) * principal_components.block(p_cumsum[0] - 1, p_cumsum[0] - 1, p[1], k);
-  MatrixXreal document_vector = G_inv_sqrt.block(p_cumsum[2] - 1, p_cumsum[2] - 1, p[3], p[3]) * principal_components.block(p_cumsum[2] - 1, p_cumsum[0] - 1, p[3], k);
+//   std::cout << "Calculate Randomized SVD..." << std::endl;
+//   RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
+//   MatrixXreal principal_components = svdA.matrixV();
+//   MatrixXreal word_vector     = G_inv_sqrt.block(p_cumsum[0] - 1, p_cumsum[0] - 1, p[1], p[1]) * principal_components.block(p_cumsum[0] - 1, p_cumsum[0] - 1, p[1], k);
+//   MatrixXreal document_vector = G_inv_sqrt.block(p_cumsum[2] - 1, p_cumsum[2] - 1, p[3], p[3]) * principal_components.block(p_cumsum[2] - 1, p_cumsum[0] - 1, p[3], k);
   
-  return Rcpp::List::create(Rcpp::Named("word_vector")     = Rcpp::wrap(word_vector),
-                            Rcpp::Named("document_vector") = Rcpp::wrap(document_vector),
-                            Rcpp::Named("singular_values") = Rcpp::wrap(svdA.singularValues()));
-}
+//   return Rcpp::List::create(Rcpp::Named("word_vector")     = Rcpp::wrap(word_vector),
+//                             Rcpp::Named("document_vector") = Rcpp::wrap(document_vector),
+//                             Rcpp::Named("singular_values") = Rcpp::wrap(svdA.singularValues()));
+// }
 
 
-// [[Rcpp::export]]
-Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
-                             const MapVectorXi& document_id_concated,
-                             const Rcpp::IntegerVector window_sizes,
-                             const Rcpp::IntegerVector vocab_sizes,
-                             const Rcpp::IntegerVector sentence_lengths,
-                             const int k,
-                             const real gamma_G,
-                             const real gamma_H,
-                             const bool link_w_d,
-                             const bool link_c_d,
-                             const bool doc_weighting,
-                             const real weight_doc_vs_vc)
-{
+// // [[Rcpp::export]]
+// Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
+//                              const MapVectorXi& document_id_concated,
+//                              const Rcpp::IntegerVector window_sizes,
+//                              const Rcpp::IntegerVector vocab_sizes,
+//                              const Rcpp::IntegerVector sentence_lengths,
+//                              const int k,
+//                              const real gamma_G,
+//                              const real gamma_H,
+//                              const bool link_w_d,
+//                              const bool link_c_d,
+//                              const bool doc_weighting,
+//                              const real weight_doc_vs_vc)
+// {
   
-  if (window_sizes.length() != vocab_sizes.length()) {
-    std::cout << "window_sizes.length() != vocab_sizes.length()" << std::endl;
-    return(-1);
-  }
-  const int n_languages = window_sizes.length();
+//   if (window_sizes.length() != vocab_sizes.length()) {
+//     std::cout << "window_sizes.length() != vocab_sizes.length()" << std::endl;
+//     return(-1);
+//   }
+//   const int n_languages = window_sizes.length();
   
 
-  // dimension of context domain
-  unsigned long long lr_col_sizes[n_languages];
-  unsigned long long  c_col_sizes[n_languages];
-  for (int i = 0; i < n_languages; i++) {
-    lr_col_sizes[i] = (unsigned long long)window_sizes[i] * vocab_sizes[i];
-    c_col_sizes[i] = 2 * lr_col_sizes[i];
-  }
+//   // dimension of context domain
+//   unsigned long long lr_col_sizes[n_languages];
+//   unsigned long long  c_col_sizes[n_languages];
+//   for (int i = 0; i < n_languages; i++) {
+//     lr_col_sizes[i] = (unsigned long long)window_sizes[i] * vocab_sizes[i];
+//     c_col_sizes[i] = 2 * lr_col_sizes[i];
+//   }
 
-  const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
-  const unsigned long long n_domain = 2 * n_languages + 1;  // # of domains = 2 * (# of languages) + document
-  unsigned long long p_indices[n_domain];        // dimensions of each domain
-  unsigned long long p_head_domains[n_domain];   // head of indices of each domain
+//   const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
+//   const unsigned long long n_domain = 2 * n_languages + 1;  // # of domains = 2 * (# of languages) + document
+//   unsigned long long p_indices[n_domain];        // dimensions of each domain
+//   unsigned long long p_head_domains[n_domain];   // head of indices of each domain
 
-  for (int i = 0; i < n_domain - 1; i++) {
-    int i_domain = i / 2;
-    if (i % 2 == 0) {
-      p_indices[i] = vocab_sizes[i_domain];
-    } else {
-      p_indices[i] = c_col_sizes[i_domain];
-    }
-  }
-  p_indices[n_domain - 1] = n_documents;
+//   for (int i = 0; i < n_domain - 1; i++) {
+//     int i_domain = i / 2;
+//     if (i % 2 == 0) {
+//       p_indices[i] = vocab_sizes[i_domain];
+//     } else {
+//       p_indices[i] = c_col_sizes[i_domain];
+//     }
+//   }
+//   p_indices[n_domain - 1] = n_documents;
   
-  p_head_domains[0] = 0;
-  for (int i = 1; i < n_domain; i++) {
-    p_head_domains[i] = p_head_domains[i - 1] + p_indices[i - 1];
-  }
+//   p_head_domains[0] = 0;
+//   for (int i = 1; i < n_domain; i++) {
+//     p_head_domains[i] = p_head_domains[i - 1] + p_indices[i - 1];
+//   }
 
-  const unsigned long long p = p_head_domains[n_domain - 1] + n_documents;  // dimension of concated vectors
+//   const unsigned long long p = p_head_domains[n_domain - 1] + n_documents;  // dimension of concated vectors
 
 
-  // Construct count table of words of each documents
-  int l = 0;  //todo
-  VectorXreal inverse_word_count_table(n_documents);
+//   // Construct count table of words of each documents
+//   int l = 0;  //todo
+//   VectorXreal inverse_word_count_table(n_documents);
 
-  {
-    Eigen::VectorXi word_count_table(n_documents);
+//   {
+//     Eigen::VectorXi word_count_table(n_documents);
     
-    // Initialization
-    for (unsigned long long i = 0; i < n_documents; i++) {
-      word_count_table(i) = 0;
-    }
+//     // Initialization
+//     for (unsigned long long i = 0; i < n_documents; i++) {
+//       word_count_table(i) = 0;
+//     }
     
-    for (unsigned long long i = 0; i < sentence_lengths[l]; i++) {
-      word_count_table(document_id_concated[i]) += 1;
-    }
+//     for (unsigned long long i = 0; i < sentence_lengths[l]; i++) {
+//       word_count_table(document_id_concated[i]) += 1;
+//     }
     
-    for (unsigned long long i = 0; i < n_documents; i++) {
-      inverse_word_count_table(i) = 1.0 / (real)word_count_table(i);
-    }
-  }
+//     for (unsigned long long i = 0; i < n_documents; i++) {
+//       inverse_word_count_table(i) = 1.0 / (real)word_count_table(i);
+//     }
+//   }
 
-  // Construct matrices: G, H
-  VectorXreal G_diag(p);
-  realSparseMatrix H(p, p);
+//   // Construct matrices: G, H
+//   VectorXreal G_diag(p);
+//   realSparseMatrix H(p, p);
 
-  construct_matrices_mceigendocs(sentence_concated, document_id_concated, inverse_word_count_table,
-                                 G_diag, H,
-                                 window_sizes, vocab_sizes, sentence_lengths,
-                                 p_head_domains, n_domain,
-                                 link_w_d, link_c_d, doc_weighting, weight_doc_vs_vc);
+//   construct_matrices_mceigendocs(sentence_concated, document_id_concated, inverse_word_count_table,
+//                                  G_diag, H,
+//                                  window_sizes, vocab_sizes, sentence_lengths,
+//                                  p_head_domains, n_domain,
+//                                  link_w_d, link_c_d, doc_weighting, weight_doc_vs_vc);
 
-  // Construct the matrices for CCA
-  std::cout << "Calculate CDMCA..." << std::endl;
+//   // Construct the matrices for CCA
+//   std::cout << "Calculate CDMCA..." << std::endl;
   
-  realSparseMatrix G_inv_sqrt(p, p);
-  construct_h_diag_matrix(G_diag, G_inv_sqrt);
+//   realSparseMatrix G_inv_sqrt(p, p);
+//   construct_h_diag_matrix(G_diag, G_inv_sqrt);
 
-  realSparseMatrix A = (G_inv_sqrt * (H.cast <real> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
+//   realSparseMatrix A = (G_inv_sqrt * (H.cast <real> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
 
-  // Execute CCA
-  std::cout << "Calculate Randomized SVD..." << std::endl;
-  RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
-  MatrixXreal principal_components = svdA.matrixV();
-  MatrixXreal vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
+//   // Execute CCA
+//   std::cout << "Calculate Randomized SVD..." << std::endl;
+//   RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
+//   MatrixXreal principal_components = svdA.matrixV();
+//   MatrixXreal vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
 
-  Rcpp::NumericVector p_head_domains_return(n_domain);
-  for (int i = 0; i < n_domain; i++){
-    p_head_domains_return[i] = p_head_domains[i];
-  }
+//   Rcpp::NumericVector p_head_domains_return(n_domain);
+//   for (int i = 0; i < n_domain; i++){
+//     p_head_domains_return[i] = p_head_domains[i];
+//   }
 
 
-  return Rcpp::List::create(Rcpp::Named("V") = Rcpp::wrap(vector_representations),
-                            Rcpp::Named("p_head_domains") = p_head_domains_return,
-                            Rcpp::Named("p") = (double)p);
-}
+//   return Rcpp::List::create(Rcpp::Named("V") = Rcpp::wrap(vector_representations),
+//                             Rcpp::Named("p_head_domains") = p_head_domains_return,
+//                             Rcpp::Named("p") = (double)p);
+// }
