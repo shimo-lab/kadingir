@@ -253,7 +253,7 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
   unsigned long long i_sentence_concated = 0;
   unsigned long long n_pushed_triplets = 0;
 
-  unsigned long long n = 0;
+  unsigned long long n = 0;  // number of data
   for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
     n += sentence_lengths[i_languages];
   }
@@ -352,7 +352,7 @@ void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h
   }
 }
 
-// TODO
+// TODO : template で書けないか？
 void construct_h_diag_matrix (VectorXreal &tXX_diag, realSparseMatrix &tXX_h_diag)
 {
   VectorXreal tXX_h(tXX_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
@@ -537,8 +537,10 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
                              const Rcpp::IntegerVector vocab_sizes,
                              const Rcpp::IntegerVector sentence_lengths,
                              const int k,
-                             const real gamma_G, const real gamma_H,
-                             const bool link_w_d, const bool link_c_d,
+                             const real gamma_G,
+                             const real gamma_H,
+                             const bool link_w_d,
+                             const bool link_c_d,
                              const bool doc_weighting)
 {
   
@@ -558,7 +560,7 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
   }
 
   const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
-  const unsigned long long n_domain = 2 * n_languages + 1;  // 2 * languages + document
+  const unsigned long long n_domain = 2 * n_languages + 1;  // # of domains = 2 * (# of languages) + document
   unsigned long long p_indices[n_domain];        // dimensions of each domain
   unsigned long long p_head_domains[n_domain];   // head of indices of each domain
 
@@ -601,7 +603,7 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
     }
   }
 
-  // Construct crossprod matrices
+  // Construct matrices: G, H
   VectorXreal G_diag(p);
   realSparseMatrix H(p, p);
 
@@ -611,7 +613,7 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
                                  p_head_domains, n_domain,
                                  link_w_d, link_c_d, doc_weighting);
 
-  // Construct the matrices for CCA and execute CCA
+  // Construct the matrices for CCA
   std::cout << "Calculate CDMCA..." << std::endl;
   
   realSparseMatrix G_inv_sqrt(p, p);
@@ -619,6 +621,7 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
 
   realSparseMatrix A = (G_inv_sqrt * (H.cast <real> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
 
+  // Execute CCA
   std::cout << "Calculate Randomized SVD..." << std::endl;
   RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
   MatrixXreal principal_components = svdA.matrixV();
@@ -628,6 +631,7 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
   for (int i = 0; i < n_domain; i++){
     p_head_domains_return[i] = p_head_domains[i];
   }
+
 
   return Rcpp::List::create(Rcpp::Named("V") = Rcpp::wrap(vector_representations),
                             Rcpp::Named("p_head_domains") = p_head_domains_return,
