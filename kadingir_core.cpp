@@ -28,7 +28,8 @@ const int TRIPLET_VECTOR_SIZE = 10000000;
 
 // Update crossprod matrix using triplets
 template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
-                                                       MatrixX &tXX_temp, MatrixX &tXX)
+                                                       MatrixX &tXX_temp,
+                                                       MatrixX &tXX)
 {
   tXX_temp.setFromTriplets(tXX_tripletList.begin(), tXX_tripletList.end());
   tXX_tripletList.clear();
@@ -50,10 +51,14 @@ void fill_offset_table (int offsets[], int window_size)
 
 
 void construct_crossprod_matrices (const MapVectorXi& sentence,
-                                   Eigen::VectorXi &tWW_diag, Eigen::VectorXi &tCC_diag,
-                                   iSparseMatrix &tWC, iSparseMatrix &tLL,
-                                   iSparseMatrix &tLR, iSparseMatrix &tRR,
-                                   const int window_size, const int vocab_size,
+                                   Eigen::VectorXi &tWW_diag,
+                                   Eigen::VectorXi &tCC_diag,
+                                   iSparseMatrix &tWC,
+                                   iSparseMatrix &tLL,
+                                   iSparseMatrix &tLR,
+                                   iSparseMatrix &tRR,
+                                   const int window_size,
+                                   const int vocab_size,
                                    const bool mode_oscca)
 {
   const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
@@ -156,11 +161,16 @@ void construct_crossprod_matrices (const MapVectorXi& sentence,
 }
 
 
-void construct_crossprod_matrices_documents (const MapVectorXi& sentence, const MapVectorXi& document_id,
-                                             Eigen::VectorXi &tWW_diag, Eigen::VectorXi &tCC_diag,
-                                             Eigen::VectorXi &tDD_diag, iSparseMatrix &H,
-                                             const int window_size, const int vocab_size,
-                                             const bool link_w_d, const bool link_c_d)
+void construct_crossprod_matrices_documents (const MapVectorXi& sentence,
+                                             const MapVectorXi& document_id,
+                                             Eigen::VectorXi &tWW_diag,
+                                             Eigen::VectorXi &tCC_diag,
+                                             Eigen::VectorXi &tDD_diag,
+                                             iSparseMatrix &H,
+                                             const int window_size,
+                                             const int vocab_size,
+                                             const bool link_w_d,
+                                             const bool link_c_d)
 {
   const unsigned long long sentence_size = sentence.size();
   const unsigned long long c_col_size = 2 * (unsigned long long)window_size * vocab_size;
@@ -228,15 +238,18 @@ void construct_crossprod_matrices_documents (const MapVectorXi& sentence, const 
 
 
 
-void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const MapVectorXi& document_id_concated,
+void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated,
+                                     const MapVectorXi& document_id_concated,
                                      const VectorXreal& inverse_word_count_table,
-                                     VectorXreal &G_diag, realSparseMatrix &H,
+                                     VectorXreal &G_diag,
+                                     realSparseMatrix &H,
                                      const Rcpp::IntegerVector window_sizes,
                                      const Rcpp::IntegerVector vocab_sizes,
                                      const Rcpp::IntegerVector sentence_lengths,
                                      const unsigned long long p_head_domains[],
                                      const unsigned long long n_domain,
-                                     const bool link_w_d, const bool link_c_d,
+                                     const bool link_w_d,
+                                     const bool link_c_d,
                                      const bool doc_weighting,
                                      const real weight_doc_vs_vc)
 {
@@ -369,8 +382,11 @@ void construct_h_diag_matrix (VectorXreal &tXX_diag, realSparseMatrix &tXX_h_dia
 
 
 // [[Rcpp::export]]
-Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
-                            const int vocab_size, const int k, const bool mode_oscca)
+Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence,
+                            const int window_size,
+                            const int vocab_size,
+                            const int k,
+                            const bool mode_oscca)
 {
   const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
   const unsigned long long c_col_size = 2 * lr_col_size;
@@ -475,9 +491,15 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence, const int window_size,
 
 
 // [[Rcpp::export]]
-Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence, const MapVectorXi& document_id, const int window_size,
-                           const int vocab_size, const int k,
-                           const real gamma_G, const real gamma_H, const bool link_w_d, const bool link_c_d)
+Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
+                           const MapVectorXi& document_id,
+                           const int window_size,
+                           const int vocab_size,
+                           const int k,
+                           const real gamma_G,
+                           const real gamma_H,
+                           const bool link_w_d,
+                           const bool link_c_d)
 {
   const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
   const unsigned long long c_col_size = 2 * lr_col_size;
