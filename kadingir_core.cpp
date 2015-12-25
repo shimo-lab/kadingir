@@ -395,14 +395,16 @@ void Eigenwords::compute()
   construct_h_diag_matrix(tWW_diag, tWW_h_diag);
 
   if (mode_oscca) {
-    run_oscca();
+    run_oscca(tWW_h_diag, tWC, tCC_diag);
   } else {
-    run_tscca();
+    run_tscca(tWW_h_diag, tLL, tLR, tRR, tWC);
   }
 }
 
 // Execute One Step CCA
-void Eigenwords::run_oscca()
+void Eigenwords::run_oscca(realSparseMatrix &tWW_h_diag,
+                           iSparseMatrix &tWC,
+                           Eigen::VectorXi &tCC_diag)
 {
   std::cout << "Calculate OSCCA..." << std::endl;
   
@@ -420,7 +422,11 @@ void Eigenwords::run_oscca()
 }
 
 // Execute Two Step CCA
-void Eigenwords::run_tscca()
+void Eigenwords::run_tscca(realSparseMatrix &tWW_h_diag,
+                           iSparseMatrix &tLL,
+                           iSparseMatrix &tLR,
+                           iSparseMatrix &tRR,
+                           iSparseMatrix &tWC)
 {
   std::cout << "Calculate TSCCA..." << std::endl;
   

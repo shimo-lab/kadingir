@@ -36,6 +36,14 @@ private:
                            iSparseMatrix &tLL,
                            iSparseMatrix &tLR,
                            iSparseMatrix &tRR);
+  void run_oscca(realSparseMatrix &tWW_h_diag,
+                 iSparseMatrix &tWC,
+                 Eigen::VectorXi &tCC_diag);
+  void run_tscca(realSparseMatrix &tWW_h_diag,
+                 iSparseMatrix &tLL,
+                 iSparseMatrix &tLR,
+                 iSparseMatrix &tRR,
+                 iSparseMatrix &tWC);
 
 public:
   Eigenwords(const MapVectorXi& _sentence,
