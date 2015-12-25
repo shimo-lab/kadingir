@@ -38,125 +38,6 @@ void fill_offset_table (int offsets[], int window_size)
 }
 
 
-Eigenwords::Eigenwords (const MapVectorXi& _sentence,
-                        const int _window_size,
-                        const int _vocab_size,
-                        const int _k,
-                        const bool _mode_oscca
-                        ) : sentence(_sentence),
-                            window_size(_window_size),
-                            vocab_size(_vocab_size),
-                            k(_k),
-                            mode_oscca(_mode_oscca)
-{
-  lr_col_size = (unsigned long long)window_size * vocab_size;
-  c_col_size = 2 * lr_col_size;
-}
-
-void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
-                                     Eigen::VectorXi &tCC_diag,
-                                     iSparseMatrix &tWC,
-                                     iSparseMatrix &tLL,
-                                     iSparseMatrix &tLR,
-                                     iSparseMatrix &tRR)
-{
-  const unsigned long long sentence_size = sentence.size();
-  unsigned long long n_pushed_triplets = 0;
-
-  std::vector<Triplet> tWC_tripletList, tLL_tripletList, tLR_tripletList, tRR_tripletList;
-  tWC_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tLL_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tLR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tRR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-
-  iSparseMatrix tWC_temp(vocab_size, c_col_size);
-  iSparseMatrix tLL_temp(lr_col_size, lr_col_size);
-  iSparseMatrix tLR_temp(lr_col_size, lr_col_size);
-  iSparseMatrix tRR_temp(lr_col_size, lr_col_size);
-
-  tWW_diag.setZero();
-  tCC_diag.setZero();
-
-  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
-  int offsets[2*window_size];
-  fill_offset_table(offsets, window_size);
-  
-  
-  for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
-    unsigned long long word0 = sentence[i_sentence];
-    tWW_diag(word0) += 1;
-    
-    for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
-      long long i_word1 = i_sentence + offsets[i_offset1];
-      
-      // If `i_word1` is out of indices of sentence
-      if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
-      
-      unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
-      
-      if (mode_oscca) {
-        // One Step CCA
-        tCC_diag(word1) += 1;
-        
-      } else {
-        // Two step CCA
-        for (int i_offset2 = 0; i_offset2 < 2 * window_size; i_offset2++) {
-          long long i_word2 = i_sentence + offsets[i_offset2];
-          
-          // If `i_word2` is out of indices of sentence
-          if ((i_word2 < 0) || (i_word2 >= sentence_size)) continue;
-          
-          unsigned long long word2 = sentence[i_word2] + vocab_size * i_offset2;
-          
-          bool word1_in_left_context = word1 < lr_col_size;
-          bool word2_in_left_context = word2 < lr_col_size;
-          bool is_upper_triangular = word1 <= word2;
-          
-          if (word1_in_left_context && word2_in_left_context && is_upper_triangular) {
-            // (word1, word2) is an element of upper-triangular part of tLL
-            tLL_tripletList.push_back(Triplet(word1, word2, 1));
-          } else if (word1_in_left_context && !word2_in_left_context) {
-            // (word1, word2) is an element of tLR
-            tLR_tripletList.push_back(Triplet(word1, word2 - lr_col_size, 1));
-          } else if (!word1_in_left_context && !word2_in_left_context && is_upper_triangular) {
-            // (word1, word2) is an element of upper-triangular part of tRR
-            tRR_tripletList.push_back(Triplet(word1 - lr_col_size, word2 - lr_col_size, 1));
-          }
-        }
-      }
-      
-      tWC_tripletList.push_back(Triplet(word0, word1, 1));
-    }
-    
-    n_pushed_triplets++;
-    
-    // Commit temporary matrices
-    if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
-      update_crossprod_matrix(tWC_tripletList, tWC_temp, tWC);
-            
-      if (!mode_oscca) {
-        update_crossprod_matrix(tLL_tripletList, tLL_temp, tLL);
-        update_crossprod_matrix(tLR_tripletList, tLR_temp, tLR);
-        update_crossprod_matrix(tRR_tripletList, tRR_temp, tRR);
-      }
-
-      n_pushed_triplets = 0;
-    }
-  }
-
-  tWC.makeCompressed();
-  tLL.makeCompressed();
-  tLR.makeCompressed();
-  tRR.makeCompressed();
-
-  std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
-  std::cout << "tWC,  " << tWC.nonZeros() << ",  " << tWC.rows() << ",  " << tWC.cols() << std::endl;
-  std::cout << "tLL,  " << tLL.nonZeros() << ",  " << tLL.rows() << ",  " << tLL.cols() << std::endl;
-  std::cout << "tLR,  " << tLR.nonZeros() << ",  " << tLR.rows() << ",  " << tLR.cols() << std::endl;
-  std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
-  std::cout << std::endl;
-}
-
 
 // void construct_crossprod_matrices_documents (const MapVectorXi& sentence,
 //                                              const MapVectorXi& document_id,
@@ -377,6 +258,124 @@ void construct_h_diag_matrix (VectorXreal &tXX_diag, realSparseMatrix &tXX_h_dia
 }
 
 
+Eigenwords::Eigenwords (const MapVectorXi& _sentence,
+                        const int _window_size,
+                        const int _vocab_size,
+                        const int _k,
+                        const bool _mode_oscca
+                        ) : sentence(_sentence),
+                            window_size(_window_size),
+                            vocab_size(_vocab_size),
+                            k(_k),
+                            mode_oscca(_mode_oscca)
+{
+  lr_col_size = (unsigned long long)window_size * vocab_size;
+  c_col_size = 2 * lr_col_size;
+}
+
+void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
+                                     Eigen::VectorXi &tCC_diag,
+                                     iSparseMatrix &tWC,
+                                     iSparseMatrix &tLL,
+                                     iSparseMatrix &tLR,
+                                     iSparseMatrix &tRR)
+{
+  const unsigned long long sentence_size = sentence.size();
+  unsigned long long n_pushed_triplets = 0;
+
+  std::vector<Triplet> tWC_tripletList, tLL_tripletList, tLR_tripletList, tRR_tripletList;
+  tWC_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tLL_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tLR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  tRR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+
+  iSparseMatrix tWC_temp(vocab_size, c_col_size);
+  iSparseMatrix tLL_temp(lr_col_size, lr_col_size);
+  iSparseMatrix tLR_temp(lr_col_size, lr_col_size);
+  iSparseMatrix tRR_temp(lr_col_size, lr_col_size);
+
+  tWW_diag.setZero();
+  tCC_diag.setZero();
+
+  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
+  int offsets[2*window_size];
+  fill_offset_table(offsets, window_size);
+  
+  
+  for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
+    unsigned long long word0 = sentence[i_sentence];
+    tWW_diag(word0) += 1;
+    
+    for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
+      long long i_word1 = i_sentence + offsets[i_offset1];
+      
+      // If `i_word1` is out of indices of sentence
+      if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
+      
+      unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
+      
+      if (mode_oscca) {
+        // One Step CCA
+        tCC_diag(word1) += 1;
+        
+      } else {
+        // Two step CCA
+        for (int i_offset2 = 0; i_offset2 < 2 * window_size; i_offset2++) {
+          long long i_word2 = i_sentence + offsets[i_offset2];
+          
+          // If `i_word2` is out of indices of sentence
+          if ((i_word2 < 0) || (i_word2 >= sentence_size)) continue;
+          
+          unsigned long long word2 = sentence[i_word2] + vocab_size * i_offset2;
+          
+          bool word1_in_left_context = word1 < lr_col_size;
+          bool word2_in_left_context = word2 < lr_col_size;
+          bool is_upper_triangular = word1 <= word2;
+          
+          if (word1_in_left_context && word2_in_left_context && is_upper_triangular) {
+            // (word1, word2) is an element of upper-triangular part of tLL
+            tLL_tripletList.push_back(Triplet(word1, word2, 1));
+          } else if (word1_in_left_context && !word2_in_left_context) {
+            // (word1, word2) is an element of tLR
+            tLR_tripletList.push_back(Triplet(word1, word2 - lr_col_size, 1));
+          } else if (!word1_in_left_context && !word2_in_left_context && is_upper_triangular) {
+            // (word1, word2) is an element of upper-triangular part of tRR
+            tRR_tripletList.push_back(Triplet(word1 - lr_col_size, word2 - lr_col_size, 1));
+          }
+        }
+      }
+      
+      tWC_tripletList.push_back(Triplet(word0, word1, 1));
+    }
+    
+    n_pushed_triplets++;
+    
+    // Commit temporary matrices
+    if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
+      update_crossprod_matrix(tWC_tripletList, tWC_temp, tWC);
+            
+      if (!mode_oscca) {
+        update_crossprod_matrix(tLL_tripletList, tLL_temp, tLL);
+        update_crossprod_matrix(tLR_tripletList, tLR_temp, tLR);
+        update_crossprod_matrix(tRR_tripletList, tRR_temp, tRR);
+      }
+
+      n_pushed_triplets = 0;
+    }
+  }
+
+  tWC.makeCompressed();
+  tLL.makeCompressed();
+  tLR.makeCompressed();
+  tRR.makeCompressed();
+
+  std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
+  std::cout << "tWC,  " << tWC.nonZeros() << ",  " << tWC.rows() << ",  " << tWC.cols() << std::endl;
+  std::cout << "tLL,  " << tLL.nonZeros() << ",  " << tLL.rows() << ",  " << tLL.cols() << std::endl;
+  std::cout << "tLR,  " << tLR.nonZeros() << ",  " << tLR.rows() << ",  " << tLR.cols() << std::endl;
+  std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
+  std::cout << std::endl;
+}
 
 void Eigenwords::compute()
 {
