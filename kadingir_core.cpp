@@ -465,16 +465,10 @@ void Eigenwords::run_tscca()
   
   std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
   RedSVD::RedSVD<MatrixXreal> svdA(a, k, 20);
-  
-  // return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(tWW_h_diag * svdA.matrixU()),
-  //                           Rcpp::Named("singular_values") = Rcpp::wrap(svdA.singularValues())
-  //                           // Rcpp::Named("tWS") = Rcpp::wrap(tWS),
-  //                           // Rcpp::Named("tWW_h") = Rcpp::wrap(tWW_h),
-  //                           // Rcpp::Named("tSS_h") = Rcpp::wrap(tSS_h),
-  //                           // Rcpp::Named("A") = Rcpp::wrap(a),
-  //                           // Rcpp::Named("V") = Rcpp::wrap(svdA.matrixV()),
-  //                           // Rcpp::Named("U") = Rcpp::wrap(svdA.matrixU()),
-  //                           );
+
+  word_vectors = tWW_h_diag * svdA.matrixU();
+  context_vectors = tSS_h_diag * svdA.matrixV();
+  singular_values = svdA.singularValues();
 }
 
 // // [[Rcpp::export]]
