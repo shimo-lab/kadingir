@@ -237,7 +237,8 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
                                      const unsigned long long p_head_domains[],
                                      const unsigned long long n_domain,
                                      const bool link_w_d, const bool link_c_d,
-                                     const bool doc_weighting)
+                                     const bool doc_weighting,
+                                     const real weight_doc_vs_vc)
 {
   const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
   const unsigned long long p = p_head_domains[n_domain - 1] + n_documents;
@@ -268,6 +269,7 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
     } else {
       M_diag(i) = 2;
     }
+    M_diag(i) *= weight_doc_vs_vc;
   }
 
 
@@ -298,6 +300,7 @@ void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated, const
       } else {
         H_ij = 1;
       }
+      H_ij *= weight_doc_vs_vc;
 
       G_diag(word0 + p_v) += M_diag(i_sentence);
       G_diag(docid + p_d) += 1;
@@ -541,7 +544,8 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
                              const real gamma_H,
                              const bool link_w_d,
                              const bool link_c_d,
-                             const bool doc_weighting)
+                             const bool doc_weighting,
+                             const real weight_doc_vs_vc)
 {
   
   if (window_sizes.length() != vocab_sizes.length()) {
@@ -611,7 +615,7 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
                                  G_diag, H,
                                  window_sizes, vocab_sizes, sentence_lengths,
                                  p_head_domains, n_domain,
-                                 link_w_d, link_c_d, doc_weighting);
+                                 link_w_d, link_c_d, doc_weighting, weight_doc_vs_vc);
 
   // Construct the matrices for CCA
   std::cout << "Calculate CDMCA..." << std::endl;
