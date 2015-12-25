@@ -7,3 +7,4 @@ data
 output_*.csv
 *.pdf
 *.html
+*.o
