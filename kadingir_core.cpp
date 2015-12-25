@@ -47,7 +47,11 @@ Eigenwords::Eigenwords (const MapVectorXi& _sentence,
                             window_size(_window_size),
                             vocab_size(_vocab_size),
                             k(_k),
-                            mode_oscca(_mode_oscca) {}
+                            mode_oscca(_mode_oscca)
+{
+  lr_col_size = (unsigned long long)window_size * vocab_size;
+  c_col_size = 2 * lr_col_size;
+}
 
 void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
                                      Eigen::VectorXi &tCC_diag,
@@ -56,8 +60,6 @@ void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
                                      iSparseMatrix &tLR,
                                      iSparseMatrix &tRR)
 {
-  const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
-  const unsigned long long c_col_size = 2 * lr_col_size;
   const unsigned long long sentence_size = sentence.size();
   unsigned long long n_pushed_triplets = 0;
 
@@ -378,10 +380,6 @@ void construct_h_diag_matrix (VectorXreal &tXX_diag, realSparseMatrix &tXX_h_dia
 
 void Eigenwords::compute()
 {
-  const unsigned long long lr_col_size = (unsigned long long)window_size * vocab_size;
-  const unsigned long long c_col_size = 2 * lr_col_size;
-  
-  
   // Construct crossprod matrices
   Eigen::VectorXi tWW_diag(vocab_size);
   Eigen::VectorXi tCC_diag(c_col_size);

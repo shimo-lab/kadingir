@@ -22,6 +22,10 @@ private:
   int vocab_size;
   int k;
   bool mode_oscca;
+
+  unsigned long long c_col_size;
+  unsigned long long lr_col_size;
+
   MatrixXreal word_vectors;
   MatrixXreal context_vectors;
   VectorXreal singular_values;
