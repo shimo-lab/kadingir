@@ -303,16 +303,16 @@ void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
   
   
   for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
-    unsigned long long word0 = sentence[i_sentence];
+    const unsigned long long word0 = sentence[i_sentence];
     tWW_diag(word0) += 1;
     
     for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
-      long long i_word1 = i_sentence + offsets[i_offset1];
+      const long long i_word1 = i_sentence + offsets[i_offset1];
       
       // If `i_word1` is out of indices of sentence
       if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
       
-      unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
+      const unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
       
       if (mode_oscca) {
         // One Step CCA
@@ -321,16 +321,16 @@ void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
       } else {
         // Two step CCA
         for (int i_offset2 = 0; i_offset2 < 2 * window_size; i_offset2++) {
-          long long i_word2 = i_sentence + offsets[i_offset2];
+          const long long i_word2 = i_sentence + offsets[i_offset2];
           
           // If `i_word2` is out of indices of sentence
           if ((i_word2 < 0) || (i_word2 >= sentence_size)) continue;
           
-          unsigned long long word2 = sentence[i_word2] + vocab_size * i_offset2;
+          const unsigned long long word2 = sentence[i_word2] + vocab_size * i_offset2;
           
-          bool word1_in_left_context = word1 < lr_col_size;
-          bool word2_in_left_context = word2 < lr_col_size;
-          bool is_upper_triangular = word1 <= word2;
+          const bool word1_in_left_context = word1 < lr_col_size;
+          const bool word2_in_left_context = word2 < lr_col_size;
+          const bool is_upper_triangular = word1 <= word2;
           
           if (word1_in_left_context && word2_in_left_context && is_upper_triangular) {
             // (word1, word2) is an element of upper-triangular part of tLL
