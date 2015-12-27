@@ -58,6 +58,50 @@ public:
 };
 
 
+class Eigendocs
+{
+private:
+  MapVectorXi sentence;
+  MapVectorXi document_id;
+  int window_size;
+  int vocab_size;
+  int k;
+  bool link_w_d;
+  bool link_c_d;
+  real gamma_G;
+  real gamma_H;
+
+  unsigned long long c_col_size;
+  unsigned long long lr_col_size;
+
+  MatrixXreal vector_representations;
+  VectorXreal singular_values;
+
+  void construct_matrices (Eigen::VectorXi &tWW_diag,
+                           Eigen::VectorXi &tCC_diag,
+                           Eigen::VectorXi &tDD_diag,
+                           iSparseMatrix &H);
+
+public:
+  unsigned long long p;
+  unsigned long long p_indices[3];
+  unsigned long long p_head_domains[3];
+
+  Eigendocs(const MapVectorXi& _sentence,
+            const MapVectorXi& _document_id,
+            const int _window_size,
+            const int _vocab_size,
+            const int _k,
+            const bool _link_w_d,
+            const bool _link_c_d,
+            const real _gamma_G,
+            const real _gamma_H);
+  void compute();
+  MatrixXreal get_vector_representations();
+  VectorXreal get_singular_values();
+};
+
+
 template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
                                                        MatrixX &tXX_temp,
                                                        MatrixX &tXX);
