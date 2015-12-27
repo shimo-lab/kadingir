@@ -8,25 +8,32 @@ source("kadingir.R")
 n.vocabulary <- 10000 # 語彙に含める単語数
 dim.internal <- 200   # 共通空間の次元
 window.size <- 4      # 前後何個の単語をcontextとするか
-path.corpus <- "data/reuters_rcv1_text10000.csv"
-#path.corpus <- "data/train.txt"
+path.corpus <- "data/reuters/reuters_rcv1_text.100000.csv"
 
 
-res.eigendocs <- Eigendocs(path.corpus, n.vocabulary, dim.internal, window.size)
+res.eigendocs <- Eigendocs(path.corpus, n.vocabulary, dim.internal, window.size, plot = TRUE)
 save(res.eigendocs, file = "res_eigendocs.Rdata")
 
 ## Check vector representations of documents
 document.id <- 999
-infos <- read.csv("data/reuters_rcv1_infos10000.csv")
-MostSimilarDocs(document.id, res.eigendocs$svd$document_vector, titles = infos$title)
+infos <- read.csv("data/reuters/reuters_rcv1_infos.100000.csv")
+
+pp <- res.eigendocs$svd$p_head_domains
+p <- res.eigendocs$svd$p
+
+word_vectors <- res.eigendocs$svd$V[(pp[1]+1):pp[2], ]
+document_vectors <- res.eigendocs$svd$V[(pp[3]+1):p, ]
+
+MostSimilarDocs(document.id, document_vectors, titles = infos$title)
+
 
 
 ## Check vector representations of words
-MostSimilar(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words,
+MostSimilar(word_vectors, res.eigendocs$vocab.words,
             positive=c("man"), distance = "cosine")
-MostSimilar(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words,
+MostSimilar(word_vectors, res.eigendocs$vocab.words,
             positive=c("king", "woman"), negative=c("man"), distance = "cosine")
 
 ## Test some tasks for check
-TestGoogleTasks(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words, n.cores = 24)
-TestWordsim353(res.eigendocs$svd$word_vector, res.eigendocs$vocab.words)
+TestGoogleTasks(word_vectors, res.eigendocs$vocab.words, n.cores = 24)
+TestWordsim353(word_vectors, res.eigendocs$vocab.words)
