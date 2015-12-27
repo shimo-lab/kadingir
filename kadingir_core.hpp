@@ -102,6 +102,61 @@ public:
 };
 
 
+class MCEigendocs
+{
+private:
+  MapVectorXi sentence_concated;
+  MapVectorXi document_id_concated;
+  Eigen::VectorXi window_sizes;
+  Eigen::VectorXi vocab_sizes;
+  Eigen::VectorXi sentence_lengths;
+  int k;
+  real gamma_G;
+  real gamma_H;
+  bool link_w_d;
+  bool link_c_d;
+  bool doc_weighting;
+  real weight_doc_vs_vc;
+
+  int n_languages;
+  unsigned long long n_documents;
+  unsigned long long n_domain;
+  unsigned long long p;
+  std::vector<unsigned long long> p_indices;
+  std::vector<unsigned long long> p_head_domains;
+
+  std::vector<unsigned long long> c_col_sizes;
+  std::vector<unsigned long long> lr_col_sizes;
+  std::vector<real>  inverse_word_count_table;
+
+  MatrixXreal vector_representations;
+  VectorXreal singular_values;
+
+  void construct_matrices (VectorXreal &G_diag, realSparseMatrix &H);
+
+public:
+  MCEigendocs(const MapVectorXi& _sentence_concated,
+              const MapVectorXi& _document_id_concated,
+              const Eigen::VectorXi _window_sizes,
+              const Eigen::VectorXi _vocab_sizes,
+              const Eigen::VectorXi _sentence_lengths,
+              const int _k,
+              const real _gamma_G,
+              const real _gamma_H,
+              const bool _link_w_d,
+              const bool _link_c_d,
+              const bool _doc_weighting,
+              const real _weight_doc_vs_vc
+              );
+  void compute();
+  MatrixXreal get_vector_representations();
+  VectorXreal get_singular_values();
+  int get_n_domain();
+  unsigned long long get_p();
+  unsigned long long get_p_head_domains(int index);
+};
+
+
 template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
                                                        MatrixX &tXX_temp,
                                                        MatrixX &tXX);

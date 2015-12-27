@@ -40,124 +40,6 @@ void fill_offset_table (int offsets[], int window_size)
 
 
 
-// void construct_matrices_mceigendocs (const MapVectorXi& sentence_concated,
-//                                      const MapVectorXi& document_id_concated,
-//                                      const VectorXreal& inverse_word_count_table,
-//                                      VectorXreal &G_diag,
-//                                      realSparseMatrix &H,
-//                                      const Rcpp::IntegerVector window_sizes,
-//                                      const Rcpp::IntegerVector vocab_sizes,
-//                                      const Rcpp::IntegerVector sentence_lengths,
-//                                      const unsigned long long p_head_domains[],
-//                                      const unsigned long long n_domain,
-//                                      const bool link_w_d,
-//                                      const bool link_c_d,
-//                                      const bool doc_weighting,
-//                                      const real weight_doc_vs_vc)
-// {
-//   const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
-//   const unsigned long long p = p_head_domains[n_domain - 1] + n_documents;
-
-//   std::vector<Triplet> H_tripletList;
-//   H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-
-//   realSparseMatrix H_temp(p, p);
-
-//   G_diag.setZero();
-
-
-//   unsigned long long i_sentence_concated = 0;
-//   unsigned long long n_pushed_triplets = 0;
-
-//   unsigned long long n = 0;  // number of data
-//   for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
-//     n += sentence_lengths[i_languages];
-//   }
-//   n += n_documents;
-
-//   // todo
-//   unsigned long long size_M = sentence_lengths[0];
-//   VectorXreal M_diag(size_M);
-//   for (unsigned long long i = 0; i < size_M; i++) {
-//     if (doc_weighting) {
-//       M_diag(i) = 1 + inverse_word_count_table(document_id_concated[i]);
-//     } else {
-//       M_diag(i) = 2;
-//     }
-//     M_diag(i) *= weight_doc_vs_vc;
-//   }
-
-
-//   // For each languages
-//   for (int i_languages = 0; i_languages < sentence_lengths.length(); i_languages++) {
-      
-//     const unsigned long long p_v = p_head_domains[2 * i_languages];     // Head of Vi
-//     const unsigned long long p_c = p_head_domains[2 * i_languages + 1]; // Head of Ci
-//     const unsigned long long p_d = p_head_domains[n_domain - 1];        // Head of D
-//     const unsigned long long window_size = window_sizes[i_languages];
-//     const unsigned long long vocab_size = vocab_sizes[i_languages];
-//     const unsigned long long sentence_size = sentence_lengths[i_languages];
-
-
-//     // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
-//     int offsets[2 * window_size];
-//     fill_offset_table(offsets, window_size);
-
-//     // For tokens of each languages
-//     for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
-
-//       const unsigned long long word0 = sentence_concated[i_sentence_concated];
-//       const unsigned long long docid = document_id_concated[i_sentence_concated];
-//       real H_ij;
-
-//       if (doc_weighting) {
-//         H_ij = inverse_word_count_table(docid);
-//       } else {
-//         H_ij = 1;
-//       }
-//       H_ij *= weight_doc_vs_vc;
-
-//       G_diag(word0 + p_v) += M_diag(i_sentence);
-//       G_diag(docid + p_d) += 1;
-
-//       H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij));  // Element of t(Wi) %*% Ji
-
-//       // For each words of context window
-//       for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
-//         const long long i_word1 = i_sentence + offsets[i_offset1];
-//         const long long i_word1_concated = i_sentence_concated + offsets[i_offset1];
-      
-//         // If `i_word1` is out of indices of sentence
-//         if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
-        
-//         const unsigned long long word1 = sentence_concated[i_word1_concated] + vocab_size * i_offset1;
-        
-//         G_diag(word1 + p_c) += M_diag[i_word1_concated];
-        
-//         H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(Wi) %*% Ci
-//         H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij));  // Element of t(Ci) %*% Ji
-//       }
-      
-//       n_pushed_triplets += 2*window_size + 1;
-      
-//       // Commit temporary matrices
-//       if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
-//         update_crossprod_matrix(H_tripletList, H_temp, H);
-        
-//         n_pushed_triplets = 0;
-//       }
-
-//       i_sentence_concated++;
-//     }
-//   }
-
-
-//   H.makeCompressed();
-
-//   std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
-//   std::cout << "H,  " << H.nonZeros() << ",  " << H.rows() << ",  " << H.cols() << std::endl;
-//   std::cout << std::endl;
-// }
 
 
 void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h_diag)
@@ -563,111 +445,234 @@ void Eigendocs::construct_matrices (Eigen::VectorXi &tWW_diag,
 
 
 
-// // [[Rcpp::export]]
-// Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
-//                              const MapVectorXi& document_id_concated,
-//                              const Rcpp::IntegerVector window_sizes,
-//                              const Rcpp::IntegerVector vocab_sizes,
-//                              const Rcpp::IntegerVector sentence_lengths,
-//                              const int k,
-//                              const real gamma_G,
-//                              const real gamma_H,
-//                              const bool link_w_d,
-//                              const bool link_c_d,
-//                              const bool doc_weighting,
-//                              const real weight_doc_vs_vc)
-// {
+MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
+                         const MapVectorXi& _document_id_concated,
+                         const Eigen::VectorXi _window_sizes,
+                         const Eigen::VectorXi _vocab_sizes,
+                         const Eigen::VectorXi _sentence_lengths,
+                         const int _k,
+                         const real _gamma_G,
+                         const real _gamma_H,
+                         const bool _link_w_d,
+                         const bool _link_c_d,
+                         const bool _doc_weighting,
+                         const real _weight_doc_vs_vc
+                         ) : sentence_concated(_sentence_concated),
+               document_id_concated(_document_id_concated),
+               window_sizes(_window_sizes),
+               vocab_sizes(_vocab_sizes),
+               sentence_lengths(_sentence_lengths),
+               k(_k),
+               gamma_G(_gamma_G),
+               gamma_H(_gamma_H),
+               link_w_d(_link_w_d),
+               link_c_d(_link_c_d),
+               doc_weighting(_doc_weighting),
+               weight_doc_vs_vc(_weight_doc_vs_vc)
+               
+{
+  if (window_sizes.size() != vocab_sizes.size()) {
+    std::cout << "window_sizes.size() != vocab_sizes.size()" << std::endl;
+  }
+  n_languages = window_sizes.size();
+
+  // dimension of context domain
+  lr_col_sizes.resize(n_languages);
+  c_col_sizes.resize(n_languages);
+  for (int i = 0; i < n_languages; i++) {
+    lr_col_sizes[i] = (unsigned long long)window_sizes(i) * vocab_sizes[i];
+    c_col_sizes[i] = 2 * lr_col_sizes[i];
+  }
+
+  n_documents = document_id_concated.maxCoeff() + 1;
+  n_domain = 2 * n_languages + 1;  // # of domains = 2 * (# of languages) + document
+  p_indices.resize(n_domain);        // dimensions of each domain
+  p_head_domains.resize(n_domain);   // head of indices of each domain
+
+  for (int i = 0; i < n_domain - 1; i++) {
+    int i_domain = i / 2;
+    if (i % 2 == 0) {
+      p_indices[i] = vocab_sizes[i_domain];
+    } else {
+      p_indices[i] = c_col_sizes[i_domain];
+    }
+  }
+  p_indices[n_domain - 1] = n_documents;
   
-//   if (window_sizes.length() != vocab_sizes.length()) {
-//     std::cout << "window_sizes.length() != vocab_sizes.length()" << std::endl;
-//     return(-1);
-//   }
-//   const int n_languages = window_sizes.length();
-  
+  p_head_domains[0] = 0;
+  for (int i = 1; i < n_domain; i++) {
+    p_head_domains[i] = p_head_domains[i - 1] + p_indices[i - 1];
+  }
 
-//   // dimension of context domain
-//   unsigned long long lr_col_sizes[n_languages];
-//   unsigned long long  c_col_sizes[n_languages];
-//   for (int i = 0; i < n_languages; i++) {
-//     lr_col_sizes[i] = (unsigned long long)window_sizes[i] * vocab_sizes[i];
-//     c_col_sizes[i] = 2 * lr_col_sizes[i];
-//   }
+  p = p_head_domains[n_domain - 1] + n_documents;  // dimension of concated vectors
+}
 
-//   const unsigned long long n_documents = document_id_concated.maxCoeff() + 1;
-//   const unsigned long long n_domain = 2 * n_languages + 1;  // # of domains = 2 * (# of languages) + document
-//   unsigned long long p_indices[n_domain];        // dimensions of each domain
-//   unsigned long long p_head_domains[n_domain];   // head of indices of each domain
+void MCEigendocs::compute()
+{
+  // Construct count table of words of each documents
+  int l = 0;  //todo
+  inverse_word_count_table.resize(n_documents);
 
-//   for (int i = 0; i < n_domain - 1; i++) {
-//     int i_domain = i / 2;
-//     if (i % 2 == 0) {
-//       p_indices[i] = vocab_sizes[i_domain];
-//     } else {
-//       p_indices[i] = c_col_sizes[i_domain];
-//     }
-//   }
-//   p_indices[n_domain - 1] = n_documents;
-  
-//   p_head_domains[0] = 0;
-//   for (int i = 1; i < n_domain; i++) {
-//     p_head_domains[i] = p_head_domains[i - 1] + p_indices[i - 1];
-//   }
-
-//   const unsigned long long p = p_head_domains[n_domain - 1] + n_documents;  // dimension of concated vectors
-
-
-//   // Construct count table of words of each documents
-//   int l = 0;  //todo
-//   VectorXreal inverse_word_count_table(n_documents);
-
-//   {
-//     Eigen::VectorXi word_count_table(n_documents);
+  {
+    Eigen::VectorXi word_count_table(n_documents);
     
-//     // Initialization
-//     for (unsigned long long i = 0; i < n_documents; i++) {
-//       word_count_table(i) = 0;
-//     }
+    // Initialization
+    for (unsigned long long i = 0; i < n_documents; i++) {
+      word_count_table(i) = 0;
+    }
     
-//     for (unsigned long long i = 0; i < sentence_lengths[l]; i++) {
-//       word_count_table(document_id_concated[i]) += 1;
-//     }
+    for (unsigned long long i = 0; i < sentence_lengths[l]; i++) {
+      word_count_table(document_id_concated[i]) += 1;
+    }
     
-//     for (unsigned long long i = 0; i < n_documents; i++) {
-//       inverse_word_count_table(i) = 1.0 / (real)word_count_table(i);
-//     }
-//   }
+    for (unsigned long long i = 0; i < n_documents; i++) {
+      inverse_word_count_table[i] = 1.0 / (real)word_count_table(i);
+    }
+  }
 
-//   // Construct matrices: G, H
-//   VectorXreal G_diag(p);
-//   realSparseMatrix H(p, p);
+  // Construct matrices: G, H
+  VectorXreal G_diag(p);
+  G_diag.setZero();
+  realSparseMatrix H(p, p);
 
-//   construct_matrices_mceigendocs(sentence_concated, document_id_concated, inverse_word_count_table,
-//                                  G_diag, H,
-//                                  window_sizes, vocab_sizes, sentence_lengths,
-//                                  p_head_domains, n_domain,
-//                                  link_w_d, link_c_d, doc_weighting, weight_doc_vs_vc);
+  construct_matrices(G_diag, H);
 
-//   // Construct the matrices for CCA
-//   std::cout << "Calculate CDMCA..." << std::endl;
+  // Construct the matrices for CCA
+  std::cout << "Calculate CDMCA..." << std::endl;
   
-//   realSparseMatrix G_inv_sqrt(p, p);
-//   construct_h_diag_matrix(G_diag, G_inv_sqrt);
+  realSparseMatrix G_inv_sqrt(p, p);
+  construct_h_diag_matrix(G_diag, G_inv_sqrt);
 
-//   realSparseMatrix A = (G_inv_sqrt * (H.cast <real> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
+  realSparseMatrix A = (G_inv_sqrt * (H.cast <real> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
 
-//   // Execute CCA
-//   std::cout << "Calculate Randomized SVD..." << std::endl;
-//   RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
-//   MatrixXreal principal_components = svdA.matrixV();
-//   MatrixXreal vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
-
-//   Rcpp::NumericVector p_head_domains_return(n_domain);
-//   for (int i = 0; i < n_domain; i++){
-//     p_head_domains_return[i] = p_head_domains[i];
-//   }
+  // Execute CDMCA
+  std::cout << "Calculate Randomized SVD..." << std::endl;
+  RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
+  MatrixXreal principal_components = svdA.matrixV();
+  MatrixXreal vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
+}
 
 
-//   return Rcpp::List::create(Rcpp::Named("V") = Rcpp::wrap(vector_representations),
-//                             Rcpp::Named("p_head_domains") = p_head_domains_return,
-//                             Rcpp::Named("p") = (double)p);
-// }
+void MCEigendocs::construct_matrices (VectorXreal &G_diag, realSparseMatrix &H)
+{
+  unsigned long long i_sentence_concated = 0;
+  unsigned long long n_pushed_triplets = 0;
+
+  unsigned long long n = 0;  // number of data
+  for (int i_languages = 0; i_languages < sentence_lengths.size(); i_languages++) {
+    n += sentence_lengths[i_languages];
+  }
+  n += n_documents;
+
+  // todo
+  unsigned long long size_M = sentence_lengths[0];
+  VectorXreal M_diag(size_M);
+  for (unsigned long long i = 0; i < size_M; i++) {
+    if (doc_weighting) {
+      M_diag(i) = 1 + inverse_word_count_table[document_id_concated[i]];
+    } else {
+      M_diag(i) = 2;
+    }
+    M_diag(i) *= weight_doc_vs_vc;
+  }
+
+  std::vector<Triplet> H_tripletList;
+  H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+
+  realSparseMatrix H_temp(p, p);
+
+
+  // For each languages
+  for (int i_languages = 0; i_languages < sentence_lengths.size(); i_languages++) {
+      
+    const unsigned long long p_v = p_head_domains[2 * i_languages];     // Head of Vi
+    const unsigned long long p_c = p_head_domains[2 * i_languages + 1]; // Head of Ci
+    const unsigned long long p_d = p_head_domains[n_domain - 1];        // Head of D
+    const unsigned long long window_size = window_sizes[i_languages];
+    const unsigned long long vocab_size = vocab_sizes[i_languages];
+    const unsigned long long sentence_size = sentence_lengths[i_languages];
+
+
+    // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
+    int offsets[2 * window_size];
+    fill_offset_table(offsets, window_size);
+
+    // For tokens of each languages
+    for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
+
+      const unsigned long long word0 = sentence_concated[i_sentence_concated];
+      const unsigned long long docid = document_id_concated[i_sentence_concated];
+      real H_ij;
+
+      if (doc_weighting) {
+        H_ij = inverse_word_count_table[docid];
+      } else {
+        H_ij = 1;
+      }
+      H_ij *= weight_doc_vs_vc;
+
+      G_diag(word0 + p_v) += M_diag(i_sentence);
+      G_diag(docid + p_d) += 1;
+
+      H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij));  // Element of t(Wi) %*% Ji
+
+      // For each words of context window
+      for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
+        const long long i_word1 = i_sentence + offsets[i_offset1];
+        const long long i_word1_concated = i_sentence_concated + offsets[i_offset1];
+      
+        // If `i_word1` is out of indices of sentence
+        if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
+        
+        const unsigned long long word1 = sentence_concated[i_word1_concated] + vocab_size * i_offset1;
+        
+        G_diag(word1 + p_c) += M_diag[i_word1_concated];
+        
+        H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(Wi) %*% Ci
+        H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij));  // Element of t(Ci) %*% Ji
+      }
+      
+      n_pushed_triplets += 2*window_size + 1;
+      
+      // Commit temporary matrices
+      if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
+        update_crossprod_matrix(H_tripletList, H_temp, H);
+        
+        n_pushed_triplets = 0;
+      }
+
+      i_sentence_concated++;
+    }
+  }
+
+
+  H.makeCompressed();
+
+  std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
+  std::cout << "H,  " << H.nonZeros() << ",  " << H.rows() << ",  " << H.cols() << std::endl;
+  std::cout << std::endl;
+}
+
+
+MatrixXreal MCEigendocs::get_vector_representations() {
+  return vector_representations;
+}
+
+VectorXreal MCEigendocs::get_singular_values() {
+  return singular_values;
+}
+
+int MCEigendocs::get_n_domain()
+{
+  return n_domain;
+}
+
+unsigned long long MCEigendocs::get_p()
+{
+  return p;
+}
+
+unsigned long long MCEigendocs::get_p_head_domains(int index)
+{
+  return p_head_domains[index];
+}
