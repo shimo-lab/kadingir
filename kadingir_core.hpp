@@ -51,10 +51,10 @@ public:
              const int _vocab_size,
              const int _k,
              const bool _mode_oscca);
-  MatrixXreal get_word_vectors() { return word_vectors; }
-  MatrixXreal get_context_vectors() { return context_vectors; }
-  VectorXreal get_singular_values() { return singular_values; }
   void compute();
+  MatrixXreal get_word_vectors();
+  MatrixXreal get_context_vectors();
+  VectorXreal get_singular_values();
 };
 
 

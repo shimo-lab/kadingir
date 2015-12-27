@@ -273,6 +273,42 @@ Eigenwords::Eigenwords (const MapVectorXi& _sentence,
   c_col_size = 2 * lr_col_size;
 }
 
+void Eigenwords::compute()
+{
+  // Construct crossprod matrices
+  Eigen::VectorXi tWW_diag(vocab_size);
+  Eigen::VectorXi tCC_diag(c_col_size);
+  iSparseMatrix tWC(vocab_size, c_col_size);
+  iSparseMatrix tLL(lr_col_size, lr_col_size);
+  iSparseMatrix tLR(lr_col_size, lr_col_size);
+  iSparseMatrix tRR(lr_col_size, lr_col_size);
+
+  construct_matrices(tWW_diag, tCC_diag, tWC, tLL, tLR, tRR);
+
+
+  // Construct the matrices for CCA and execute CCA
+  realSparseMatrix tWW_h_diag(vocab_size, vocab_size);
+  construct_h_diag_matrix(tWW_diag, tWW_h_diag);
+
+  if (mode_oscca) {
+    run_oscca(tWW_h_diag, tWC, tCC_diag);
+  } else {
+    run_tscca(tWW_h_diag, tLL, tLR, tRR, tWC);
+  }
+}
+
+MatrixXreal get_word_vectors() {
+  return word_vectors;
+}
+
+MatrixXreal get_context_vectors() {
+  return context_vectors;
+}
+
+VectorXreal get_singular_values() {
+  return singular_values;
+}
+
 void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
                                      Eigen::VectorXi &tCC_diag,
                                      iSparseMatrix &tWC,
@@ -375,30 +411,6 @@ void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
   std::cout << "tLR,  " << tLR.nonZeros() << ",  " << tLR.rows() << ",  " << tLR.cols() << std::endl;
   std::cout << "tRR,  " << tRR.nonZeros() << ",  " << tRR.rows() << ",  " << tRR.cols() << std::endl;
   std::cout << std::endl;
-}
-
-void Eigenwords::compute()
-{
-  // Construct crossprod matrices
-  Eigen::VectorXi tWW_diag(vocab_size);
-  Eigen::VectorXi tCC_diag(c_col_size);
-  iSparseMatrix tWC(vocab_size, c_col_size);
-  iSparseMatrix tLL(lr_col_size, lr_col_size);
-  iSparseMatrix tLR(lr_col_size, lr_col_size);
-  iSparseMatrix tRR(lr_col_size, lr_col_size);
-
-  construct_matrices(tWW_diag, tCC_diag, tWC, tLL, tLR, tRR);
-
-
-  // Construct the matrices for CCA and execute CCA
-  realSparseMatrix tWW_h_diag(vocab_size, vocab_size);
-  construct_h_diag_matrix(tWW_diag, tWW_h_diag);
-
-  if (mode_oscca) {
-    run_oscca(tWW_h_diag, tWC, tCC_diag);
-  } else {
-    run_tscca(tWW_h_diag, tLL, tLR, tRR, tWC);
-  }
 }
 
 // Execute One Step CCA
