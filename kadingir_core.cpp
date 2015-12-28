@@ -396,8 +396,8 @@ void Eigendocs::construct_matrices (Eigen::VectorXi &tWW_diag,
   fill_offset_table(offsets, window_size);
     
   for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
-    unsigned long long word0 = sentence[i_sentence];
-    unsigned long long d_id = document_id[i_sentence];
+    const unsigned long long word0 = sentence[i_sentence];
+    const unsigned long long d_id = document_id[i_sentence];
 
     tWW_diag(word0) += 1;
     tDD_diag(d_id) += 1;
@@ -407,12 +407,12 @@ void Eigendocs::construct_matrices (Eigen::VectorXi &tWW_diag,
     }
     
     for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
-      long long i_word1 = i_sentence + offsets[i_offset1];
+      const long long i_word1 = i_sentence + offsets[i_offset1];
       
       // If `i_word1` is out of indices of sentence
       if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
       
-      unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
+      const unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
 
       tCC_diag(word1) += 1;
 
@@ -560,7 +560,7 @@ void MCEigendocs::construct_matrices (VectorXreal &G_diag, realSparseMatrix &H)
   n += n_documents;
 
   // todo
-  unsigned long long size_M = sentence_lengths[0];
+  const unsigned long long size_M = sentence_lengths[0];
   VectorXreal M_diag(size_M);
   for (unsigned long long i = 0; i < size_M; i++) {
     if (doc_weighting) {
