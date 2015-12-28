@@ -38,10 +38,6 @@ void fill_offset_table (int offsets[], int window_size)
 }
 
 
-
-
-
-
 void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h_diag)
 {
   VectorXreal tXX_h(tXX_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
@@ -309,13 +305,13 @@ Eigendocs::Eigendocs (const MapVectorXi& _sentence,
                       const real _gamma_H
                       ) : sentence(_sentence),
                           document_id(_document_id),
-                                                      window_size(_window_size),
-                                                      vocab_size(_vocab_size),
-                                                      k(_k),
-                                                      link_w_d(_link_w_d),
-                                                      link_c_d(_link_c_d),
-                                                      gamma_G(_gamma_G),
-                                                      gamma_H(_gamma_H)
+                          window_size(_window_size),
+                          vocab_size(_vocab_size),
+                          k(_k),
+                          link_w_d(_link_w_d),
+                          link_c_d(_link_c_d),
+                          gamma_G(_gamma_G),
+                          gamma_H(_gamma_H)
 {
   lr_col_size = (unsigned long long)window_size * vocab_size;
   c_col_size = 2 * lr_col_size;
@@ -457,25 +453,24 @@ MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
                          const bool _link_c_d,
                          const bool _doc_weighting,
                          const real _weight_doc_vs_vc
-                         ) : sentence_concated(_sentence_concated),
-               document_id_concated(_document_id_concated),
-               window_sizes(_window_sizes),
-               vocab_sizes(_vocab_sizes),
-               sentence_lengths(_sentence_lengths),
-               k(_k),
-               gamma_G(_gamma_G),
-               gamma_H(_gamma_H),
-               link_w_d(_link_w_d),
-               link_c_d(_link_c_d),
-               doc_weighting(_doc_weighting),
-               weight_doc_vs_vc(_weight_doc_vs_vc)
-               
+                        ) : sentence_concated(_sentence_concated),
+                        document_id_concated(_document_id_concated),
+                        window_sizes(_window_sizes),
+                        vocab_sizes(_vocab_sizes),
+                        sentence_lengths(_sentence_lengths),
+                        k(_k),
+                        gamma_G(_gamma_G),
+                        gamma_H(_gamma_H),
+                        link_w_d(_link_w_d),
+                        link_c_d(_link_c_d),
+                        doc_weighting(_doc_weighting),
+                        weight_doc_vs_vc(_weight_doc_vs_vc)
 {
   if (window_sizes.size() != vocab_sizes.size()) {
     std::cout << "window_sizes.size() != vocab_sizes.size()" << std::endl;
   }
   n_languages = window_sizes.size();
-
+  
   // dimension of context domain
   lr_col_sizes.resize(n_languages);
   c_col_sizes.resize(n_languages);
