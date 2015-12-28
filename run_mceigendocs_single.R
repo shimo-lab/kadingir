@@ -2,23 +2,18 @@
 source("kadingir.R")
 source("mceigendocs.R")
 
-paths.corpus <- c("data/europarl-v7.de-en.100000.en")
+paths.corpus <- c("data/europarl/europarl-v7.de-en.en")
 
-res.eigendocs <- MCEigendocs(paths.corpus, max.vocabulary=10000, dim.internal=50,
-                             window.sizes = c(2), aliases=c("en"), plot = TRUE)
+res.mceigendocs <- MCEigendocs(paths.corpus, max.vocabulary=10000, dim.internal=50,
+                               window.sizes = c(2), aliases=c("en"), plot = TRUE)
 
-p <- res.eigendocs$svd$p_cumsum
-V.en <- res.eigendocs$svd$V[p[1]:p[2], ]
-vocab.words.en <- res.eigendocs$vocab.words[[1]]
+save(res.mceigendocs, file = "res_mceigendocs.Rdata")
+load("res_mceigendocs.Rdata")
 
-save(res.eigendocs, file = "res_eigendocs.Rdata")
-
-
-load("res_eigendocs.Rdata")
-
-p <- res.eigendocs$svd$p_cumsum
-V.en <- res.eigendocs$svd$V[p[1]:p[2], ]
-vocab.words.en <- res.eigendocs$vocab.words[[1]]
+pp <- res.mceigendocs$svd$p_head_domains
+V.en <- res.mceigendocs$svd$V[(pp[1]+1):pp[2], ]
+vocab.sizes <- res.mceigendocs$vocab.sizes
+vocab.words.en <- res.mceigendocs$vocab.words[[1]]
 
 
 MostSimilar(V.en, vocab.words.en,
