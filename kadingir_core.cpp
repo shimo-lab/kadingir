@@ -549,7 +549,7 @@ void MCEigendocs::compute()
   std::cout << "Calculate Randomized SVD..." << std::endl;
   RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
   MatrixXreal principal_components = svdA.matrixV();
-  MatrixXreal vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
+  vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
 }
 
 
