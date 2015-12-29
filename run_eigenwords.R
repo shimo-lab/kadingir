@@ -1,11 +1,11 @@
 
 set.seed(0)
 
-source("kadingir.R")
+source("src/kadingir.R", chdir = TRUE)
 
 
 ## Tuning parameters
-n.vocabulary <- 100000 # 語彙に含める単語数
+n.vocabulary <- 10000 # 語彙に含める単語数
 dim.internal <- 200   # 共通空間の次元
 window.size <- 4      # 前後何個の単語をcontextとするか
 mode <- "oscca"

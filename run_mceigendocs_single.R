@@ -1,6 +1,6 @@
 
-source("kadingir.R")
-source("mceigendocs.R")
+source("src/kadingir.R", chdir = TRUE)
+source("src/mceigendocs.R", chdir = TRUE)
 
 paths.corpus <- c("data/europarl/europarl-v7.de-en.en")
 

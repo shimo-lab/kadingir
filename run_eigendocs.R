@@ -1,7 +1,7 @@
 
 set.seed(0)
 
-source("kadingir.R")
+source("src/kadingir.R", chdir = TRUE)
 
 
 ## Tuning parameters
