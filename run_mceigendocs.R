@@ -2,8 +2,8 @@
 source("src/kadingir.R", chdir = TRUE)
 source("src/mceigendocs.R", chdir = TRUE)
 
-paths.corpus <- c("~/corpus/europarl/europarl-v7.de-en.de",
-                  "~/corpus/europarl/europarl-v7.de-en.en")
+paths.corpus <- c("data/europarl/europarl-v7.de-en.de.tokenized.100000",
+                  "data/europarl/europarl-v7.de-en.en.tokenized.100000")
 
 r <- MCEigendocs(paths.corpus, max.vocabulary=10000, dim.internal=100,
                  window.sizes = c(2, 3), aliases=c("de", "en"), plot = TRUE)

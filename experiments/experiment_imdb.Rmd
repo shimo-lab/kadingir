@@ -16,16 +16,16 @@ print(date())
 ```{r, include = FALSE}
 set.seed(0)
 
-source("./../kadingir.R", chdir=TRUE)
-source("./../mceigendocs.R", chdir=TRUE)
+source("./../src/kadingir.R", chdir=TRUE)
+source("./../src/mceigendocs.R", chdir=TRUE)
 ```
 
 ```{r}
-paths.corpus <- c("./../data/corpus/movie_imdb/imdb_reviews.txt")
+paths.corpus <- c("./../data/eigendocs_imdb/imdb_reviews.txt")
 res.eigendocs <- MCEigendocs(paths.corpus, max.vocabulary=10000, dim.internal=50,
                              window.sizes = c(4), aliases=c("en"), plot = TRUE,
                              doc_weighting = FALSE, weight_doc_vs_vc = 0.01)
-save(res.eigendocs, file = "./../res_eigendocs_imdb.Rdata")
+save(res.eigendocs, file = "./res_eigendocs_imdb.Rdata")
 ```
 
 ## Check vector representations of words
@@ -59,7 +59,7 @@ TestWordsim353(word_vector, vocab_words, path = "./../test/combined.csv")
 ## Sentiment analysis using IMDb dataset 1 : unregularized
 ```{r}
 vectors <- res.eigendocs$svd$V[(pp[3]+1):p, ]
-csv <- read.csv("./../data/corpus/movie_imdb/imdb_id_rate.csv")
+csv <- read.csv("./../data/eigendocs_imdb/imdb_id_rate.csv")
 
 df <- data.frame(cbind(csv, vectors))
 df <- df[df[ , "rate"] != 0, ]  # Remove unsup
