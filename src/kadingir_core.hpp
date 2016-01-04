@@ -5,13 +5,12 @@
 #include "redsvd.hpp"
 
 
-typedef double real;
-typedef Eigen::VectorXd VectorXreal;
-typedef Eigen::MatrixXd MatrixXreal;
+typedef Eigen::VectorXd VectorXd;
+typedef Eigen::MatrixXd MatrixXd;
 typedef Eigen::Map<Eigen::VectorXi> MapVectorXi;
 typedef Eigen::SparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> iSparseMatrix;
-typedef Eigen::SparseMatrix<real, Eigen::RowMajor, std::ptrdiff_t> realSparseMatrix;
-typedef Eigen::Triplet<real> Triplet;
+typedef Eigen::SparseMatrix<double, Eigen::RowMajor, std::ptrdiff_t> dSparseMatrix;
+typedef Eigen::Triplet<double> Triplet;
 
 
 class Eigenwords
@@ -26,9 +25,9 @@ private:
   unsigned long long c_col_size;
   unsigned long long lr_col_size;
 
-  MatrixXreal word_vectors;
-  MatrixXreal context_vectors;
-  VectorXreal singular_values;
+  MatrixXd word_vectors;
+  MatrixXd context_vectors;
+  VectorXd singular_values;
 
   void construct_matrices (Eigen::VectorXi &tWW_diag,
                            Eigen::VectorXi &tCC_diag,
@@ -36,10 +35,10 @@ private:
                            iSparseMatrix &tLL,
                            iSparseMatrix &tLR,
                            iSparseMatrix &tRR);
-  void run_oscca(realSparseMatrix &tWW_h_diag,
+  void run_oscca(dSparseMatrix &tWW_h_diag,
                  iSparseMatrix &tWC,
                  Eigen::VectorXi &tCC_diag);
-  void run_tscca(realSparseMatrix &tWW_h_diag,
+  void run_tscca(dSparseMatrix &tWW_h_diag,
                  iSparseMatrix &tLL,
                  iSparseMatrix &tLR,
                  iSparseMatrix &tRR,
@@ -52,9 +51,9 @@ public:
              const int _k,
              const bool _mode_oscca);
   void compute();
-  MatrixXreal get_word_vectors();
-  MatrixXreal get_context_vectors();
-  VectorXreal get_singular_values();
+  MatrixXd get_word_vectors();
+  MatrixXd get_context_vectors();
+  VectorXd get_singular_values();
 };
 
 
@@ -68,14 +67,14 @@ private:
   int k;
   bool link_w_d;
   bool link_c_d;
-  real gamma_G;
-  real gamma_H;
+  double gamma_G;
+  double gamma_H;
 
   unsigned long long c_col_size;
   unsigned long long lr_col_size;
 
-  MatrixXreal vector_representations;
-  VectorXreal singular_values;
+  MatrixXd vector_representations;
+  VectorXd singular_values;
 
   void construct_matrices (Eigen::VectorXi &tWW_diag,
                            Eigen::VectorXi &tCC_diag,
@@ -94,11 +93,11 @@ public:
             const int _k,
             const bool _link_w_d,
             const bool _link_c_d,
-            const real _gamma_G,
-            const real _gamma_H);
+            const double _gamma_G,
+            const double _gamma_H);
   void compute();
-  MatrixXreal get_vector_representations();
-  VectorXreal get_singular_values();
+  MatrixXd get_vector_representations();
+  VectorXd get_singular_values();
 };
 
 
@@ -111,12 +110,12 @@ private:
   Eigen::VectorXi vocab_sizes;
   Eigen::VectorXi sentence_lengths;
   int k;
-  real gamma_G;
-  real gamma_H;
+  double gamma_G;
+  double gamma_H;
   bool link_w_d;
   bool link_c_d;
   bool doc_weighting;
-  real weight_doc_vs_vc;
+  double weight_doc_vs_vc;
 
   int n_languages;
   unsigned long long n_documents;
@@ -127,12 +126,12 @@ private:
 
   std::vector<unsigned long long> c_col_sizes;
   std::vector<unsigned long long> lr_col_sizes;
-  std::vector<real>  inverse_word_count_table;
+  std::vector<double>  inverse_word_count_table;
 
-  MatrixXreal vector_representations;
-  VectorXreal singular_values;
+  MatrixXd vector_representations;
+  VectorXd singular_values;
 
-  void construct_matrices (VectorXreal &G_diag, realSparseMatrix &H);
+  void construct_matrices (VectorXd &G_diag, dSparseMatrix &H);
 
 public:
   MCEigendocs(const MapVectorXi& _sentence_concated,
@@ -141,16 +140,16 @@ public:
               const Eigen::VectorXi _vocab_sizes,
               const Eigen::VectorXi _sentence_lengths,
               const int _k,
-              const real _gamma_G,
-              const real _gamma_H,
+              const double _gamma_G,
+              const double _gamma_H,
               const bool _link_w_d,
               const bool _link_c_d,
               const bool _doc_weighting,
-              const real _weight_doc_vs_vc
+              const double _weight_doc_vs_vc
               );
   void compute();
-  MatrixXreal get_vector_representations();
-  VectorXreal get_singular_values();
+  MatrixXd get_vector_representations();
+  VectorXd get_singular_values();
   int get_n_domain();
   unsigned long long get_p();
   unsigned long long get_p_head_domains(int index);
@@ -161,5 +160,5 @@ template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX
                                                        MatrixX &tXX_temp,
                                                        MatrixX &tXX);
 void fill_offset_table (int offsets[], int window_size);
-void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h_diag);
+void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag);
 

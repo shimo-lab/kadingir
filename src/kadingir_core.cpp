@@ -38,9 +38,9 @@ void fill_offset_table (int offsets[], int window_size)
 }
 
 
-void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h_diag)
+void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag)
 {
-  VectorXreal tXX_h(tXX_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  VectorXd tXX_h(tXX_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   tXX_h_diag.reserve(tXX_diag.size());
   
   for (int i = 0; i < tXX_h.size(); i++) {
@@ -49,9 +49,9 @@ void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, realSparseMatrix &tXX_h
 }
 
 // TODO : template で書けないか？
-void construct_h_diag_matrix (VectorXreal &tXX_diag, realSparseMatrix &tXX_h_diag)
+void construct_h_diag_matrix (VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
 {
-  VectorXreal tXX_h(tXX_diag.cast <real> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  VectorXd tXX_h(tXX_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   tXX_h_diag.reserve(tXX_diag.size());
   
   for (int i = 0; i < tXX_h.size(); i++) {
@@ -89,7 +89,7 @@ void Eigenwords::compute()
 
 
   // Construct the matrices for CCA and execute CCA
-  realSparseMatrix tWW_h_diag(vocab_size, vocab_size);
+  dSparseMatrix tWW_h_diag(vocab_size, vocab_size);
   construct_h_diag_matrix(tWW_diag, tWW_h_diag);
 
   if (mode_oscca) {
@@ -99,15 +99,15 @@ void Eigenwords::compute()
   }
 }
 
-MatrixXreal Eigenwords::get_word_vectors() {
+MatrixXd Eigenwords::get_word_vectors() {
   return word_vectors;
 }
 
-MatrixXreal Eigenwords::get_context_vectors() {
+MatrixXd Eigenwords::get_context_vectors() {
   return context_vectors;
 }
 
-VectorXreal Eigenwords::get_singular_values() {
+VectorXd Eigenwords::get_singular_values() {
   return singular_values;
 }
 
@@ -216,19 +216,19 @@ void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
 }
 
 // Execute One Step CCA
-void Eigenwords::run_oscca(realSparseMatrix &tWW_h_diag,
+void Eigenwords::run_oscca(dSparseMatrix &tWW_h_diag,
                            iSparseMatrix &tWC,
                            Eigen::VectorXi &tCC_diag)
 {
   std::cout << "Calculate OSCCA..." << std::endl;
   
-  realSparseMatrix tCC_h_diag(c_col_size, c_col_size);
+  dSparseMatrix tCC_h_diag(c_col_size, c_col_size);
   construct_h_diag_matrix(tCC_diag, tCC_h_diag);
   
-  realSparseMatrix a = tWW_h_diag * (tWC.cast <real> ().eval().cwiseSqrt()) * tCC_h_diag;
+  dSparseMatrix a = tWW_h_diag * (tWC.cast <double> ().eval().cwiseSqrt()) * tCC_h_diag;
   
   std::cout << "Calculate Randomized SVD..." << std::endl;
-  RedSVD::RedSVD<realSparseMatrix> svdA(a, k, 20);
+  RedSVD::RedSVD<dSparseMatrix> svdA(a, k, 20);
   
   word_vectors = tWW_h_diag * svdA.matrixU();
   context_vectors = tCC_h_diag * svdA.matrixV();
@@ -236,7 +236,7 @@ void Eigenwords::run_oscca(realSparseMatrix &tWW_h_diag,
 }
 
 // Execute Two Step CCA
-void Eigenwords::run_tscca(realSparseMatrix &tWW_h_diag,
+void Eigenwords::run_tscca(dSparseMatrix &tWW_h_diag,
                            iSparseMatrix &tLL,
                            iSparseMatrix &tLR,
                            iSparseMatrix &tRR,
@@ -247,44 +247,44 @@ void Eigenwords::run_tscca(realSparseMatrix &tWW_h_diag,
   // Two Step CCA : Step 1
   Eigen::VectorXi tLL_diag = tLL.diagonal();
   Eigen::VectorXi tRR_diag = tRR.diagonal();
-  realSparseMatrix tLL_h_diag(lr_col_size, lr_col_size);
-  realSparseMatrix tRR_h_diag(lr_col_size, lr_col_size);
+  dSparseMatrix tLL_h_diag(lr_col_size, lr_col_size);
+  dSparseMatrix tRR_h_diag(lr_col_size, lr_col_size);
   
   construct_h_diag_matrix(tLL_diag, tLL_h_diag);
   construct_h_diag_matrix(tRR_diag, tRR_h_diag);
-  realSparseMatrix b = tLL_h_diag * (tLR.cast <real> ().eval().cwiseSqrt()) * tRR_h_diag;
+  dSparseMatrix b = tLL_h_diag * (tLR.cast <double> ().eval().cwiseSqrt()) * tRR_h_diag;
   
   std::cout << "# of nonzero,  # of rows,  # of cols = " << b.nonZeros() << ",  " << b.rows() << ",  " << b.cols() << std::endl;
   
   std::cout << "Calculate Randomized SVD (1/2)..." << std::endl;
-  RedSVD::RedSVD<realSparseMatrix> svdB(b, k, 20);
+  RedSVD::RedSVD<dSparseMatrix> svdB(b, k, 20);
   b.resize(0, 0);  // Release memory
   
-  MatrixXreal phi_l = svdB.matrixU();
-  MatrixXreal phi_r = svdB.matrixV();
+  MatrixXd phi_l = svdB.matrixU();
+  MatrixXd phi_r = svdB.matrixV();
   
   // Two Step CCA : Step 2
-  VectorXreal tSS_h1 = (phi_l.transpose() * (tLL.cast <real> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt();
-  VectorXreal tSS_h2 = (phi_r.transpose() * (tRR.cast <real> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt();
+  VectorXd tSS_h1 = (phi_l.transpose() * (tLL.cast <double> ().selfadjointView<Eigen::Upper>() * phi_l)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt();
+  VectorXd tSS_h2 = (phi_r.transpose() * (tRR.cast <double> ().selfadjointView<Eigen::Upper>() * phi_r)).eval().diagonal().cwiseInverse().cwiseSqrt().cwiseSqrt();
   
   // Release memory
   tLL.resize(0, 0);
   tRR.resize(0, 0);
   
-  VectorXreal tSS_h(2*k);
+  VectorXd tSS_h(2*k);
   tSS_h << tSS_h1, tSS_h2;
-  realSparseMatrix tSS_h_diag(tSS_h.size(), tSS_h.size());
+  dSparseMatrix tSS_h_diag(tSS_h.size(), tSS_h.size());
   for (int i = 0; i < tSS_h.size(); i++) {
     tSS_h_diag.insert(i, i) = tSS_h(i);
   }
   
-  MatrixXreal tWS(vocab_size, 2*k);
-  tWS << tWC.topLeftCorner(vocab_size, lr_col_size).cast <real> ().cwiseSqrt() * phi_l, tWC.topRightCorner(vocab_size, lr_col_size).cast <real> ().cwiseSqrt() * phi_r;
+  MatrixXd tWS(vocab_size, 2*k);
+  tWS << tWC.topLeftCorner(vocab_size, lr_col_size).cast <double> ().cwiseSqrt() * phi_l, tWC.topRightCorner(vocab_size, lr_col_size).cast <double> ().cwiseSqrt() * phi_r;
   
-  MatrixXreal a = tWW_h_diag * tWS * tSS_h_diag;
+  MatrixXd a = tWW_h_diag * tWS * tSS_h_diag;
   
   std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
-  RedSVD::RedSVD<MatrixXreal> svdA(a, k, 20);
+  RedSVD::RedSVD<MatrixXd> svdA(a, k, 20);
 
   word_vectors = tWW_h_diag * svdA.matrixU();
   context_vectors = tSS_h_diag * svdA.matrixV();
@@ -301,8 +301,8 @@ Eigendocs::Eigendocs (const MapVectorXi& _sentence,
                       const int _k,
                       const bool _link_w_d,
                       const bool _link_c_d,
-                      const real _gamma_G,
-                      const real _gamma_H
+                      const double _gamma_G,
+                      const double _gamma_H
                       ) : sentence(_sentence),
                           document_id(_document_id),
                           window_size(_window_size),
@@ -351,24 +351,24 @@ void Eigendocs::compute()
     G_diag << 2*tWW_diag,   tCC_diag,   tDD_diag;
   }
 
-  realSparseMatrix G_inv_sqrt(p, p);
+  dSparseMatrix G_inv_sqrt(p, p);
   construct_h_diag_matrix(G_diag, G_inv_sqrt);
   G_inv_sqrt /= sqrt(2);
 
-  realSparseMatrix A = (G_inv_sqrt * ((H.cast <real> ().cwiseSqrt()).selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
+  dSparseMatrix A = (G_inv_sqrt * ((H.cast <double> ().cwiseSqrt()).selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
 
   std::cout << "Calculate Randomized SVD..." << std::endl;
-  RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
-  MatrixXreal principal_components = svdA.matrixV();
+  RedSVD::RedSVD<dSparseMatrix> svdA(A, k, 20);
+  MatrixXd principal_components = svdA.matrixV();
   vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
   singular_values = svdA.singularValues();
 }
 
-MatrixXreal Eigendocs::get_vector_representations() {
+MatrixXd Eigendocs::get_vector_representations() {
   return vector_representations;
 }
 
-VectorXreal Eigendocs::get_singular_values() {
+VectorXd Eigendocs::get_singular_values() {
   return singular_values;
 }
 
@@ -447,12 +447,12 @@ MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
                          const Eigen::VectorXi _vocab_sizes,
                          const Eigen::VectorXi _sentence_lengths,
                          const int _k,
-                         const real _gamma_G,
-                         const real _gamma_H,
+                         const double _gamma_G,
+                         const double _gamma_H,
                          const bool _link_w_d,
                          const bool _link_c_d,
                          const bool _doc_weighting,
-                         const real _weight_doc_vs_vc
+                         const double _weight_doc_vs_vc
                         ) : sentence_concated(_sentence_concated),
                         document_id_concated(_document_id_concated),
                         window_sizes(_window_sizes),
@@ -521,34 +521,34 @@ void MCEigendocs::compute()
     }
     
     for (unsigned long long i = 0; i < n_documents; i++) {
-      inverse_word_count_table[i] = 1.0 / (real)word_count_table(i);
+      inverse_word_count_table[i] = 1.0 / (double)word_count_table(i);
     }
   }
 
   // Construct matrices: G, H
-  VectorXreal G_diag(p);
+  VectorXd G_diag(p);
   G_diag.setZero();
-  realSparseMatrix H(p, p);
+  dSparseMatrix H(p, p);
 
   construct_matrices(G_diag, H);
 
   // Construct the matrices for CCA
   std::cout << "Calculate CDMCA..." << std::endl;
   
-  realSparseMatrix G_inv_sqrt(p, p);
+  dSparseMatrix G_inv_sqrt(p, p);
   construct_h_diag_matrix(G_diag, G_inv_sqrt);
 
-  realSparseMatrix A = (G_inv_sqrt * (H.cast <real> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
+  dSparseMatrix A = (G_inv_sqrt * (H.cast <double> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
 
   // Execute CDMCA
   std::cout << "Calculate Randomized SVD..." << std::endl;
-  RedSVD::RedSVD<realSparseMatrix> svdA(A, k, 20);
-  MatrixXreal principal_components = svdA.matrixV();
+  RedSVD::RedSVD<dSparseMatrix> svdA(A, k, 20);
+  MatrixXd principal_components = svdA.matrixV();
   vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
 }
 
 
-void MCEigendocs::construct_matrices (VectorXreal &G_diag, realSparseMatrix &H)
+void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
 {
   unsigned long long i_sentence_concated = 0;
   unsigned long long n_pushed_triplets = 0;
@@ -561,7 +561,7 @@ void MCEigendocs::construct_matrices (VectorXreal &G_diag, realSparseMatrix &H)
 
   // todo
   const unsigned long long size_M = sentence_lengths[0];
-  VectorXreal M_diag(size_M);
+  VectorXd M_diag(size_M);
   for (unsigned long long i = 0; i < size_M; i++) {
     if (doc_weighting) {
       M_diag(i) = 1 + inverse_word_count_table[document_id_concated[i]];
@@ -574,7 +574,7 @@ void MCEigendocs::construct_matrices (VectorXreal &G_diag, realSparseMatrix &H)
   std::vector<Triplet> H_tripletList;
   H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
 
-  realSparseMatrix H_temp(p, p);
+  dSparseMatrix H_temp(p, p);
 
 
   // For each languages
@@ -597,7 +597,7 @@ void MCEigendocs::construct_matrices (VectorXreal &G_diag, realSparseMatrix &H)
 
       const unsigned long long word0 = sentence_concated[i_sentence_concated];
       const unsigned long long docid = document_id_concated[i_sentence_concated];
-      real H_ij;
+      double H_ij;
 
       if (doc_weighting) {
         H_ij = inverse_word_count_table[docid];
@@ -649,11 +649,11 @@ void MCEigendocs::construct_matrices (VectorXreal &G_diag, realSparseMatrix &H)
 }
 
 
-MatrixXreal MCEigendocs::get_vector_representations() {
+MatrixXd MCEigendocs::get_vector_representations() {
   return vector_representations;
 }
 
-VectorXreal MCEigendocs::get_singular_values() {
+VectorXd MCEigendocs::get_singular_values() {
   return singular_values;
 }
 

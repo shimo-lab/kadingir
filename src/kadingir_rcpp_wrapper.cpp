@@ -36,8 +36,8 @@ Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
                            const int window_size,
                            const int vocab_size,
                            const int k,
-                           const real gamma_G,
-                           const real gamma_H,
+                           const double gamma_G,
+                           const double gamma_H,
                            const bool link_w_d,
                            const bool link_c_d
                            )
@@ -67,12 +67,12 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
                              const Rcpp::IntegerVector vocab_sizes,
                              const Rcpp::IntegerVector sentence_lengths,
                              const int k,
-                             const real gamma_G,
-                             const real gamma_H,
+                             const double gamma_G,
+                             const double gamma_H,
                              const bool link_w_d,
                              const bool link_c_d,
                              const bool doc_weighting,
-                             const real weight_doc_vs_vc
+                             const double weight_doc_vs_vc
                              )
 {
   Eigen::VectorXi window_sizes_eigen(window_sizes.length());
