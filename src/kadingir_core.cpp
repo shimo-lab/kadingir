@@ -38,7 +38,7 @@ void fill_offset_table (int offsets[], int window_size)
 }
 
 
-void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag)
+void construct_h_diag_matrix (VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag)
 {
   VectorXd tXX_h(tXX_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   tXX_h_diag.reserve(tXX_diag.size());
@@ -78,8 +78,8 @@ Eigenwords::Eigenwords (const MapVectorXi& _sentence,
 void Eigenwords::compute()
 {
   // Construct crossprod matrices
-  Eigen::VectorXi tWW_diag(vocab_size);
-  Eigen::VectorXi tCC_diag(c_col_size);
+  VectorXi tWW_diag(vocab_size);
+  VectorXi tCC_diag(c_col_size);
   iSparseMatrix tWC(vocab_size, c_col_size);
   iSparseMatrix tLL(lr_col_size, lr_col_size);
   iSparseMatrix tLR(lr_col_size, lr_col_size);
@@ -111,8 +111,8 @@ VectorXd Eigenwords::get_singular_values() {
   return singular_values;
 }
 
-void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
-                                     Eigen::VectorXi &tCC_diag,
+void Eigenwords::construct_matrices (VectorXi &tWW_diag,
+                                     VectorXi &tCC_diag,
                                      iSparseMatrix &tWC,
                                      iSparseMatrix &tLL,
                                      iSparseMatrix &tLR,
@@ -218,7 +218,7 @@ void Eigenwords::construct_matrices (Eigen::VectorXi &tWW_diag,
 // Execute One Step CCA
 void Eigenwords::run_oscca(dSparseMatrix &tWW_h_diag,
                            iSparseMatrix &tWC,
-                           Eigen::VectorXi &tCC_diag)
+                           VectorXi &tCC_diag)
 {
   std::cout << "Calculate OSCCA..." << std::endl;
   
@@ -245,8 +245,8 @@ void Eigenwords::run_tscca(dSparseMatrix &tWW_h_diag,
   std::cout << "Calculate TSCCA..." << std::endl;
   
   // Two Step CCA : Step 1
-  Eigen::VectorXi tLL_diag = tLL.diagonal();
-  Eigen::VectorXi tRR_diag = tRR.diagonal();
+  VectorXi tLL_diag = tLL.diagonal();
+  VectorXi tRR_diag = tRR.diagonal();
   dSparseMatrix tLL_h_diag(lr_col_size, lr_col_size);
   dSparseMatrix tRR_h_diag(lr_col_size, lr_col_size);
   
@@ -332,16 +332,16 @@ void Eigendocs::compute()
 
 
   // Construct crossprod matrices
-  Eigen::VectorXi tWW_diag(vocab_size);
-  Eigen::VectorXi tCC_diag(c_col_size);
-  Eigen::VectorXi tDD_diag(n_documents);
+  VectorXi tWW_diag(vocab_size);
+  VectorXi tCC_diag(c_col_size);
+  VectorXi tDD_diag(n_documents);
   iSparseMatrix H(p, p);
 
   construct_matrices (tWW_diag, tCC_diag, tDD_diag, H);
 
 
   // Construct the matrices for CCA and execute CCA  
-  Eigen::VectorXi G_diag(p);
+  VectorXi G_diag(p);
   
   if (link_w_d && link_c_d) {
     G_diag << 2*tWW_diag, 2*tCC_diag, 2*tDD_diag;
@@ -372,9 +372,9 @@ VectorXd Eigendocs::get_singular_values() {
   return singular_values;
 }
 
-void Eigendocs::construct_matrices (Eigen::VectorXi &tWW_diag,
-                                    Eigen::VectorXi &tCC_diag,
-                                    Eigen::VectorXi &tDD_diag,
+void Eigendocs::construct_matrices (VectorXi &tWW_diag,
+                                    VectorXi &tCC_diag,
+                                    VectorXi &tDD_diag,
                                     iSparseMatrix &H)
 {
   const unsigned long long sentence_size = sentence.size();
@@ -443,9 +443,9 @@ void Eigendocs::construct_matrices (Eigen::VectorXi &tWW_diag,
 
 MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
                          const MapVectorXi& _document_id_concated,
-                         const Eigen::VectorXi _window_sizes,
-                         const Eigen::VectorXi _vocab_sizes,
-                         const Eigen::VectorXi _sentence_lengths,
+                         const VectorXi _window_sizes,
+                         const VectorXi _vocab_sizes,
+                         const VectorXi _sentence_lengths,
                          const int _k,
                          const double _gamma_G,
                          const double _gamma_H,
@@ -509,7 +509,7 @@ void MCEigendocs::compute()
   inverse_word_count_table.resize(n_documents);
 
   {
-    Eigen::VectorXi word_count_table(n_documents);
+    VectorXi word_count_table(n_documents);
     
     // Initialization
     for (unsigned long long i = 0; i < n_documents; i++) {

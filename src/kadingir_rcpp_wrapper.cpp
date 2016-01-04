@@ -75,17 +75,17 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
                              const double weight_doc_vs_vc
                              )
 {
-  Eigen::VectorXi window_sizes_eigen(window_sizes.length());
+  VectorXi window_sizes_eigen(window_sizes.length());
   for (int i = 0; i < window_sizes.length(); i++) {
     window_sizes_eigen(i) = window_sizes[i];
   }
 
-  Eigen::VectorXi vocab_sizes_eigen(vocab_sizes.length());
+  VectorXi vocab_sizes_eigen(vocab_sizes.length());
   for (int i = 0; i < vocab_sizes.length(); i++) {
     vocab_sizes_eigen(i) = vocab_sizes[i];
   }
 
-  Eigen::VectorXi sentence_lengths_eigen(sentence_lengths.length());
+  VectorXi sentence_lengths_eigen(sentence_lengths.length());
   for (int i = 0; i < sentence_lengths.length(); i++) {
     sentence_lengths_eigen(i) = sentence_lengths[i];
   }

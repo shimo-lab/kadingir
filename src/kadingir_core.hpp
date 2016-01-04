@@ -5,6 +5,7 @@
 #include "redsvd.hpp"
 
 
+typedef Eigen::VectorXi VectorXi;
 typedef Eigen::VectorXd VectorXd;
 typedef Eigen::MatrixXd MatrixXd;
 typedef Eigen::Map<Eigen::VectorXi> MapVectorXi;
@@ -29,15 +30,15 @@ private:
   MatrixXd context_vectors;
   VectorXd singular_values;
 
-  void construct_matrices (Eigen::VectorXi &tWW_diag,
-                           Eigen::VectorXi &tCC_diag,
+  void construct_matrices (VectorXi &tWW_diag,
+                           VectorXi &tCC_diag,
                            iSparseMatrix &tWC,
                            iSparseMatrix &tLL,
                            iSparseMatrix &tLR,
                            iSparseMatrix &tRR);
   void run_oscca(dSparseMatrix &tWW_h_diag,
                  iSparseMatrix &tWC,
-                 Eigen::VectorXi &tCC_diag);
+                 VectorXi &tCC_diag);
   void run_tscca(dSparseMatrix &tWW_h_diag,
                  iSparseMatrix &tLL,
                  iSparseMatrix &tLR,
@@ -76,9 +77,9 @@ private:
   MatrixXd vector_representations;
   VectorXd singular_values;
 
-  void construct_matrices (Eigen::VectorXi &tWW_diag,
-                           Eigen::VectorXi &tCC_diag,
-                           Eigen::VectorXi &tDD_diag,
+  void construct_matrices (VectorXi &tWW_diag,
+                           VectorXi &tCC_diag,
+                           VectorXi &tDD_diag,
                            iSparseMatrix &H);
 
 public:
@@ -106,9 +107,9 @@ class MCEigendocs
 private:
   MapVectorXi sentence_concated;
   MapVectorXi document_id_concated;
-  Eigen::VectorXi window_sizes;
-  Eigen::VectorXi vocab_sizes;
-  Eigen::VectorXi sentence_lengths;
+  VectorXi window_sizes;
+  VectorXi vocab_sizes;
+  VectorXi sentence_lengths;
   int k;
   double gamma_G;
   double gamma_H;
@@ -136,9 +137,9 @@ private:
 public:
   MCEigendocs(const MapVectorXi& _sentence_concated,
               const MapVectorXi& _document_id_concated,
-              const Eigen::VectorXi _window_sizes,
-              const Eigen::VectorXi _vocab_sizes,
-              const Eigen::VectorXi _sentence_lengths,
+              const VectorXi _window_sizes,
+              const VectorXi _vocab_sizes,
+              const VectorXi _sentence_lengths,
               const int _k,
               const double _gamma_G,
               const double _gamma_H,
@@ -160,5 +161,5 @@ template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX
                                                        MatrixX &tXX_temp,
                                                        MatrixX &tXX);
 void fill_offset_table (int offsets[], int window_size);
-void construct_h_diag_matrix (Eigen::VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag);
+void construct_h_diag_matrix (VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag);
 
