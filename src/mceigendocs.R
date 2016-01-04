@@ -4,12 +4,12 @@ library(RcppEigen)
 
 sourceCpp("kadingir_core.cpp", rebuild = TRUE, verbose = TRUE)
 
+
 MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
-                        window.sizes = NULL, aliases = NULL, plot = FALSE) {
-  
-  link_w_d <- TRUE
-  link_c_d <- TRUE
-  
+                        window.sizes = NULL, aliases = NULL, plot = FALSE,
+                        link_w_d = TRUE, link_c_d = TRUE, doc_weighting = TRUE,
+                        weight_doc_vs_vc = 1)
+{  
   time.start <- Sys.time()
   
   ## Preprocess training data
@@ -58,6 +58,8 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   cat("\n\n")
   
   cat("dim.internal       :", dim.internal, "\n")
+  cat("Doc weighting      :", doc_weighting, "\n")
+  cat("Weight d & v/c     :", weight_doc_vs_vc, "\n")
   cat("Link: W - D        :", link_w_d, "\n")
   cat("Link: C - D        :", link_c_d, "\n\n")
   
@@ -74,8 +76,8 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   cat("Calculate MCEigendocs...\n\n")
     
-  corpus.concated <- as.integer(c(sentences[[1]], sentences[[2]]))
-  document.id.concated <- as.integer(c(document.id[[1]], document.id[[2]]))
+  corpus.concated <- as.integer(unlist(sentences))
+  document.id.concated <- as.integer(unlist(document.id))
   window.sizes <- as.integer(window.sizes)
   vocab.sizes <- as.integer(vocab.sizes)
   sentence.lengths <- lengths(sentences)
@@ -84,7 +86,9 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   results.redsvd <- MCEigendocsRedSVD(corpus.concated, document.id.concated,
                                       window.sizes, vocab.sizes, sentence.lengths,
                                       dim.internal, gamma_G = 0, gamma_H = 0,
-                                      link_w_d = link_w_d, link_c_d = link_c_d)
+                                      link_w_d = link_w_d, link_c_d = link_c_d,
+                                      doc_weighting = doc_weighting,
+                                      weight_doc_vs_vc = weight_doc_vs_vc)
   
   return.list <- list()
   return.list$svd <- results.redsvd

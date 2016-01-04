@@ -8,7 +8,7 @@ library(RcppEigen)
 library(foreach)
 library(doParallel)
 
-sourceCpp("kadingir_core.cpp", rebuild = TRUE, verbose = TRUE)
+sourceCpp("kadingir_rcpp_wrapper.cpp", rebuild = TRUE, verbose = TRUE)
 
 
 make.matrices <- function(sentence, document.id, window.size) {
@@ -203,8 +203,8 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 
 
 Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
-                      window.size = 2, mode = "oscca", use.eigen = TRUE, plot = FALSE) {
-  
+                      window.size = 2, use.eigen = TRUE, plot = FALSE) {
+
   link_w_d <- TRUE
   link_c_d <- TRUE
   
@@ -248,16 +248,15 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", n.vocab, "\n")
   cat("Link: W - D        :", link_w_d, "\n")
-  cat("Link: C - D        :", link_c_d, "\n")
-  cat("mode               :", mode, "\n\n")
+  cat("Link: C - D        :", link_c_d, "\n\n")
   
   cat("Calculate Eigendocs...\n\n")
   
   if (use.eigen) {
     results.redsvd <- EigendocsRedSVD(as.integer(sentence), as.integer(document.id),
-                                      window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"),
+                                      window.size, n.vocab, dim.internal,
                                       gamma_G = 0, gamma_H = 0, link_w_d = link_w_d, link_c_d = link_c_d)
-    
+
   } else {
     r <- make.matrices(sentence, document.id, window.size)
     
@@ -376,7 +375,7 @@ MostSimilarDocs <- function (document.id, document_vector, titles, topn = 10) {
 }
 
 
-TestGoogleTasks <- function (U, vocab, path = "./../test/questions-words.txt", n.cores = 1) {
+TestGoogleTasks <- function (U, vocab, path = "test/questions-words.txt", n.cores = 1) {
   
   time.start <- Sys.time()
   
@@ -413,7 +412,7 @@ TestGoogleTasks <- function (U, vocab, path = "./../test/questions-words.txt", n
 }
 
 
-TestWordsim353 <- function (vectors, vocab, path = "./../test/combined.csv") {
+TestWordsim353 <- function (vectors, vocab, path = "test/combined.csv") {
   
   cosine.similarity <- function (w1, w2) {
     v1 <- vectors[w1, ]
@@ -429,7 +428,7 @@ TestWordsim353 <- function (vectors, vocab, path = "./../test/combined.csv") {
   wordsims <- read.csv(path, header = 1)
   
   n.tests <- nrow(wordsims)
-  similarity.eigenwords <- rep(NULL, times = n.tests)
+  similarity.eigenwords <- rep(NA, times = n.tests)
   
   for(i in seq(n.tests)) {
     w1 <- as.character(wordsims[i, 1])
