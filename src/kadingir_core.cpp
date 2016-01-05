@@ -536,21 +536,23 @@ void MCEigendocs::construct_inverse_word_count_table()
   
   VectorXi word_count_table(n_documents);
   inverse_word_count_table.resize(n_languages);
+  unsigned long long sum_sentence_lengths = 0;
   
-  for (int i_language = 0; i_language < n_languages; i_language++) {
-    inverse_word_count_table[i_language].resize(n_documents);
+  for (int i_languages = 0; i_languages < n_languages; i_languages++) {
+    inverse_word_count_table[i_languages].resize(n_documents);
     
     for (unsigned long long i = 0; i < n_documents; i++) {
       // Initialization
       word_count_table(i) = 0;
     }
     
-    for (unsigned long long i = 0; i < sentence_lengths[i_language]; i++) {
-      word_count_table(document_id_concated[2 * i_language + i]) += 1;
+    for (unsigned long long i = 0; i < sentence_lengths[i_languages]; i++) {
+      word_count_table(document_id_concated[sum_sentence_lengths + i]) += 1;
     }
+    sum_sentence_lengths += sentence_lengths[i_languages];
     
     for (unsigned long long i = 0; i < n_documents; i++) {
-      inverse_word_count_table[i_language][i] = 1.0 / (double)word_count_table(i);
+      inverse_word_count_table[i_languages][i] = 1.0 / (double)word_count_table(i);
     }
   }
 }
@@ -558,15 +560,8 @@ void MCEigendocs::construct_inverse_word_count_table()
 
 void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
 {
-  unsigned long long i_sentence_concated = 0;
-  unsigned long long n_pushed_triplets = 0;
 
-  unsigned long long n = 0;  // number of data
-  for (int i_languages = 0; i_languages < n_languages; i_languages++) {
-    n += (2 * window_sizes[i_languages] + 1) * sentence_lengths[i_languages];
-  }
-  n += n_documents;
-
+  // Calculate diagonal elements of M  
   std::vector<std::vector<double> > m_diag_languages(n_languages);
 
   for (int i_languages = 0; i_languages < n_languages; i_languages++) {
@@ -588,9 +583,11 @@ void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
 
   dSparseMatrix H_temp(p, p);
 
-
+  unsigned long long i_sentence_concated = 0;
+  unsigned long long n_pushed_triplets = 0;
+  
   // For each languages
-  for (int i_languages = 0; i_languages < sentence_lengths.size(); i_languages++) {
+  for (int i_languages = 0; i_languages < n_languages; i_languages++) {
       
     const unsigned long long p_v = p_head_domains[2 * i_languages];     // Head of Vi
     const unsigned long long p_c = p_head_domains[2 * i_languages + 1]; // Head of Ci
