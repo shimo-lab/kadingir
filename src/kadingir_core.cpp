@@ -504,26 +504,8 @@ MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
 
 void MCEigendocs::compute()
 {
-  // Construct count table of words of each documents
-  int l = 0;  //todo
-  inverse_word_count_table.resize(n_documents);
 
-  {
-    VectorXi word_count_table(n_documents);
-    
-    // Initialization
-    for (unsigned long long i = 0; i < n_documents; i++) {
-      word_count_table(i) = 0;
-    }
-    
-    for (unsigned long long i = 0; i < sentence_lengths[l]; i++) {
-      word_count_table(document_id_concated[i]) += 1;
-    }
-    
-    for (unsigned long long i = 0; i < n_documents; i++) {
-      inverse_word_count_table[i] = 1.0 / (double)word_count_table(i);
-    }
-  }
+  construct_inverse_count_table();
 
   // Construct matrices: G, H
   VectorXd G_diag(p);
@@ -545,6 +527,28 @@ void MCEigendocs::compute()
   RedSVD::RedSVD<dSparseMatrix> svdA(A, k, 20);
   MatrixXd principal_components = svdA.matrixV();
   vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
+}
+
+
+void MCEigendocs::construct_inverse_count_table()
+{
+  // Construct count table of words of each documents
+
+  VectorXi word_count_table(n_documents);
+  inverse_word_count_table.resize(n_documents);
+  
+  // Initialization
+  for (unsigned long long i = 0; i < n_documents; i++) {
+    word_count_table(i) = 0;
+  }
+  
+  for (unsigned long long i = 0; i < sentence_lengths[l]; i++) {
+    word_count_table(document_id_concated[i]) += 1;
+  }
+  
+  for (unsigned long long i = 0; i < n_documents; i++) {
+    inverse_word_count_table[i] = 1.0 / (double)word_count_table(i);
+  }
 }
 
 
