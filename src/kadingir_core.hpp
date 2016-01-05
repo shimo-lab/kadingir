@@ -127,11 +127,12 @@ private:
 
   std::vector<unsigned long long> c_col_sizes;
   std::vector<unsigned long long> lr_col_sizes;
-  std::vector<double>  inverse_word_count_table;
+  std::vector<std::vector<double> >  inverse_word_count_table;
 
   MatrixXd vector_representations;
   VectorXd singular_values;
 
+  void construct_inverse_word_count_table();
   void construct_matrices (VectorXd &G_diag, dSparseMatrix &H);
 
 public:

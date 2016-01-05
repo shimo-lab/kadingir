@@ -505,7 +505,7 @@ MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
 void MCEigendocs::compute()
 {
 
-  construct_inverse_count_table();
+  construct_inverse_word_count_table();
 
   // Construct matrices: G, H
   VectorXd G_diag(p);
@@ -530,24 +530,28 @@ void MCEigendocs::compute()
 }
 
 
-void MCEigendocs::construct_inverse_count_table()
+void MCEigendocs::construct_inverse_word_count_table()
 {
   // Construct count table of words of each documents
-
+  
   VectorXi word_count_table(n_documents);
-  inverse_word_count_table.resize(n_documents);
+  inverse_word_count_table.resize(n_languages);
   
-  // Initialization
-  for (unsigned long long i = 0; i < n_documents; i++) {
-    word_count_table(i) = 0;
-  }
-  
-  for (unsigned long long i = 0; i < sentence_lengths[l]; i++) {
-    word_count_table(document_id_concated[i]) += 1;
-  }
-  
-  for (unsigned long long i = 0; i < n_documents; i++) {
-    inverse_word_count_table[i] = 1.0 / (double)word_count_table(i);
+  for (int i_language = 0; i_language < n_languages; i_language++) {
+    inverse_word_count_table[i_language].resize(n_documents);
+    
+    for (unsigned long long i = 0; i < n_documents; i++) {
+      // Initialization
+      word_count_table(i) = 0;
+    }
+    
+    for (unsigned long long i = 0; i < sentence_lengths[i_language]; i++) {
+      word_count_table(document_id_concated[2 * i_language + i]) += 1;
+    }
+    
+    for (unsigned long long i = 0; i < n_documents; i++) {
+      inverse_word_count_table[i_language][i] = 1.0 / (double)word_count_table(i);
+    }
   }
 }
 
@@ -558,21 +562,25 @@ void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
   unsigned long long n_pushed_triplets = 0;
 
   unsigned long long n = 0;  // number of data
-  for (int i_languages = 0; i_languages < sentence_lengths.size(); i_languages++) {
-    n += sentence_lengths[i_languages];
+  for (int i_languages = 0; i_languages < n_languages; i_languages++) {
+    n += (2 * window_sizes[i_languages] + 1) * sentence_lengths[i_languages];
   }
   n += n_documents;
 
-  // todo
-  const unsigned long long size_M = sentence_lengths[0];
-  VectorXd M_diag(size_M);
-  for (unsigned long long i = 0; i < size_M; i++) {
-    if (doc_weighting) {
-      M_diag(i) = 1 + inverse_word_count_table[document_id_concated[i]];
-    } else {
-      M_diag(i) = 2;
+  std::vector<std::vector<double> > m_diag_languages(n_languages);
+
+  for (int i_languages = 0; i_languages < n_languages; i_languages++) {
+    const unsigned long long sentence_length = sentence_lengths[i_languages];
+    m_diag_languages[i_languages].resize(sentence_length);
+    
+    for (unsigned long long i = 0; i < sentence_length; i++) {
+      if (doc_weighting) {
+        m_diag_languages[i_languages][i] = 1 + inverse_word_count_table[i_languages][document_id_concated[i]];
+      } else {
+        m_diag_languages[i_languages][i] = 2;
+      }
+      m_diag_languages[i_languages][i] *= weight_doc_vs_vc;
     }
-    M_diag(i) *= weight_doc_vs_vc;
   }
 
   std::vector<Triplet> H_tripletList;
@@ -604,13 +612,13 @@ void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
       double H_ij;
 
       if (doc_weighting) {
-        H_ij = inverse_word_count_table[docid];
+        H_ij = inverse_word_count_table[i_languages][docid];
       } else {
         H_ij = 1;
       }
       H_ij *= weight_doc_vs_vc;
 
-      G_diag(word0 + p_v) += M_diag(i_sentence);
+      G_diag(word0 + p_v) += m_diag_languages[i_languages][i_sentence];
       G_diag(docid + p_d) += 1;
 
       H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij));  // Element of t(Wi) %*% Ji
@@ -625,7 +633,7 @@ void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
         
         const unsigned long long word1 = sentence_concated[i_word1_concated] + vocab_size * i_offset1;
         
-        G_diag(word1 + p_c) += M_diag[i_word1_concated];
+        G_diag(word1 + p_c) += m_diag_languages[i_languages][i_word1];
         
         H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(Wi) %*% Ci
         H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij));  // Element of t(Ci) %*% Ji
