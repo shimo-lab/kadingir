@@ -8,7 +8,7 @@ library(RcppEigen)
 library(foreach)
 library(doParallel)
 
-sourceCpp("kadingir_rcpp_wrapper.cpp", rebuild = TRUE, verbose = TRUE)
+sourceCpp("kadingir_rcpp_wrapper.cpp", rebuild = TRUE)
 
 
 make.matrices <- function(sentence, document.id, window.size) {
