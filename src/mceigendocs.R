@@ -71,7 +71,7 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
     cat("Size of sentence   :", length(sentences[[i]]), "\n")
     cat("# of documents     :", max(document.id[[i]]), "\n")
     cat("window.size        :", window.sizes[i], "\n")
-    cat("Weight d - v/c     :", weight_vsdoc[i], "\n")
+    cat("Weight (vs doc)    :", weight_vsdoc[i], "\n")
     cat("Size of vocab      :", vocab.sizes[i], "\n\n")
   }
   
