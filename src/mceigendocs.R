@@ -7,9 +7,10 @@ sourceCpp("kadingir_core.cpp", rebuild = TRUE, verbose = TRUE)
 
 MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
                         window.sizes = NULL, aliases = NULL, plot = FALSE,
-                        link_w_d = TRUE, link_c_d = TRUE, doc_weighting = TRUE,
-                        weight_doc_vs_vc = 1)
-{  
+                        link_w_d = TRUE, link_c_d = TRUE,
+                        weighting_tf = FALSE,
+                        weight_vsdoc = NULL)
+{
   time.start <- Sys.time()
   
   ## Preprocess training data
@@ -58,8 +59,8 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   cat("\n\n")
   
   cat("dim.internal       :", dim.internal, "\n")
-  cat("Doc weighting      :", doc_weighting, "\n")
-  cat("Weight d & v/c     :", weight_doc_vs_vc, "\n")
+  cat("Doc weighting      :", weighting_tf, "\n")
+  
   cat("Link: W - D        :", link_w_d, "\n")
   cat("Link: C - D        :", link_c_d, "\n\n")
   
@@ -70,6 +71,7 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
     cat("Size of sentence   :", length(sentences[[i]]), "\n")
     cat("# of documents     :", max(document.id[[i]]), "\n")
     cat("window.size        :", window.sizes[i], "\n")
+    cat("Weight d - v/c     :", weight_vsdoc[i], "\n")
     cat("Size of vocab      :", vocab.sizes[i], "\n\n")
   }
   
@@ -87,8 +89,8 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
                                       window.sizes, vocab.sizes, sentence.lengths,
                                       dim.internal, gamma_G = 0, gamma_H = 0,
                                       link_w_d = link_w_d, link_c_d = link_c_d,
-                                      doc_weighting = doc_weighting,
-                                      weight_doc_vs_vc = weight_doc_vs_vc)
+                                      weighting_tf = weighting_tf,
+                                      weight_vsdoc = weight_vsdoc)
   
   return.list <- list()
   return.list$svd <- results.redsvd

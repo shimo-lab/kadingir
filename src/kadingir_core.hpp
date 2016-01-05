@@ -115,8 +115,8 @@ private:
   double gamma_H;
   bool link_w_d;
   bool link_c_d;
-  bool doc_weighting;
-  double weight_doc_vs_vc;
+  bool weighting_tf;
+  VectorXd weight_vsdoc;
 
   int n_languages;
   unsigned long long n_documents;
@@ -146,8 +146,8 @@ public:
               const double _gamma_H,
               const bool _link_w_d,
               const bool _link_c_d,
-              const bool _doc_weighting,
-              const double _weight_doc_vs_vc
+              const bool _weighting_tf,
+              const VectorXd _weight_vsdoc
               );
   void compute();
   MatrixXd get_vector_representations();

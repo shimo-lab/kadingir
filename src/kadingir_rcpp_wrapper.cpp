@@ -71,8 +71,8 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
                              const double gamma_H,
                              const bool link_w_d,
                              const bool link_c_d,
-                             const bool doc_weighting,
-                             const double weight_doc_vs_vc
+                             const bool weighting_tf,
+                             const Rcpp::NumericVector weight_vsdoc
                              )
 {
   VectorXi window_sizes_eigen(window_sizes.length());
@@ -89,13 +89,18 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
   for (int i = 0; i < sentence_lengths.length(); i++) {
     sentence_lengths_eigen(i) = sentence_lengths[i];
   }
+  
+  VectorXd weight_vsdoc_eigen(weight_vsdoc.length());
+  for (int i = 0; i < weight_vsdoc.length(); i++) {
+    weight_vsdoc_eigen(i) = weight_vsdoc[i];
+  }
 
 
   MCEigendocs mceigendocs = MCEigendocs(sentence_concated, document_id_concated,
                                         window_sizes_eigen, vocab_sizes_eigen,
                                         sentence_lengths_eigen, k,
                                         link_w_d, link_c_d, gamma_G, gamma_H,
-                                        doc_weighting, weight_doc_vs_vc);
+                                        weighting_tf, weight_vsdoc_eigen);
   mceigendocs.compute();
 
   int n_domain = mceigendocs.get_n_domain();

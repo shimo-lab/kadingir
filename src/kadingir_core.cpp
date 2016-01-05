@@ -451,8 +451,8 @@ MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
                          const double _gamma_H,
                          const bool _link_w_d,
                          const bool _link_c_d,
-                         const bool _doc_weighting,
-                         const double _weight_doc_vs_vc
+                         const bool _weighting_tf,
+                         const VectorXd _weight_vsdoc
                         ) : sentence_concated(_sentence_concated),
                         document_id_concated(_document_id_concated),
                         window_sizes(_window_sizes),
@@ -463,8 +463,8 @@ MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
                         gamma_H(_gamma_H),
                         link_w_d(_link_w_d),
                         link_c_d(_link_c_d),
-                        doc_weighting(_doc_weighting),
-                        weight_doc_vs_vc(_weight_doc_vs_vc)
+                        weighting_tf(_weighting_tf),
+                        weight_vsdoc(_weight_vsdoc)
 {
   if (window_sizes.size() != vocab_sizes.size()) {
     std::cout << "window_sizes.size() != vocab_sizes.size()" << std::endl;
@@ -574,12 +574,12 @@ void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
     m_diag_languages[i_languages].resize(sentence_length);
     
     for (unsigned long long i = 0; i < sentence_length; i++) {
-      if (doc_weighting) {
+      if (weighting_tf) {
         m_diag_languages[i_languages][i] = 1 + inverse_word_count_table[i_languages][document_id_concated[i]];
       } else {
         m_diag_languages[i_languages][i] = 2;
       }
-      m_diag_languages[i_languages][i] *= weight_doc_vs_vc;
+      m_diag_languages[i_languages][i] *= weight_vsdoc[i_languages];
     }
   }
 
@@ -611,12 +611,12 @@ void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
       const unsigned long long docid = document_id_concated[i_sentence_concated];
       double H_ij;
 
-      if (doc_weighting) {
+      if (weighting_tf) {
         H_ij = inverse_word_count_table[i_languages][docid];
       } else {
         H_ij = 1;
       }
-      H_ij *= weight_doc_vs_vc;
+      H_ij *= weight_vsdoc[i_languages];
 
       G_diag(word0 + p_v) += m_diag_languages[i_languages][i_sentence];
       G_diag(docid + p_d) += 1;
