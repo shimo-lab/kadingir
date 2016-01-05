@@ -2,7 +2,7 @@
 library(Rcpp)
 library(RcppEigen)
 
-sourceCpp("kadingir_core.cpp", rebuild = TRUE, verbose = TRUE)
+sourceCpp("kadingir_core.cpp", rebuild = TRUE)
 
 
 MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
