@@ -308,7 +308,8 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 
 
 MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
-                        topn = 10, distance = "euclid", print.error = TRUE) {
+                        topn = 10, distance = "euclid", print.error = TRUE,
+                        language.search = NULL) {
   
   rownames(U) <- vocab
   
@@ -355,6 +356,13 @@ MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
     
   } else if (distance == "cosine") {
     similarities <- drop(U %*% rep.query)
+    
+    if (!is.null(language.search)) {
+      names.similarities <- names(similarities)
+      search.indies <- grepl(paste0("^\\(", language.search, "\\)"), names.similarities)
+      similarities <- similarities[search.indies]
+    }
+    
     return(similarities[order(-similarities)[1:topn]])
   }
 }
