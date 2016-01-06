@@ -5,11 +5,12 @@ source("src/mceigendocs.R", chdir = TRUE)
 paths.corpus <- c("data/europarl/europarl-v7.de-en.de.tokenized.100000",
                   "data/europarl/europarl-v7.de-en.en.tokenized.100000")
 
-r <- MCEigendocs(paths.corpus, max.vocabulary=10000, dim.internal=100,
-                 window.sizes = c(2, 2), aliases=c("de", "en"),
+r <- MCEigendocs(paths.corpus, sizes.vocabulary = c(10000, 8000),
+                 dim.common = 100,
+                 sizes.window = c(2, 2), aliases.languages=c("de", "en"),
                  plot = TRUE,
                  weighting_tf = FALSE ,
-                 weight_vsdoc = c(1.0, 1.0))
+                 weight.vsdoc = c(1.0, 1.0))
 
 p <- r$svd$p_head_domains
 V.de <- r$svd$V[p[1]:p[2], ]
