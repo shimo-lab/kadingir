@@ -25,7 +25,7 @@ MostSimilar(V, vocab.words, positive=c("(en)who"), distance = "cosine")
 MostSimilar(V, vocab.words, positive=c("(de)Ich"), distance = "cosine")
 
 MostSimilar(V, vocab.words,
-            positive=c("king", "woman"), negative=c("man"), distance = "cosine")
+            positive=c("(en)king", "(en)woman"), negative=c("(en)man"), distance = "cosine")
 
 
 TestGoogleTasks(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]], n.cores = 24)
