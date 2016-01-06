@@ -18,6 +18,7 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
   vocab.sizes <- c()
   document.id <- list()
   vocab.words <- list()
+  min.counts <- list()
   
   for (i in seq(paths.corpus)) {
     path.corpus <- paths.corpus[i]
@@ -43,6 +44,7 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
     d.table.sorted <- sort(d.table, decreasing = TRUE)
     vocab.words[[i]] <- names(d.table.sorted[seq(max.vocabulary)])
     sentences[[i]] <- match(sentence.str, vocab.words[[i]], nomatch = 0)  # Fill zero for out-of-vocabulary words
+    min.counts[[i]] <- d.table.sorted[[max.vocabulary]]
     rm(sentence.str)
 
     if (plot) {
@@ -71,8 +73,11 @@ MCEigendocs <- function(paths.corpus, max.vocabulary = 1000, dim.internal = 200,
     cat("Size of sentence   :", length(sentences[[i]]), "\n")
     cat("# of documents     :", max(document.id[[i]]), "\n")
     cat("window.size        :", window.sizes[i], "\n")
+    cat("Size of vocab      :", vocab.sizes[i], "\n")
     cat("Weight (vs doc)    :", weight_vsdoc[i], "\n")
-    cat("Size of vocab      :", vocab.sizes[i], "\n\n")
+    cat("min count          :", min.counts[[i]], "\n")
+    
+    cat("\n")
   }
   
   
