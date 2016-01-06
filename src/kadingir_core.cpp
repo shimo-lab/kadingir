@@ -527,6 +527,7 @@ void MCEigendocs::compute()
   RedSVD::RedSVD<dSparseMatrix> svdA(A, k, 20);
   MatrixXd principal_components = svdA.matrixV();
   vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
+  singular_values = svdA.singularValues();
 }
 
 
