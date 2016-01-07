@@ -23,12 +23,11 @@ vocab.words.en <- paste0("(en)", r$vocab.words[[2]])
 V <- rbind(V.de, V.en)
 vocab.words <- c(vocab.words.de, vocab.words.en)
 
-MostSimilar(V, vocab.words, positive=c("(en)he"), distance = "cosine")
-MostSimilar(V, vocab.words, positive=c("(en)who"), distance = "cosine")
-MostSimilar(V, vocab.words, positive=c("(de)Ich"), distance = "cosine")
-
-MostSimilar(V, vocab.words,
-            positive=c("(en)king", "(en)woman"), negative=c("(en)man"), distance = "cosine")
+MostSimilar(V, vocab.words, positive=c("(en)he"), distance = "cosine", language.search = "en")
+MostSimilar(V, vocab.words, positive=c("(en)he"), distance = "cosine", language.search = "de")
+MostSimilar(V, vocab.words, positive=c("(de)Ich"), distance = "cosine", language.search = "en")
+MostSimilar(V, vocab.words, positive=c("(de)Ich"), distance = "cosine", language.search = "de")
+MostSimilar(V, vocab.words, positive=c("(en)him", "(de)ich"), negative=c("(en)he"), distance = "cosine")
 
 
 TestGoogleTasks(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]], n.cores = 24)
