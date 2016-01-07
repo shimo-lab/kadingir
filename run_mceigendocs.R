@@ -9,7 +9,7 @@ r <- MCEigendocs(paths.corpus, sizes.vocabulary = c(10000, 8000),
                  dim.common = 100,
                  sizes.window = c(2, 2), aliases.languages=c("de", "en"),
                  plot = TRUE,
-                 weighting_tf = FALSE ,
+                 weighting_tf = FALSE,
                  weight.vsdoc = c(1.0, 1.0))
 
 save(r, file = "res_mceigendocs.Rdata")
