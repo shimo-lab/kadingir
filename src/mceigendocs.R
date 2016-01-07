@@ -97,6 +97,9 @@ MCEigendocs <- function(paths.corpus, sizes.vocabulary, dim.common,
   return.list <- list()
   return.list$svd <- results.redsvd
 
+  if (plot) {
+    plot(results.redsvd$singular_values, log = "y", main = "Singular Values")
+  }
 
   return.list$vocab.words <- list()
   for (i in seq(n.languages)) {
