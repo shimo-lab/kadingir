@@ -12,6 +12,8 @@ r <- MCEigendocs(paths.corpus, sizes.vocabulary = c(10000, 8000),
                  weighting_tf = FALSE ,
                  weight.vsdoc = c(1.0, 1.0))
 
+save(r, file = "res_mceigendocs.Rdata")
+
 p <- r$svd$p_head_domains
 V.de <- r$svd$V[p[1]:p[2], ]
 V.en <- r$svd$V[(p[3]+1):p[4], ]
