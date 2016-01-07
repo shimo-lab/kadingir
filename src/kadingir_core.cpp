@@ -516,7 +516,10 @@ MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
 void MCEigendocs::compute()
 {
 
-  construct_inverse_word_count_table();
+  if (weighting_tf) {
+    // Reweight matching weights using Term-Frequency
+    construct_inverse_word_count_table();
+  }
 
   // Construct matrices: G, H
   VectorXd G_diag(p);
