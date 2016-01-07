@@ -573,6 +573,8 @@ void MCEigendocs::construct_inverse_word_count_table()
 void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
 {
 
+  unsigned long long sum_sentence_lengths = 0;
+  
   // Calculate diagonal elements of M  
   std::vector<std::vector<double> > m_diag_languages(n_languages);
 
@@ -582,12 +584,14 @@ void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
     
     for (unsigned long long i = 0; i < sentence_length; i++) {
       if (weighting_tf) {
-        m_diag_languages[i_languages][i] = 1 + inverse_word_count_table[i_languages][document_id_concated[i]];
+        m_diag_languages[i_languages][i] = 1 + inverse_word_count_table[i_languages][document_id_concated[sum_sentence_lengths + i]];
       } else {
         m_diag_languages[i_languages][i] = 2;
       }
       m_diag_languages[i_languages][i] *= weight_vsdoc[i_languages];
     }
+    
+    sum_sentence_lengths += sentence_length;
   }
 
   std::vector<Triplet> H_tripletList;
