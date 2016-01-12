@@ -2,8 +2,8 @@
 source("src/kadingir.R", chdir = TRUE)
 source("src/cleigenwords.R", chdir = TRUE)
 
-paths.corpus <- c("data/europarl/europarl-v7.de-en.de.tokenized.100000",
-                  "data/europarl/europarl-v7.de-en.en.tokenized.100000")
+paths.corpus <- c("data/europarl/europarl-v7.de-en.de.tokenized",
+                  "data/europarl/europarl-v7.de-en.en.tokenized")
 
 r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(10000, 8000),
                   dim.common = 100,
@@ -30,5 +30,5 @@ MostSimilar(V, vocab.words, positive=c("(de)Ich"), distance = "cosine", language
 MostSimilar(V, vocab.words, positive=c("(en)him", "(de)ich"), negative=c("(en)he"), distance = "cosine")
 
 
-TestGoogleTasks(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]], n.cores = 24)
+TestGoogleTasks(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]], n.cores = 12)
 TestWordsim353(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]])
