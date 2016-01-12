@@ -61,18 +61,18 @@ Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
 
 
 // [[Rcpp::export]]
-Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
-                             const MapVectorXi& document_id_concated,
-                             const Rcpp::IntegerVector window_sizes,
-                             const Rcpp::IntegerVector vocab_sizes,
-                             const Rcpp::IntegerVector sentence_lengths,
-                             const int k,
-                             const double gamma_G,
-                             const double gamma_H,
-                             const bool link_w_d,
-                             const bool link_c_d,
-                             const bool weighting_tf,
-                             const Rcpp::NumericVector weight_vsdoc
+Rcpp::List CLEigenwordsRedSVD(const MapVectorXi& sentence_concated,
+                              const MapVectorXi& document_id_concated,
+                              const Rcpp::IntegerVector window_sizes,
+                              const Rcpp::IntegerVector vocab_sizes,
+                              const Rcpp::IntegerVector sentence_lengths,
+                              const int k,
+                              const double gamma_G,
+                              const double gamma_H,
+                              const bool link_w_d,
+                              const bool link_c_d,
+                              const bool weighting_tf,
+                              const Rcpp::NumericVector weight_vsdoc
                              )
 {
   VectorXi window_sizes_eigen(window_sizes.length());
@@ -96,22 +96,22 @@ Rcpp::List MCEigendocsRedSVD(const MapVectorXi& sentence_concated,
   }
 
 
-  MCEigendocs mceigendocs = MCEigendocs(sentence_concated, document_id_concated,
+  CLEigenwords cleigenwords = CLEigenwords(sentence_concated, document_id_concated,
                                         window_sizes_eigen, vocab_sizes_eigen,
                                         sentence_lengths_eigen, k,
                                         link_w_d, link_c_d, gamma_G, gamma_H,
                                         weighting_tf, weight_vsdoc_eigen);
-  mceigendocs.compute();
+  cleigenwords.compute();
 
-  int n_domain = mceigendocs.get_n_domain();
+  int n_domain = cleigenwords.get_n_domain();
   Rcpp::NumericVector p_head_domains_return(n_domain);
   for (int i = 0; i < n_domain; i++){
-    p_head_domains_return[i] = mceigendocs.get_p_head_domains(i);
+    p_head_domains_return[i] = cleigenwords.get_p_head_domains(i);
   }
 
-  return Rcpp::List::create(Rcpp::Named("V") = Rcpp::wrap(mceigendocs.get_vector_representations()),
-                            Rcpp::Named("singular_values") = Rcpp::wrap(mceigendocs.get_singular_values()),
+  return Rcpp::List::create(Rcpp::Named("V") = Rcpp::wrap(cleigenwords.get_vector_representations()),
+                            Rcpp::Named("singular_values") = Rcpp::wrap(cleigenwords.get_singular_values()),
                             Rcpp::Named("p_head_domains") = p_head_domains_return,
-                            Rcpp::Named("p") = (double)mceigendocs.get_p()
+                            Rcpp::Named("p") = (double)cleigenwords.get_p()
                             );
 }

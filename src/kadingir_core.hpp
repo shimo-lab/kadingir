@@ -102,7 +102,7 @@ public:
 };
 
 
-class MCEigendocs
+class CLEigenwords
 {
 private:
   MapVectorXi sentence_concated;
@@ -136,19 +136,19 @@ private:
   void construct_matrices (VectorXd &G_diag, dSparseMatrix &H);
 
 public:
-  MCEigendocs(const MapVectorXi& _sentence_concated,
-              const MapVectorXi& _document_id_concated,
-              const VectorXi _window_sizes,
-              const VectorXi _vocab_sizes,
-              const VectorXi _sentence_lengths,
-              const int _k,
-              const double _gamma_G,
-              const double _gamma_H,
-              const bool _link_w_d,
-              const bool _link_c_d,
-              const bool _weighting_tf,
-              const VectorXd _weight_vsdoc
-              );
+  CLEigenwords(const MapVectorXi& _sentence_concated,
+               const MapVectorXi& _document_id_concated,
+               const VectorXi _window_sizes,
+               const VectorXi _vocab_sizes,
+               const VectorXi _sentence_lengths,
+               const int _k,
+               const double _gamma_G,
+               const double _gamma_H,
+               const bool _link_w_d,
+               const bool _link_c_d,
+               const bool _weighting_tf,
+               const VectorXd _weight_vsdoc
+  );
   void compute();
   MatrixXd get_vector_representations();
   VectorXd get_singular_values();

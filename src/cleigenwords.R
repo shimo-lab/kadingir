@@ -5,11 +5,11 @@ library(RcppEigen)
 sourceCpp("kadingir_core.cpp", rebuild = TRUE)
 
 
-MCEigendocs <- function(paths.corpus, sizes.vocabulary, dim.common,
-                        sizes.window, aliases.languages, weight.vsdoc,
-                        plot = FALSE,
-                        link_w_d = TRUE, link_c_d = TRUE,
-                        weighting_tf = FALSE)
+CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
+                         sizes.window, aliases.languages, weight.vsdoc,
+                         plot = FALSE,
+                         link_w_d = TRUE, link_c_d = TRUE,
+                         weighting_tf = FALSE)
 {
   time.start <- Sys.time()
   
@@ -78,7 +78,7 @@ MCEigendocs <- function(paths.corpus, sizes.vocabulary, dim.common,
   }
   
   
-  cat("Calculate MCEigendocs...\n\n")
+  cat("Calculate CLEigenwords...\n\n")
     
   corpus.concated <- as.integer(unlist(sentences))
   document.id.concated <- as.integer(unlist(document.id))
@@ -87,12 +87,12 @@ MCEigendocs <- function(paths.corpus, sizes.vocabulary, dim.common,
   lengths.sentence <- lengths(sentences)
   n.languages <- length(paths.corpus)
   
-  results.redsvd <- MCEigendocsRedSVD(corpus.concated, document.id.concated,
-                                      sizes.window, sizes.vocabulary, lengths.sentence,
-                                      dim.common, gamma_G = 0, gamma_H = 0,
-                                      link_w_d = link_w_d, link_c_d = link_c_d,
-                                      weighting_tf = weighting_tf,
-                                      weight_vsdoc = weight.vsdoc)
+  results.redsvd <- CLEigenwordsRedSVD(corpus.concated, document.id.concated,
+                                       sizes.window, sizes.vocabulary, lengths.sentence,
+                                       dim.common, gamma_G = 0, gamma_H = 0,
+                                       link_w_d = link_w_d, link_c_d = link_c_d,
+                                       weighting_tf = weighting_tf,
+                                       weight_vsdoc = weight.vsdoc)
   
   return.list <- list()
   return.list$svd <- results.redsvd

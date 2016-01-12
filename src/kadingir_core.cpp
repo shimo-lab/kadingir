@@ -452,18 +452,18 @@ void Eigendocs::construct_matrices (VectorXi &tWW_diag,
 
 
 
-MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
-                         const MapVectorXi& _document_id_concated,
-                         const VectorXi _window_sizes,
-                         const VectorXi _vocab_sizes,
-                         const VectorXi _sentence_lengths,
-                         const int _k,
-                         const double _gamma_G,
-                         const double _gamma_H,
-                         const bool _link_w_d,
-                         const bool _link_c_d,
-                         const bool _weighting_tf,
-                         const VectorXd _weight_vsdoc
+CLEigenwords::CLEigenwords(const MapVectorXi& _sentence_concated,
+                           const MapVectorXi& _document_id_concated,
+                           const VectorXi _window_sizes,
+                           const VectorXi _vocab_sizes,
+                           const VectorXi _sentence_lengths,
+                           const int _k,
+                           const double _gamma_G,
+                           const double _gamma_H,
+                           const bool _link_w_d,
+                           const bool _link_c_d,
+                           const bool _weighting_tf,
+                           const VectorXd _weight_vsdoc
                         ) : sentence_concated(_sentence_concated),
                         document_id_concated(_document_id_concated),
                         window_sizes(_window_sizes),
@@ -513,7 +513,7 @@ MCEigendocs::MCEigendocs(const MapVectorXi& _sentence_concated,
   p = p_head_domains[n_domain - 1] + n_documents;  // dimension of concated vectors
 }
 
-void MCEigendocs::compute()
+void CLEigenwords::compute()
 {
 
   if (weighting_tf) {
@@ -545,7 +545,7 @@ void MCEigendocs::compute()
 }
 
 
-void MCEigendocs::construct_inverse_word_count_table()
+void CLEigenwords::construct_inverse_word_count_table()
 {
   // Construct count table of words of each documents
   
@@ -573,7 +573,7 @@ void MCEigendocs::construct_inverse_word_count_table()
 }
 
 
-void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
+void CLEigenwords::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
 {
 
   unsigned long long sum_sentence_lengths = 0;
@@ -677,25 +677,25 @@ void MCEigendocs::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
 }
 
 
-MatrixXd MCEigendocs::get_vector_representations() {
+MatrixXd CLEigenwords::get_vector_representations() {
   return vector_representations;
 }
 
-VectorXd MCEigendocs::get_singular_values() {
+VectorXd CLEigenwords::get_singular_values() {
   return singular_values;
 }
 
-int MCEigendocs::get_n_domain()
+int CLEigenwords::get_n_domain()
 {
   return n_domain;
 }
 
-unsigned long long MCEigendocs::get_p()
+unsigned long long CLEigenwords::get_p()
 {
   return p;
 }
 
-unsigned long long MCEigendocs::get_p_head_domains(int index)
+unsigned long long CLEigenwords::get_p_head_domains(int index)
 {
   return p_head_domains[index];
 }
