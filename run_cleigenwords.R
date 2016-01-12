@@ -1,18 +1,18 @@
 
 source("src/kadingir.R", chdir = TRUE)
-source("src/mceigendocs.R", chdir = TRUE)
+source("src/cleigenwords.R", chdir = TRUE)
 
 paths.corpus <- c("data/europarl/europarl-v7.de-en.de.tokenized.100000",
                   "data/europarl/europarl-v7.de-en.en.tokenized.100000")
 
-r <- MCEigendocs(paths.corpus, sizes.vocabulary = c(10000, 8000),
-                 dim.common = 100,
-                 sizes.window = c(2, 2), aliases.languages=c("de", "en"),
-                 plot = TRUE,
-                 weighting_tf = FALSE,
-                 weight.vsdoc = c(1.0, 1.0))
+r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(10000, 8000),
+                  dim.common = 100,
+                  sizes.window = c(2, 2), aliases.languages=c("de", "en"),
+                  plot = TRUE,
+                  weighting_tf = FALSE,
+                  weight.vsdoc = c(1.0, 1.0))
 
-save(r, file = "res_mceigendocs.Rdata")
+save(r, file = "res_cleigenwords.Rdata")
 
 p <- r$svd$p_head_domains
 V.de <- r$svd$V[p[1]:p[2], ]
