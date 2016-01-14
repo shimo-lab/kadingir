@@ -1,0 +1,114 @@
+---
+title: "Experiments of Cross-Lingual Eigenwords"
+author: "OSHIKIRI Takamasa"
+date: "2016/1/12"
+output: html_document
+---
+
+提案手法である Cross-Lingual Eigenwords の評価を行う
+
+```{r, message=FALSE}
+source("./../src/kadingir.R", chdir = TRUE)
+load("./../res_cleigenwords.Rdata")
+
+#write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab.csv")  # Make csv file that contains vocab.words (de)
+```
+
+```{r}
+p <- r$svd$p_head_domains
+V.de <- r$svd$V[p[1]:p[2], ]
+V.en <- r$svd$V[(p[3]+1):p[4], ]
+vocab.words.de <- paste0("(de)", r$vocab.words[[1]])
+vocab.words.en <- paste0("(en)", r$vocab.words[[2]])
+write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab.csv")  # Make csv file that contains vocab.words (de)
+
+V <- rbind(V.de, V.en)
+vocab.words <- c(vocab.words.de, vocab.words.en)
+```
+
+Google Spreadsheet の `GOOGLETRANSLATE` 関数で生成した対訳表を読み込む．
+
+```{r}
+translate.table <- read.csv("../data/translate_table/googletranslate1000_preprocessed.csv", sep = ",", as.is = TRUE)
+head(translate.table[ , 1:2])
+```
+
+# 評価
+
+```{r}
+queries <- paste0("(de)", as.character(translate.table[ , "queries"]))
+n.queries <- length(queries)
+answers.machinetranslate <- paste0("(en)", as.character(translate.table[ , "translate"]))
+answers.cleigenwords <- vector(mode = "character", length = n.queries)
+answers.adist <- vector(mode = "character", length = n.queries)
+correct.at.n.cleigenwords <- vector(mode = "logical", length = n.queries)
+correct.at.n.adist <- vector(mode = "logical", length = n.queries)
+topn <- 5  # P@topn
+
+# Search word that have minimum edit distance with `query` from `vocab.search`
+search.adist <- function (query, vocab.search, topn = 1)
+{
+  vector.adist <- adist(query, vocab.search)
+  names(vector.adist) <- vocab.search
+  
+  if (topn == 1) {
+    return(names(which.min(vector.adist)))
+  } else {
+    return(names(vector.adist[order(vector.adist)[seq(topn)]]))
+  }
+}
+
+
+for (i.query in seq(queries)) {
+  query <- queries[i.query]
+  query.nolang <- substr(query, 5, 100)  # `query` with no language identifier
+  answer.collect <- tolower(answers.machinetranslate[i.query])
+  answer.collect.nolang <- tolower(substr(answers.machinetranslate[i.query], 5, 100))
+  answers.cleigenwords.query <- names(MostSimilar(V, vocab.words, positive=c(query), distance = "cosine", language.search = "en", topn = topn))
+
+  word.most.similar <- answers.cleigenwords.query[1]
+  if (is.null(word.most.similar)) { word.most.similar <- "" }
+  
+  # Edit distance
+  answers.adist.query <- search.adist(query.nolang, r$vocab.words[[2]], topn = 5)
+  
+  answers.cleigenwords[i.query] <- word.most.similar
+  correct.at.n.cleigenwords[i.query] <- answer.collect %in% tolower(answers.cleigenwords.query)
+  correct.at.n.adist[i.query] <- answer.collect.nolang %in% tolower(answers.adist.query)
+  answers.adist[i.query] <- answers.adist.query[1]
+}
+
+answers.adist <- paste0("(en)", answers.adist)
+
+results <- data.frame(queries = queries,
+                      answer.machinetranslate = answers.machinetranslate,
+                      answer.cleigenwords = answers.cleigenwords,
+                      answer.adist = answers.adist,
+                      correct.at.n.cleigenwords = correct.at.n.cleigenwords,
+                      correct.at.n.adist= correct.at.n.adist)
+head(results)
+```
+
+今回は，
+
+1. generalized Levenshtein edit distance (ナイーブな古典的手法，R の `adist` 関数を使った)
+2. Cross-Lingual Eigenwords (提案手法)
+
+による検索の精度を表示する．それぞれ，Precision\@1, Precision\@5 の値を見る．
+(TODO: 最近の手法による評価を追加する？)
+
+```{r}
+accuracy.between <- function(col1, col2)
+{
+  return( mean(tolower(as.character(results[ , col1])) == tolower(as.character(results[ , col2]))) )
+}
+
+accuracy <- c(accuracy.between("answer.machinetranslate", "answer.adist"),
+              0,
+              accuracy.between("answer.machinetranslate", "answer.cleigenwords"),
+              mean(results[ , "correct.at.n.adist"]),
+              0,
+              mean(results[ , "correct.at.n.cleigenwords"]))
+matrix(accuracy, nrow = 3,
+       dimnames = list(c("Edit distance", "CL-LSA", "CL-Eigenwords"), c("@1", paste0("@", topn))))
+```
