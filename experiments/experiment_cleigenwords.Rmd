@@ -7,12 +7,20 @@ output: html_document
 
 提案手法である Cross-Lingual Eigenwords の評価を行う
 
+# 事前の準備
+タスクによる評価に用いる，単語の対訳表を作成しておく．
+
+まず，以下のコードを実行し，CL-Eigenwords で用いた単語のリストを作成する．
+
 ```
 load("./../res_cleigenwords_es-en.Rdata")
 write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab_es-en_es.csv")
 write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en.csv")
 ```
 
+その後，Google Spreadsheet で output\_vocab\_es-en_??.csv から対訳表を作成する．
+
+# 評価
 ```{r, message=FALSE}
 source("./../src/kadingir.R", chdir = TRUE)
 load("./../res_cleigenwords.Rdata")
@@ -37,7 +45,6 @@ translate.table <- read.csv("translate_table_es-en_reduced.csv", sep = ",", as.i
 head(translate.table[ , 1:2])
 ```
 
-# 評価
 
 ```{r}
 queries <- paste0("(es)", as.character(translate.table[ , "es"]))
