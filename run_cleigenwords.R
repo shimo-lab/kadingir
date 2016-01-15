@@ -15,13 +15,13 @@ r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(10000, 8000),
 save(r, file = "res_cleigenwords.Rdata")
 
 p <- r$svd$p_head_domains
-V.de <- r$svd$V[p[1]:p[2], ]
-V.en <- r$svd$V[(p[3]+1):p[4], ]
-vocab.words.de <- paste0("(es)", r$vocab.words[[1]])
-vocab.words.en <- paste0("(en)", r$vocab.words[[2]])
+V1 <- r$svd$V[p[1]:p[2], ]
+V2 <- r$svd$V[(p[3]+1):p[4], ]
+vocab.words1 <- paste0("(es)", r$vocab.words[[1]])
+vocab.words2 <- paste0("(en)", r$vocab.words[[2]])
 
-V <- rbind(V.de, V.en)
-vocab.words <- c(vocab.words.de, vocab.words.en)
+V <- rbind(V1, V2)
+vocab.words <- c(vocab.words1, vocab.words2)
 
 MostSimilar(V, vocab.words, positive=c("(en)he"), distance = "cosine", language.search = "en")
 MostSimilar(V, vocab.words, positive=c("(en)he"), distance = "cosine", language.search = "es")
