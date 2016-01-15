@@ -16,29 +16,29 @@ load("./../res_cleigenwords.Rdata")
 
 ```{r}
 p <- r$svd$p_head_domains
-V.de <- r$svd$V[p[1]:p[2], ]
+V.es <- r$svd$V[p[1]:p[2], ]
 V.en <- r$svd$V[(p[3]+1):p[4], ]
-vocab.words.de <- paste0("(de)", r$vocab.words[[1]])
+vocab.words.es <- paste0("(es)", r$vocab.words[[1]])
 vocab.words.en <- paste0("(en)", r$vocab.words[[2]])
 write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab.csv")  # Make csv file that contains vocab.words (de)
 
-V <- rbind(V.de, V.en)
-vocab.words <- c(vocab.words.de, vocab.words.en)
+V <- rbind(V.es, V.en)
+vocab.words <- c(vocab.words.es, vocab.words.en)
 ```
 
 Google Spreadsheet の `GOOGLETRANSLATE` 関数で生成した対訳表を読み込む．
 
 ```{r}
-translate.table <- read.csv("../data/translate_table/googletranslate1000_preprocessed.csv", sep = ",", as.is = TRUE)
+translate.table <- read.csv("translate_table_es-en_reduced.csv", sep = ",", as.is = TRUE)[1:6000, ]
 head(translate.table[ , 1:2])
 ```
 
 # 評価
 
 ```{r}
-queries <- paste0("(de)", as.character(translate.table[ , "queries"]))
+queries <- paste0("(es)", as.character(translate.table[ , "es"]))
 n.queries <- length(queries)
-answers.machinetranslate <- paste0("(en)", as.character(translate.table[ , "translate"]))
+answers.machinetranslate <- paste0("(en)", as.character(translate.table[ , "en"]))
 answers.cleigenwords <- vector(mode = "character", length = n.queries)
 answers.adist <- vector(mode = "character", length = n.queries)
 correct.at.n.cleigenwords <- vector(mode = "logical", length = n.queries)
@@ -91,7 +91,7 @@ head(results)
 
 今回は，
 
-1. generalized Levenshtein edit distance (ナイーブな古典的手法，R の `adist` 関数を使った)
+1. Generalized Levenshtein edit distance (ナイーブな古典的手法，R の `adist` 関数を使った)
 2. Cross-Lingual Eigenwords (提案手法)
 
 による検索の精度を表示する．それぞれ，Precision\@1, Precision\@5 の値を見る．
