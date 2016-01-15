@@ -7,11 +7,16 @@ output: html_document
 
 提案手法である Cross-Lingual Eigenwords の評価を行う
 
+```
+load("./../res_cleigenwords_es-en.Rdata")
+write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab_es-en_es.csv")
+write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en.csv")
+```
+
 ```{r, message=FALSE}
 source("./../src/kadingir.R", chdir = TRUE)
 load("./../res_cleigenwords.Rdata")
 
-#write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab.csv")  # Make csv file that contains vocab.words (de)
 ```
 
 ```{r}
@@ -20,7 +25,6 @@ V.es <- r$svd$V[p[1]:p[2], ]
 V.en <- r$svd$V[(p[3]+1):p[4], ]
 vocab.words.es <- paste0("(es)", r$vocab.words[[1]])
 vocab.words.en <- paste0("(en)", r$vocab.words[[2]])
-write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab.csv")  # Make csv file that contains vocab.words (de)
 
 V <- rbind(V.es, V.en)
 vocab.words <- c(vocab.words.es, vocab.words.en)
