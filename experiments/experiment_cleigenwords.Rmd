@@ -22,6 +22,7 @@ write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en.csv")
 
 # 評価
 ```{r, message=FALSE}
+library(RecordLinkage)
 source("./../src/kadingir.R", chdir = TRUE)
 load("./../res_cleigenwords.Rdata")
 
@@ -59,7 +60,7 @@ topn <- 5  # P@topn
 # Search word that have minimum edit distance with `query` from `vocab.search`
 search.adist <- function (query, vocab.search, topn = 1)
 {
-  vector.adist <- adist(query, vocab.search)
+  vector.adist <- levenshteinDist(query, vocab.search)
   names(vector.adist) <- vocab.search
   
   if (topn == 1) {
