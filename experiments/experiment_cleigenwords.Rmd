@@ -25,7 +25,7 @@ write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en_phrase
 library(knitr)
 library(RecordLinkage)
 source("./../src/kadingir.R", chdir = TRUE)
-load("./../res_cleigenwords_es-en_phrase2.Rdata")
+load("./../res_cleigenwords_es-en.Rdata")
 ```
 
 ```{r}
@@ -42,8 +42,8 @@ vocab.words <- c(vocab.words.es, vocab.words.en)
 Google Spreadsheet の `GOOGLETRANSLATE` 関数で生成した対訳表を読み込む．
 
 ```{r}
-translate.table <- read.csv("translate_table_es-en_reduced.csv", sep = ",", as.is = TRUE)[1:6000, ]
-head(translate.table[ , 1:2])
+translate.table <- read.csv("translate_table_es-en_es_reduced.csv", sep = ",", as.is = TRUE)[1:3000, ]
+head(translate.table[ , c("es","en")])
 ```
 
 
