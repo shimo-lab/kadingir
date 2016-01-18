@@ -9,7 +9,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
                          sizes.window, aliases.languages, weight.vsdoc,
                          plot = FALSE,
                          link_w_d = TRUE, link_c_d = TRUE,
-                         weighting_tf = FALSE)
+                         weighting_tf = FALSE, save.data = FALSE)
 {
   time.start <- Sys.time()
   
@@ -86,6 +86,15 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   sizes.vocabulary <- as.integer(sizes.vocabulary)
   lengths.sentence <- lengths(sentences)
   n.languages <- length(paths.corpus)
+  
+  if (save.data) {
+    save.data.list <- list(corpus.concated = corpus.concated,
+                           document.id.concated = document.id.concated,
+                           sizes.vocabulary = sizes.vocabulary,
+                           lengths.sentence = lengths.sentence)
+    save(save.data.list, file = "arguments_cleigenwords.Rdata")
+    return(0)
+  }
   
   results.redsvd <- CLEigenwordsRedSVD(corpus.concated, document.id.concated,
                                        sizes.window, sizes.vocabulary, lengths.sentence,
