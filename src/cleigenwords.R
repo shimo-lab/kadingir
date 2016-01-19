@@ -87,11 +87,17 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   lengths.sentence <- lengths(sentences)
   n.languages <- length(paths.corpus)
   
+  vocab.words.concated <- list()
+  for (i in seq(n.languages)) {
+    vocab.words.concated <- c(vocab.words.concated, list(c("<OOV>", vocab.words[[i]])))
+  }
+  
   if (save.data) {
     save.data.list <- list(corpus.concated = corpus.concated,
                            document.id.concated = document.id.concated,
                            sizes.vocabulary = sizes.vocabulary,
-                           lengths.sentence = lengths.sentence)
+                           lengths.sentence = lengths.sentence,
+                           vocab.words.concated = vocab.words.concated)
     save(save.data.list, file = "arguments_cleigenwords.Rdata")
     return(0)
   }
@@ -110,11 +116,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     plot(results.redsvd$singular_values, log = "y", main = "Singular Values")
   }
 
-  return.list$vocab.words <- list()
-  for (i in seq(n.languages)) {
-    return.list$vocab.words <- c(return.list$vocab.words, list(c("<OOV>", vocab.words[[i]])))
-  }
-
+  return.list$vocab.words <- vocab.words.concated
   return.list$document_id <- seq(nrow(results.redsvd$document_vector))
   return.list$n.languages <- length(lengths.sentence)
   return.list$lengths.sentence <- lengths.sentence
