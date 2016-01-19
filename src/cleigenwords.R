@@ -9,7 +9,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
                          sizes.window, aliases.languages, weight.vsdoc,
                          plot = FALSE,
                          link_w_d = TRUE, link_c_d = TRUE,
-                         weighting_tf = FALSE, save.data = FALSE)
+                         weighting_tf = FALSE)
 {
   time.start <- Sys.time()
   
@@ -92,16 +92,6 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     vocab.words.concated <- c(vocab.words.concated, list(c("<OOV>", vocab.words[[i]])))
   }
   
-  if (save.data) {
-    save.data.list <- list(corpus.concated = corpus.concated,
-                           document.id.concated = document.id.concated,
-                           sizes.vocabulary = sizes.vocabulary,
-                           lengths.sentence = lengths.sentence,
-                           vocab.words.concated = vocab.words.concated)
-    save(save.data.list, file = "arguments_cleigenwords.Rdata")
-    return(0)
-  }
-  
   results.redsvd <- CLEigenwordsRedSVD(corpus.concated, document.id.concated,
                                        sizes.window, sizes.vocabulary, lengths.sentence,
                                        dim.common, gamma_G = 0, gamma_H = 0,
@@ -116,6 +106,8 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     plot(results.redsvd$singular_values, log = "y", main = "Singular Values")
   }
 
+  return.list$corpus.concated <- corpus.concated
+  return.list$document.id.concated <- document.id.concated
   return.list$vocab.words <- vocab.words.concated
   return.list$document_id <- seq(nrow(results.redsvd$document_vector))
   return.list$n.languages <- length(lengths.sentence)
