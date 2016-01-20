@@ -2,8 +2,8 @@
 source("src/kadingir.R", chdir = TRUE)
 source("src/cleigenwords.R", chdir = TRUE)
 
-paths.corpus <- c("data/europarl/europarl-v7.es-en.es.tokenized.phrase2",
-                  "data/europarl/europarl-v7.es-en.en.tokenized.phrase2")
+paths.corpus <- c("data/europarl/europarl-v7.es-en.es.tokenized",
+                  "data/europarl/europarl-v7.es-en.en.tokenized")
 
 r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(20000, 20000),
                   dim.common = 100,
