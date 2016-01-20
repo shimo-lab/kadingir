@@ -14,6 +14,7 @@ const int TRIPLET_VECTOR_SIZE = 100000000;
 // [[Rcpp::plugins(openmp)]]
 
 
+// Rcpp implementation of Cross-Lingual Latent Semantic Analysis
 // [[Rcpp::export]]
 Rcpp::List CLLSA(const Rcpp::IntegerVector& corpus_id_concated,
                  const Rcpp::IntegerVector& document_id_concated,
@@ -24,6 +25,7 @@ Rcpp::List CLLSA(const Rcpp::IntegerVector& corpus_id_concated,
   unsigned long long ii_start = 0;
   unsigned long long i_concated = 0;
   
+  // construct word-document matrix from corpora
   std::vector<Triplet> word_document_matrix_tripletlist;
   word_document_matrix_tripletlist.reserve(TRIPLET_VECTOR_SIZE);
   
