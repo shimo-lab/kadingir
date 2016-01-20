@@ -20,15 +20,32 @@ write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en_phrase
 
 その後，Google Spreadsheet で output\_vocab\_es-en_??.csv から対訳表を作成する．
 
-# 評価
+# 準備
 ```{r, message=FALSE}
 library(knitr)
 library(RecordLinkage)
 source("./../src/kadingir.R", chdir = TRUE)
-load("./../res_cleigenwords_es-en.Rdata")
-load("./../res_cllsa.Rdata")
+load("./../res_cleigenwords_20160121.Rdata")
 ```
 
+# CL-LSA
+```{r}
+sourceCpp("./../src/cllsa_core.cpp", rebuild = TRUE)
+
+res.cllsa <- CLLSA(r$corpus.concated, r$document.id.concated,
+                   r$sizes.vocabulary, r$lengths.sentence,
+                   dim_common_space = 100)
+
+res.cllsa$representations.word <- res.cllsa$word_representations
+rownames(res.cllsa$representations.word) <- c(paste0("(es)", r$vocab.words[[1]]),
+                                              paste0("(en)", r$vocab.words[[2]]))
+
+# Check vector representations
+MostSimilar(res.cllsa$representations.word, row.names(res.cllsa$representations.word),
+            positive = c("(en)he"), distance = "cosine", language.search = "en")
+```
+
+# 評価
 ```{r}
 p <- r$svd$p_head_domains
 V.es <- r$svd$V[p[1]:p[2], ]
@@ -118,7 +135,8 @@ kable(head(results))
 今回は，
 
 1. Generalized Levenshtein edit distance (ナイーブな古典的手法，R の `adist` 関数を使った)
-2. Cross-Lingual Eigenwords (提案手法)
+2. Cross-Lingual LSA
+3. Cross-Lingual Eigenwords (提案手法)
 
 による検索の精度を表示する．それぞれ，Precision\@1, Precision\@5 の値を見る．
 (TODO: 最近の手法による評価を追加する？)
@@ -138,6 +156,6 @@ accuracy <- c(accuracy.between("answer.machinetranslate", "answer.adist"),
 ```
 
 ```{r, results = "asis"}
-table.accuracy <- matrix(accuracy, nrow = 3, dimnames = list(c("Edit distance", "CL-LSA", "CL-Eigenwords"), c("@1", paste0("@", topn))))
+table.accuracy <- matrix(accuracy, nrow = 3, dimnames = list(c("Edit distance", "CL-LSA", "CL-Eigenwords"), c("P@1", paste0("P@", topn))))
 kable(table.accuracy)
 ```
