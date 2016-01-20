@@ -4,7 +4,7 @@ library(RcppEigen)
 
 source("src/kadingir.R", chdir = TRUE)
 sourceCpp("src/cllsa_core.cpp", rebuild = TRUE)
-load("res_cleigenwords_20160119.Rdata")
+load("res_cleigenwords_20160120.Rdata")
 
 
 res.cllsa <- CLLSA(r$corpus.concated, r$document.id.concated,
