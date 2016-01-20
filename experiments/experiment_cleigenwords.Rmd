@@ -26,6 +26,7 @@ library(knitr)
 library(RecordLinkage)
 source("./../src/kadingir.R", chdir = TRUE)
 load("./../res_cleigenwords_es-en.Rdata")
+load("./../res_cllsa.Rdata")
 ```
 
 ```{r}
@@ -52,8 +53,10 @@ queries <- paste0("(es)", as.character(translate.table[ , "es"]))
 n.queries <- length(queries)
 answers.machinetranslate <- paste0("(en)", as.character(translate.table[ , "en"]))
 answers.cleigenwords <- vector(mode = "character", length = n.queries)
+answers.cllsa <- vector(mode = "character", length = n.queries)
 answers.adist <- vector(mode = "character", length = n.queries)
 correct.at.n.cleigenwords <- vector(mode = "logical", length = n.queries)
+correct.at.n.cllsa <- vector(mode = "logical", length = n.queries)
 correct.at.n.adist <- vector(mode = "logical", length = n.queries)
 topn <- 5  # P@topn
 
@@ -77,15 +80,21 @@ for (i.query in seq(queries)) {
   answer.collect <- tolower(answers.machinetranslate[i.query])
   answer.collect.nolang <- tolower(substr(answers.machinetranslate[i.query], 5, 100))
   answers.cleigenwords.query <- names(MostSimilar(V, vocab.words, positive=c(query), distance = "cosine", language.search = "en", topn = topn))
+  answers.cllsa.query <- names(MostSimilar(res.cllsa$representations.word, row.names(res.cllsa$representations.word), positive = c(query), distance = "cosine", language.search = "en", topn = topn))
 
-  word.most.similar <- answers.cleigenwords.query[1]
-  if (is.null(word.most.similar)) { word.most.similar <- "" }
+  word.most.similar.cleigenwords <- answers.cleigenwords.query[1]
+  if (is.null(word.most.similar.cleigenwords)) { word.most.similar.cleigenwords <- "" }
+  
+  word.most.similar.cllsa <- answers.cllsa.query[1]
+  if (is.null(word.most.similar.cllsa)) { word.most.similar.cllsa <- "" }
   
   # Edit distance
   answers.adist.query <- search.adist(query.nolang, r$vocab.words[[2]], topn = 5)
   
-  answers.cleigenwords[i.query] <- word.most.similar
+  answers.cleigenwords[i.query] <- word.most.similar.cleigenwords
+  answers.cllsa[i.query] <- word.most.similar.cllsa
   correct.at.n.cleigenwords[i.query] <- answer.collect %in% tolower(answers.cleigenwords.query)
+  correct.at.n.cllsa[i.query] <- answer.collect %in% tolower(answers.cllsa.query)
   correct.at.n.adist[i.query] <- answer.collect.nolang %in% tolower(answers.adist.query)
   answers.adist[i.query] <- answers.adist.query[1]
 }
@@ -95,8 +104,10 @@ answers.adist <- paste0("(en)", answers.adist)
 results <- data.frame(queries = queries,
                       answer.machinetranslate = answers.machinetranslate,
                       answer.cleigenwords = answers.cleigenwords,
+                      answer.cllsa = answers.cllsa,
                       answer.adist = answers.adist,
                       correct.at.n.cleigenwords = correct.at.n.cleigenwords,
+                      correct.at.n.cllsa = correct.at.n.cllsa,
                       correct.at.n.adist= correct.at.n.adist)
 ```
 
@@ -119,10 +130,10 @@ accuracy.between <- function(col1, col2)
 }
 
 accuracy <- c(accuracy.between("answer.machinetranslate", "answer.adist"),
-              0,
+              accuracy.between("answer.machinetranslate", "answer.cllsa"),
               accuracy.between("answer.machinetranslate", "answer.cleigenwords"),
               mean(results[ , "correct.at.n.adist"]),
-              0,
+              mean(results[ , "correct.at.n.cllsa"]),
               mean(results[ , "correct.at.n.cleigenwords"]))
 ```
 
