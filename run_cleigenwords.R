@@ -5,7 +5,7 @@ source("src/cleigenwords.R", chdir = TRUE)
 paths.corpus <- c("data/europarl/europarl-v7.es-en.es.tokenized",
                   "data/europarl/europarl-v7.es-en.en.tokenized")
 
-r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(20000, 20000),
+r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(10000, 10000),
                   dim.common = 100,
                   sizes.window = c(2, 2), aliases.languages=c("es", "en"),
                   plot = TRUE,
