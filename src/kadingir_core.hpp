@@ -52,9 +52,9 @@ public:
              const int _k,
              const bool _mode_oscca);
   void compute();
-  MatrixXd get_word_vectors();
-  MatrixXd get_context_vectors();
-  VectorXd get_singular_values();
+  MatrixXd get_word_vectors() { return word_vectors; }
+  MatrixXd get_context_vectors() { return context_vectors; }
+  VectorXd get_singular_values() { return singular_values; }
 };
 
 
@@ -97,8 +97,8 @@ public:
             const double _gamma_G,
             const double _gamma_H);
   void compute();
-  MatrixXd get_vector_representations();
-  VectorXd get_singular_values();
+  MatrixXd get_vector_representations() { return vector_representations; }
+  VectorXd get_singular_values() { return singular_values; }
 };
 
 
@@ -150,11 +150,11 @@ public:
                const VectorXd _weight_vsdoc
   );
   void compute();
-  MatrixXd get_vector_representations();
-  VectorXd get_singular_values();
-  int get_n_domain();
-  unsigned long long get_p();
-  unsigned long long get_p_head_domains(int index);
+  MatrixXd get_vector_representations() { return vector_representations; }
+  VectorXd get_singular_values() { return singular_values; }
+  int get_n_domain() { return n_domain; }
+  unsigned long long get_p() { return p; }
+  unsigned long long get_p_head_domains(int index) { return p_head_domains[index]; }
 };
 
 

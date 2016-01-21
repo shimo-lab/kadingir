@@ -110,18 +110,6 @@ void Eigenwords::compute()
   }
 }
 
-MatrixXd Eigenwords::get_word_vectors() {
-  return word_vectors;
-}
-
-MatrixXd Eigenwords::get_context_vectors() {
-  return context_vectors;
-}
-
-VectorXd Eigenwords::get_singular_values() {
-  return singular_values;
-}
-
 void Eigenwords::construct_matrices (VectorXi &tWW_diag,
                                      VectorXi &tCC_diag,
                                      iSparseMatrix &tWC,
@@ -373,14 +361,6 @@ void Eigendocs::compute()
   MatrixXd principal_components = svdA.matrixV();
   vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
   singular_values = svdA.singularValues();
-}
-
-MatrixXd Eigendocs::get_vector_representations() {
-  return vector_representations;
-}
-
-VectorXd Eigendocs::get_singular_values() {
-  return singular_values;
 }
 
 void Eigendocs::construct_matrices (VectorXi &tWW_diag,
@@ -674,28 +654,4 @@ void CLEigenwords::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
   std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
   std::cout << "H,  " << H.nonZeros() << ",  " << H.rows() << ",  " << H.cols() << std::endl;
   std::cout << std::endl;
-}
-
-
-MatrixXd CLEigenwords::get_vector_representations() {
-  return vector_representations;
-}
-
-VectorXd CLEigenwords::get_singular_values() {
-  return singular_values;
-}
-
-int CLEigenwords::get_n_domain()
-{
-  return n_domain;
-}
-
-unsigned long long CLEigenwords::get_p()
-{
-  return p;
-}
-
-unsigned long long CLEigenwords::get_p_head_domains(int index)
-{
-  return p_head_domains[index];
 }
