@@ -18,7 +18,7 @@ write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab_es-en_es_phrase
 write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en_phrase2.csv")
 ```
 
-その後，Google Spreadsheet で output\_vocab\_es-en_??.csv から対訳表を作成する．
+その後，Google Spreadsheet で `output\_vocab\_es-en_??.csv` から対訳表を作成する．
 
 # 準備
 ```{r, message=FALSE}
@@ -26,6 +26,16 @@ library(knitr)
 library(RecordLinkage)
 source("./../src/kadingir.R", chdir = TRUE)
 load("./../res_cleigenwords_20160121.Rdata")
+
+
+p <- r$svd$p_head_domains
+V.es <- r$svd$V[p[1]:p[2], ]
+V.en <- r$svd$V[(p[3]+1):p[4], ]
+vocab.words.es <- paste0("(es)", r$vocab.words[[1]])
+vocab.words.en <- paste0("(en)", r$vocab.words[[2]])
+
+V <- rbind(V.es, V.en)
+vocab.words <- c(vocab.words.es, vocab.words.en)
 ```
 
 # CL-LSA
@@ -37,31 +47,18 @@ res.cllsa <- CLLSA(r$corpus.concated, r$document.id.concated,
                    dim_common_space = 100)
 
 res.cllsa$representations.word <- res.cllsa$word_representations
-rownames(res.cllsa$representations.word) <- c(paste0("(es)", r$vocab.words[[1]]),
-                                              paste0("(en)", r$vocab.words[[2]]))
 
 # Check vector representations
-MostSimilar(res.cllsa$representations.word, row.names(res.cllsa$representations.word),
+MostSimilar(res.cllsa$representations.word, vocab.words,
             positive = c("(en)he"), distance = "cosine", language.search = "en")
 ```
 
 # 評価
-```{r}
-p <- r$svd$p_head_domains
-V.es <- r$svd$V[p[1]:p[2], ]
-V.en <- r$svd$V[(p[3]+1):p[4], ]
-vocab.words.es <- paste0("(es)", r$vocab.words[[1]])
-vocab.words.en <- paste0("(en)", r$vocab.words[[2]])
-
-V <- rbind(V.es, V.en)
-vocab.words <- c(vocab.words.es, vocab.words.en)
-```
-
 Google Spreadsheet の `GOOGLETRANSLATE` 関数で生成した対訳表を読み込む．
 
-```{r}
-translate.table <- read.csv("translate_table_es-en_es_reduced.csv", sep = ",", as.is = TRUE)[1:3000, ]
-head(translate.table[ , c("es","en")])
+```{r, results = "asis"}
+translate.table <- read.csv("translate_table_es-en_es_reduced.csv", sep = ",", as.is = TRUE)[1:1000 + 2000, ]
+kable(head(translate.table[ , c("es","en")]))
 ```
 
 
@@ -97,7 +94,7 @@ for (i.query in seq(queries)) {
   answer.collect <- tolower(answers.machinetranslate[i.query])
   answer.collect.nolang <- tolower(substr(answers.machinetranslate[i.query], 5, 100))
   answers.cleigenwords.query <- names(MostSimilar(V, vocab.words, positive=c(query), distance = "cosine", language.search = "en", topn = topn))
-  answers.cllsa.query <- names(MostSimilar(res.cllsa$representations.word, row.names(res.cllsa$representations.word), positive = c(query), distance = "cosine", language.search = "en", topn = topn))
+  answers.cllsa.query <- names(MostSimilar(res.cllsa$representations.word, vocab.words, positive = c(query), distance = "cosine", language.search = "en", topn = topn))
 
   word.most.similar.cleigenwords <- answers.cleigenwords.query[1]
   if (is.null(word.most.similar.cleigenwords)) { word.most.similar.cleigenwords <- "" }
@@ -129,7 +126,7 @@ results <- data.frame(queries = queries,
 ```
 
 ```{r, results = "asis"}
-kable(head(results))
+kable(results[1:20, ])
 ```
 
 今回は，
