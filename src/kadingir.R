@@ -309,7 +309,7 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 
 MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
                         topn = 10, distance = "euclid", print.error = TRUE,
-                        language.search = NULL) {
+                        language.search = NULL, weight.vector = NULL) {
   
   rownames(U) <- vocab
   
@@ -357,7 +357,12 @@ MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
     
   if (distance == "euclid") {
     rep.query.matrix <- matrix(rep.query, nrow=nrow(U), ncol=ncol(U), byrow=TRUE)
-    distances <- sqrt(rowSums((U - rep.query.matrix)**2))
+    
+    if (is.null(weight.vector)) {
+      weight.vector <- rep(1, times = ncol(U))
+    }
+    
+    distances <- sqrt(rowSums(((U - rep.query.matrix) %*% diag(weight.vector))**2))
     return(distances[order(distances)[1:topn]])
   } else if (distance == "cosine") {
     similarities <- drop(U %*% rep.query)
