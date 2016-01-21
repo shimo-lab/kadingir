@@ -8,7 +8,10 @@ output: html_document
 提案手法である Cross-Lingual Eigenwords の評価を行う
 
 # 事前の準備
-タスクによる評価に用いる，単語の対訳表を作成しておく．
+
+0. データの前処理 (`preprocess_europarl.sh`)
+1. CL-Eigenwords を実行 (`run_cleigenwords.R`)
+2. タスクによる評価に用いる単語の対訳表を作成しておく．
 
 まず，以下のコードを実行し，CL-Eigenwords で用いた単語のリストを作成する．
 
@@ -38,7 +41,7 @@ V <- rbind(V.es, V.en)
 vocab.words <- c(vocab.words.es, vocab.words.en)
 ```
 
-# CL-LSA
+## Cross-Lingual LSA を実行する
 ```{r}
 sourceCpp("./../src/cllsa_core.cpp", rebuild = TRUE)
 
@@ -131,12 +134,11 @@ kable(results[1:20, ])
 
 今回は，
 
-1. Generalized Levenshtein edit distance (ナイーブな古典的手法，R の `adist` 関数を使った)
+1. Generalized Levenshtein edit distance (編集距離，R の `adist` 関数を使った)
 2. Cross-Lingual LSA
-3. Cross-Lingual Eigenwords (提案手法)
+3. **Cross-Lingual Eigenwords** (提案手法)
 
-による検索の精度を表示する．それぞれ，Precision\@1, Precision\@5 の値を見る．
-(TODO: 最近の手法による評価を追加する？)
+による検索の精度 (Precisoin@1, Precision@5) を表示する．
 
 ```{r}
 accuracy.between <- function(col1, col2)
@@ -153,6 +155,10 @@ accuracy <- c(accuracy.between("answer.machinetranslate", "answer.adist"),
 ```
 
 ```{r, results = "asis"}
-table.accuracy <- matrix(accuracy, nrow = 3, dimnames = list(c("Edit distance", "CL-LSA", "CL-Eigenwords"), c("P@1", paste0("P@", topn))))
-kable(table.accuracy)
+kable(
+  matrix(accuracy, nrow = 3,
+         dimnames = list(c("Edit distance", "CL-LSA", "CL-Eigenwords"),
+                         c("P@1", paste0("P@", topn)))
+         )
+  )
 ```
