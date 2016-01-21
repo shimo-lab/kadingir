@@ -1,7 +1,7 @@
 ---
 title: "Experiments of Cross-Lingual Eigenwords"
 author: "OSHIKIRI Takamasa"
-date: "2016/1/12"
+date: "2016/1/21"
 output: html_document
 ---
 
@@ -16,9 +16,9 @@ output: html_document
 まず，以下のコードを実行し，CL-Eigenwords で用いた単語のリストを作成する．
 
 ```
-load("./../res_cleigenwords_es-en_phrase2.Rdata")
-write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab_es-en_es_phrase2.csv")
-write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en_phrase2.csv")
+load("./../res_cleigenwords_0121.Rdata")
+write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab_es-en_es_0121.csv")
+write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en_0121.csv")
 ```
 
 その後，Google Spreadsheet で `output\_vocab\_es-en_??.csv` から対訳表を作成する．
@@ -28,8 +28,7 @@ write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en_phrase
 library(knitr)
 library(RecordLinkage)
 source("./../src/kadingir.R", chdir = TRUE)
-load("./../res_cleigenwords_20160121.Rdata")
-
+load("./../res_cleigenwords_0121.Rdata")
 
 p <- r$svd$p_head_domains
 V.es <- r$svd$V[p[1]:p[2], ]
@@ -51,16 +50,21 @@ res.cllsa <- CLLSA(r$corpus.concated, r$document.id.concated,
 
 res.cllsa$representations.word <- res.cllsa$word_representations
 
+save(res.cllsa, file = "res_cllsa_0121.Rdata")
+load("res_cllsa_0121.Rdata")
+
 # Check vector representations
 MostSimilar(res.cllsa$representations.word, vocab.words,
             positive = c("(en)he"), distance = "cosine", language.search = "en")
+MostSimilar(res.cllsa$representations.word, vocab.words,
+            positive = c("(en)he"), distance = "cosine", language.search = "es")
 ```
 
 # 評価
 Google Spreadsheet の `GOOGLETRANSLATE` 関数で生成した対訳表を読み込む．
 
 ```{r, results = "asis"}
-translate.table <- read.csv("translate_table_es-en_es_reduced.csv", sep = ",", as.is = TRUE)[1:1000 + 2000, ]
+translate.table <- read.csv("translate_table_es-en_es_reduced.csv", sep = ",", as.is = TRUE)[1:1000 + 5000, ]
 kable(head(translate.table[ , c("es","en")]))
 ```
 
@@ -76,7 +80,7 @@ correct.at.n.cleigenwords <- vector(mode = "logical", length = n.queries)
 correct.at.n.cllsa <- vector(mode = "logical", length = n.queries)
 correct.at.n.adist <- vector(mode = "logical", length = n.queries)
 topn <- 5  # P@topn
-distance <- "euclid"
+distance <- "cosine"
 weight.vector <- r$svd$singular_values
 
 # Search word that have minimum edit distance with `query` from `vocab.search`
