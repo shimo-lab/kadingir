@@ -52,12 +52,9 @@ Rcpp::List CLLSA(const Rcpp::IntegerVector& corpus_id_concated,
   // Execute Singular Value Decomposition
   std::cout << "Calculate Randomized SVD..." << std::endl;
   RedSVD::RedSVD<Eigen::SparseMatrix<double> > svd(word_document_matrix, dim_common_space, 20);
-  Eigen::MatrixXd word_representations = svd.matrixU();
-  Eigen::MatrixXd document_representations = svd.matrixV();
-  Eigen::VectorXd singular_values = svd.singularValues();
 
-  return Rcpp::List::create(Rcpp::Named("word_document_matrix") = Rcpp::wrap(word_document_matrix.cast <double> ()),
-                            Rcpp::Named("word_representations") = Rcpp::wrap(word_representations),
-                            Rcpp::Named("document_representations") = Rcpp::wrap(document_representations),
-                            Rcpp::Named("singular_values") = Rcpp::wrap(singular_values));
+  return Rcpp::List::create(Rcpp::Named("word_document_matrix")     = Rcpp::wrap(word_document_matrix.cast <double> ()),
+                            Rcpp::Named("word_representations")     = Rcpp::wrap(svd.matrixU()),
+                            Rcpp::Named("document_representations") = Rcpp::wrap(svd.matrixV()),
+                            Rcpp::Named("singular_values")          = Rcpp::wrap(svd.singularValues()));
 }
