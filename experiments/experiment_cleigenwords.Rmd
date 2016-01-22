@@ -64,7 +64,7 @@ MostSimilar(res.cllsa$representations.word, vocab.words,
 Google Spreadsheet の `GOOGLETRANSLATE` 関数で生成した対訳表を読み込む．
 
 ```{r, results = "asis"}
-translate.table <- read.csv("translate_table_es-en_es_reduced.csv", sep = ",", as.is = TRUE)[1:1000 + 5000, ]
+translate.table <- read.csv("translate_table_es-en_es_0121_reduced.csv", sep = ",", as.is = TRUE)[1:1000 + 5000, ]
 kable(head(translate.table[ , c("es","en")]))
 ```
 
