@@ -8,6 +8,12 @@ output: html_document
 提案手法である Cross-Lingual Eigenwords の評価を行う
 
 # Preparation
+```{r}
+library(knitr)
+library(RecordLinkage)
+source("./../src/kadingir.R", chdir = TRUE)
+```
+
 0. Preprocessing Europarl corpus (`preprocess_europarl.sh`)
 1. Execute CL-Eigenwords (`experiment_cleigenwords.Rmd`)
 2. Make translate table using Google Translates (Google Spreadsheet)
@@ -20,12 +26,14 @@ write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab_es-en_es.csv")
 write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en.csv")
 ```
 
-その後，Google Spreadsheet で `output\_vocab\_es-en_??.csv` から対訳表を作成する．
+`output_vocab_es-en_??.csv` 中の単語について，Google Spreadsheet の `GOOGLETRANSLATE` 関数で対訳を生成する．
+
+```{r, results = "asis"}
+translate.table <- read.csv("translate_table_es-en_es_0121_reduced.csv", sep = ",", as.is = TRUE)[1:100, ]
+kable(head(translate.table[ , c("es","en")]))
+```
 
 ```{r, message=FALSE}
-library(knitr)
-library(RecordLinkage)
-source("./../src/kadingir.R", chdir = TRUE)
 load("res_cleigenwords.Rdata")
 
 p <- r$svd$p_head_domains
@@ -62,14 +70,6 @@ MostSimilar(res.cllsa$representations.word, vocab.words,
 MostSimilar(res.cllsa$representations.word, vocab.words,
             positive = c("(en)he"), distance = "cosine", language.search = "es")
 ```
-
-Google Spreadsheet の `GOOGLETRANSLATE` 関数で生成した対訳表を読み込む．
-
-```{r, results = "asis"}
-translate.table <- read.csv("translate_table_es-en_es_0121_reduced.csv", sep = ",", as.is = TRUE)[1:1000 + 5000, ]
-kable(head(translate.table[ , c("es","en")]))
-```
-
 
 # Evaluation
 ```{r}
