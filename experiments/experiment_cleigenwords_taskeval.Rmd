@@ -1,5 +1,5 @@
 ---
-title: "Experiments of Cross-Lingual Eigenwords"
+title: "Task evaluation of Cross-Lingual Eigenwords and its related works"
 author: "OSHIKIRI Takamasa"
 date: "`r Sys.time()`"
 output: html_document
