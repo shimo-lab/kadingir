@@ -14,6 +14,12 @@ kadingir: Implementation of Eigenwords and its extensions
 * Europarl corpus
     * <http://www.statmt.org/wmt11/translation-task.html>
     * <http://www.statmt.org/europarl/>
+* questions-words.txt
+    * <https://code.google.com/p/word2vec/source/browse/trunk/questions-words.txt>
+* The WordSimilarity-353 Test Collection
+    * <http://www.cs.technion.ac.il/~gabr/resources/data/wordsim353/>
+
+
 
 # References
 ## Papers
@@ -24,8 +30,3 @@ kadingir: Implementation of Eigenwords and its extensions
     
 ## Submodules
 * [ntessore/redsvd-h - GitHub](https://github.com/ntessore/redsvd-h)
-
-## Test data
-* test/questions-words.txt : <https://code.google.com/p/word2vec/source/browse/trunk/questions-words.txt>
-* test/conbined.csv : <http://www.cs.technion.ac.il/~gabr/resources/data/wordsim353/>
-
