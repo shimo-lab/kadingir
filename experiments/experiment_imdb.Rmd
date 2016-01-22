@@ -4,8 +4,6 @@ date: "`r Sys.Date()`"
 output:
   html_document:
     toc: true
-    theme: united
-    keep_md: false
 ---
 
 ```{r}
@@ -35,10 +33,8 @@ p <- res.eigendocs$svd$p
 word_vector <- res.eigendocs$svd$V[(pp[1]+1):pp[2], ]
 vocab_words <- unlist(res.eigendocs$vocab.words)
 
-MostSimilar(word_vector, vocab_words,
-            positive=c("man"), distance = "cosine")
-MostSimilar(word_vector, vocab_words,
-            positive=c("American"), distance = "cosine")
+MostSimilar(word_vector, vocab_words, positive=c("man"), distance = "cosine")
+MostSimilar(word_vector, vocab_words, positive=c("American"), distance = "cosine")
 ```
 
 # Task
