@@ -309,7 +309,7 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 
 MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
                         topn = 10, distance = "euclid", print.error = TRUE,
-                        language.search = NULL) {
+                        language.search = NULL, weight.vector = NULL) {
   
   rownames(U) <- vocab
   
@@ -348,21 +348,24 @@ MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
   index.vocab.reduced <- which(!vocab %in% query.words)
   U <- U[index.vocab.reduced, ]
   vocab <- vocab[index.vocab.reduced]
+  
+  if (!is.null(language.search)) {
+    rownames.U <- row.names(U)
+    search.indices <- grepl(paste0("^\\(", language.search, "\\)"), rownames.U)
+    U <- U[search.indices, ]
+  }
     
   if (distance == "euclid") {
     rep.query.matrix <- matrix(rep.query, nrow=nrow(U), ncol=ncol(U), byrow=TRUE)
-    distances <- sqrt(rowSums((U - rep.query.matrix)**2))
-    return(distances[order(distances)[1:topn]])
     
-  } else if (distance == "cosine") {
-    similarities <- drop(U %*% rep.query)
-    
-    if (!is.null(language.search)) {
-      names.similarities <- names(similarities)
-      search.indies <- grepl(paste0("^\\(", language.search, "\\)"), names.similarities)
-      similarities <- similarities[search.indies]
+    if (is.null(weight.vector)) {
+      weight.vector <- rep(1, times = ncol(U))
     }
     
+    distances <- sqrt(rowSums(((U - rep.query.matrix) %*% diag(weight.vector))**2))
+    return(distances[order(distances)[1:topn]])
+  } else if (distance == "cosine") {
+    similarities <- drop(U %*% rep.query)
     return(similarities[order(-similarities)[1:topn]])
   }
 }

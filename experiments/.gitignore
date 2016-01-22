@@ -1,3 +1,5 @@
 *_files/*
 figure/
 *.md
+*.csv
+log_*
