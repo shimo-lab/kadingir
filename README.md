@@ -17,8 +17,8 @@ kadingir : Implementation of Eigenwords and its extensions
 
 # References
 ## Papers
-* Dhillon, Paramveer S, Jordan Rodu, Dean P Foster, and Lyle H Ungar. 2012. “Two Step CCA: A New Spectral Method for Estimating Vector Models of Words.” Proceedings of the 29th International Conference on Machine Learning (ICML-12), 1551–58.
-* Dhillon, Paramveer S, Dean P Foster, and Lyle H Ungar. 2015. “Eigenwords: Spectral Word Embeddings.” Journal of Machine Learning Research 16: 1–36. 
+* Dhillon, P., Rodu, J., Foster, D., and Ungar, L. (2012). Two step cca: A new spectral method for estimating vector models of words. In Langford, J. and Pineau, J., editors, Proceedings of the 29th International Conference on Machine Learning (ICML-12), ICML ’12, pages 1551–1558, New York, NY, USA. Omnipress.
+* Dhillon, P. S., Foster, D. P., and Ungar, L. H. (2015). Eigenwords: Spectral word embeddings. Journal of Machine Learning Research, 16:3035–3078.
     * Source code : [paramveerdhillon/swell - GitHub](https://github.com/paramveerdhillon/swell/)
     * Output : [Codes | Paramveer Dhillon](http://www.pdhillon.com/code.html)
     
