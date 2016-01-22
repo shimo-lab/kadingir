@@ -1,5 +1,5 @@
-kadingir : Implementation of Eigenwords and its extensions
-================
+kadingir: Implementation of Eigenwords and its extensions
+=====================================================
 
 # Contents
 * Eigenwords [Dhillon+ 2012] [Dhillon+ 2015]
