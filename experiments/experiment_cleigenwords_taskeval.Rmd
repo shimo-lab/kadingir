@@ -10,7 +10,9 @@ output: html_document
 # Preparation
 ```{r}
 time.begin <- Sys.time()
+```
 
+```{r, include=FALSE}
 library(knitr)
 library(RecordLinkage)
 source("./../src/kadingir.R", chdir = TRUE)
