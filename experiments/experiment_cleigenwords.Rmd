@@ -1,7 +1,7 @@
 ---
 title: "Experiments of Cross-Lingual Eigenwords"
 author: "OSHIKIRI Takamasa"
-date: "2016/1/21"
+date: "`r Sys.time()`"
 output: html_document
 ---
 
