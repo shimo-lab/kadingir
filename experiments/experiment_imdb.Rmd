@@ -17,15 +17,15 @@ time.begin <- Sys.time()
 set.seed(0)
 
 source("./../src/kadingir.R", chdir=TRUE)
-source("./../src/mceigendocs.R", chdir=TRUE)
+source("./../src/cleigenwords.R", chdir=TRUE)
 ```
 
 ```{r}
 paths.corpus <- c("./../data/eigendocs_imdb/imdb_reviews.txt")
-res.eigendocs <- MCEigendocs(paths.corpus, max.vocabulary=10000, dim.internal=50,
-                             window.sizes = c(4), aliases=c("en"), plot = TRUE,
-                             doc_weighting = FALSE, weight_doc_vs_vc = 0.01)
-save(res.eigendocs, file = "./res_eigendocs_imdb.Rdata")
+res.eigendocs <- CLEigenwords(paths.corpus, sizes.vocabulary=c(10000), dim.common=50,
+                              sizes.window = c(4), aliases.languages=c("en"), weight.vsdoc=c(0.01),
+                              plot = TRUE, weighting_tf=FALSE)
+save(res.eigendocs, file = "res_eigendocs_imdb.Rdata")
 ```
 
 ## Check vector representations of words
