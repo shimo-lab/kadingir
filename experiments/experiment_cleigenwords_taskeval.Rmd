@@ -9,6 +9,8 @@ output: html_document
 
 # Preparation
 ```{r}
+time.begin <- Sys.time()
+
 library(knitr)
 library(RecordLinkage)
 source("./../src/kadingir.R", chdir = TRUE)
@@ -180,4 +182,9 @@ precision <- cbind(cumsum(results[, c("correct.at.n.adist")])/seq(nrow(results))
 colnames(precision) <- c("Edit distance", "CL-LSA", "CL-Eigenwords")
 matplot(precision, pch = 1:3)
 legend(600, 0.1, legend = colnames(precision), pch = 1:3, col = 1:3)
+```
+
+```{r}
+Sys.time() - time.begin
+Sys.time()
 ```

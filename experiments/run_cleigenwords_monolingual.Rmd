@@ -38,4 +38,5 @@ TestWordsim353(V.en, vocab.words.en, path = "./../test/combined.csv")
 
 ```{r}
 Sys.time() - time.begin
+Sys.time()
 ```

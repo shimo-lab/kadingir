@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r}
-print(date())
+time.begin <- Sys.time()
 ```
 
 # Execute Eigendocs
@@ -126,5 +126,6 @@ plot(glmnet.train$lambda, cv1, log="x")
 ```
 
 ```{r}
-print(date())
+Sys.time() - time.begin
+Sys.time()
 ```

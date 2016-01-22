@@ -6,6 +6,8 @@ output: html_document
 ---
 
 ```{r, include=FALSE}
+time.begin <- Sys.time()
+
 set.seed(0)
 
 source("./../src/kadingir.R", chdir=TRUE)
@@ -52,4 +54,9 @@ TestGoogleTasks(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
 ```{r}
 TestWordsim353(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
                path = "./../test/combined.csv")
+```
+
+```{r}
+Sys.time() - time.begin
+Sys.time()
 ```

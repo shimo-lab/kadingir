@@ -6,6 +6,8 @@ output: html_document
 ---
 
 ```{r, include = FALSE}
+time.begin <- Sys.time()
+
 source("./../src/kadingir.R", chdir = TRUE)
 source("./../src/cleigenwords.R", chdir = TRUE)
 ```
@@ -56,5 +58,6 @@ TestWordsim353(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]],
 ```
 
 ```{r}
+Sys.time() - time.begin
 Sys.time()
 ```
