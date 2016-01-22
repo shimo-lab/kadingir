@@ -15,9 +15,9 @@ output: html_document
 まず，以下のコードを実行し，CL-Eigenwords で用いた単語のリストを作成する．
 
 ```
-load("./../res_cleigenwords_0121.Rdata")
-write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab_es-en_es_0121.csv")
-write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en_0121.csv")
+load("res_cleigenwords.Rdata")
+write(paste0(r$vocab.words[[1]], collapse = "\n"), "output_vocab_es-en_es.csv")
+write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en.csv")
 ```
 
 その後，Google Spreadsheet で `output\_vocab\_es-en_??.csv` から対訳表を作成する．
@@ -26,7 +26,7 @@ write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en_0121.c
 library(knitr)
 library(RecordLinkage)
 source("./../src/kadingir.R", chdir = TRUE)
-load("./../res_cleigenwords_0121.Rdata")
+load("res_cleigenwords.Rdata")
 
 p <- r$svd$p_head_domains
 V.es <- r$svd$V[p[1]:p[2], ]
@@ -40,7 +40,7 @@ vocab.words <- c(vocab.words.es, vocab.words.en)
 
 ## Execute Cross-Lingual LSA
 ```{r}
-path.cllsa.rdata <- "res_cllsa_0121.Rdata"
+path.cllsa.rdata <- "res_cllsa.Rdata"
 
 if (!file.exists(path.cllsa.rdata)) {
   sourceCpp("./../src/cllsa_core.cpp", rebuild = TRUE)
