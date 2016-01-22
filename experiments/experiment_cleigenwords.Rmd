@@ -42,16 +42,21 @@ vocab.words <- c(vocab.words.es, vocab.words.en)
 
 ## Cross-Lingual LSA を実行する
 ```{r}
-sourceCpp("./../src/cllsa_core.cpp", rebuild = TRUE)
+path.cllsa.rdata <- "res_cllsa_0121.Rdata"
 
-res.cllsa <- CLLSA(r$corpus.concated, r$document.id.concated,
-                   r$sizes.vocabulary, r$lengths.sentence,
-                   dim_common_space = 100)
-
-res.cllsa$representations.word <- res.cllsa$word_representations
-
-save(res.cllsa, file = "res_cllsa_0121.Rdata")
-load("res_cllsa_0121.Rdata")
+if (!file.exists(path.cllsa.rdata)) {
+  sourceCpp("./../src/cllsa_core.cpp", rebuild = TRUE)
+  
+  res.cllsa <- CLLSA(r$corpus.concated, r$document.id.concated,
+                     r$sizes.vocabulary, r$lengths.sentence,
+                     dim_common_space = 100)
+  
+  res.cllsa$representations.word <- res.cllsa$word_representations
+  save(res.cllsa, file = path.cllsa.rdata)
+  
+} else {
+  load(path.cllsa.rdata)
+}
 
 # Check vector representations
 MostSimilar(res.cllsa$representations.word, vocab.words,
