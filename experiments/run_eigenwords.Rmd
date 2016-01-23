@@ -52,8 +52,7 @@ TestGoogleTasks(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
 ```
 
 ```{r}
-TestWordsim353(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
-               path = "./../test/combined.csv")
+TestWordsim353(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words)
 ```
 
 ```{r}

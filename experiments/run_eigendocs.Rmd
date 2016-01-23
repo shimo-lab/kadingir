@@ -45,8 +45,7 @@ MostSimilar(word_vectors, res.eigendocs$vocab.words,
 ## Test some tasks for check
 TestGoogleTasks(word_vectors, res.eigendocs$vocab.words, n.cores = 24,
                 path = "./../test/questions-words.txt")
-TestWordsim353(word_vectors, res.eigendocs$vocab.words,
-               path = "./../test/combined.csv")
+TestWordsim353(word_vectors, res.eigendocs$vocab.words)
 ```
 
 ```{r}

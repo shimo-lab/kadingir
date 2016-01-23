@@ -48,7 +48,7 @@ TestGoogleTasks(word_vector, vocab_words, path = "./../test/questions-words.txt"
 
 ## wordsim353
 ```{r}
-TestWordsim353(word_vector, vocab_words, path = "./../test/combined.csv")
+TestWordsim353(word_vector, vocab_words)
 ```
 
 
