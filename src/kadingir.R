@@ -423,7 +423,7 @@ TestGoogleTasks <- function (U, vocab, path = "test/questions-words.txt", n.core
 }
 
 
-TestWordsim353 <- function (vectors, vocab, path = "test/combined.csv") {
+TestWordsim353 <- function (vectors, vocab, path = "./../data/wordsim353/combined.csv") {
   
   cosine.similarity <- function (w1, w2) {
     v1 <- vectors[w1, ]
