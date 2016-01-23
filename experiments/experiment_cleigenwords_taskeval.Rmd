@@ -151,7 +151,7 @@ kable(results[1:20, ])
 2. Cross-Lingual LSA
 3. **Cross-Lingual Eigenwords** (Proposed method)
 
-による検索の精度 (Precision@1, Precision@5) を表示する．
+による検索の精度 (Precision\@1, Precision\@5) を表示する．
 
 ```{r}
 accuracy.between <- function(col1, col2)
