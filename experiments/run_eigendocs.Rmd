@@ -43,8 +43,7 @@ MostSimilar(word_vectors, res.eigendocs$vocab.words,
             positive=c("king", "woman"), negative=c("man"), distance = "cosine")
 
 ## Test some tasks for check
-TestGoogleTasks(word_vectors, res.eigendocs$vocab.words, n.cores = 24,
-                path = "./../test/questions-words.txt")
+TestGoogleTasks(word_vectors, res.eigendocs$vocab.words, n.cores = 24)
 TestWordsim353(word_vectors, res.eigendocs$vocab.words)
 ```
 

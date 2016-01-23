@@ -51,8 +51,7 @@ MostSimilar(V, vocab.words, positive=c("(en)him", "(es)yo"), negative=c("(en)he"
 
 # 英語の単語ベクトルについてのタスクを試す
 ```{r}
-TestGoogleTasks(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]],
-                path = "./../test/questions-words.txt", n.cores = 12)
+TestGoogleTasks(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]], n.cores = 12)
 TestWordsim353(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]])
 ```
 

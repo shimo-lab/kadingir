@@ -43,7 +43,7 @@ MostSimilar(word_vector, vocab_words, positive=c("American"), distance = "cosine
 一応，単語ベクトルの評価を行う．
 
 ```{r}
-TestGoogleTasks(word_vector, vocab_words, path = "./../test/questions-words.txt", n.cores = 10)
+TestGoogleTasks(word_vector, vocab_words, n.cores = 10)
 ```
 
 ## wordsim353

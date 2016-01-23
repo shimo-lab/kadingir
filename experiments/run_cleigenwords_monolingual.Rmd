@@ -32,7 +32,7 @@ vocab.words.en <- res.cleigenwords$vocab.words[[1]]
 ```{r}
 MostSimilar(V.en, vocab.words.en, positive=c("he"), distance = "cosine")
 MostSimilar(V.en, vocab.words.en, positive=c("woman"), distance = "cosine")
-TestGoogleTasks(V.en, vocab.words.en, path = "./../test/questions-words.txt", n.cores = 10)
+TestGoogleTasks(V.en, vocab.words.en, n.cores = 10)
 TestWordsim353(V.en, vocab.words.en)
 ```
 
