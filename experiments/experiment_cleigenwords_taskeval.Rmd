@@ -33,7 +33,7 @@ write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en.csv")
 `output_vocab_es-en_??.csv` 中の単語について，Google Spreadsheet の `GOOGLETRANSLATE` 関数で対訳を生成する．
 
 ```{r, results = "asis"}
-translate.table <- read.csv("translate_table_es-en_es_0121_reduced.csv", sep = ",", as.is = TRUE)[1:1000, ]
+translate.table <- read.csv("translate_table_es-en_es_0123_reduced.csv", sep = ",", as.is = TRUE)[1:973, ]
 kable(head(translate.table[ , c("es","en")]))
 ```
 
