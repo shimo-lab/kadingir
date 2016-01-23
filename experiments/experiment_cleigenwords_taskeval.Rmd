@@ -13,6 +13,10 @@ time.begin <- Sys.time()
 ```
 
 ```{r, include=FALSE}
+rmarkdown::render("run_cleigenwords.Rmd")
+```
+
+```{r, include=FALSE}
 library(knitr)
 library(RecordLinkage)
 source("./../src/kadingir.R", chdir = TRUE)
