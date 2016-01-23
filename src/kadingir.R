@@ -386,7 +386,7 @@ MostSimilarDocs <- function (document.id, document_vector, titles, topn = 10) {
 }
 
 
-TestGoogleTasks <- function (U, vocab, path = "test/questions-words.txt", n.cores = 1) {
+TestGoogleTasks <- function (U, vocab, path = "./../data/word2vec/questions-words.txt", n.cores = 1) {
   
   time.start <- Sys.time()
   
