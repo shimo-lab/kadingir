@@ -13,11 +13,11 @@ source("./../src/cleigenwords.R", chdir = TRUE)
 ```
 
 ```{r}
-paths.corpus <- c("./../data/europarl/europarl-v7.es-en.es.tokenized.100000",
-                  "./../data/europarl/europarl-v7.es-en.en.tokenized.100000")
+paths.corpus <- c("./../data/europarl/europarl-v7.es-en.es.tokenized",
+                  "./../data/europarl/europarl-v7.es-en.en.tokenized")
 
-r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(1000, 1000),
-                  dim.common = 100,
+r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(10000, 10000),
+                  dim.common = 500,
                   sizes.window = c(2, 2), aliases.languages=c("es", "en"),
                   plot = TRUE,
                   weighting_tf = FALSE,
