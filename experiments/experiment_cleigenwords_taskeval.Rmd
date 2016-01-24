@@ -191,6 +191,21 @@ legend("bottomright", legend = colnames(precision), pch = 1:3, col = 1:3)
 ```
 
 ```{r}
+accuracy.partial <- function(begin){
+  accuracy.at <- colMeans(results[1:1000 + begin, 6:8])
+}
+
+begin.vector <- c(0, 1000, 2000, 3000, 4000, 5000, 6000)
+accuracy.fromto <- NULL
+for(begin in begin.vector) {
+  accuracy.fromto <- rbind(accuracy.fromto, accuracy.partial(begin))
+}
+row.names(accuracy.fromto) <- as.character(paste0(begin.vector + 1, ":", begin.vector + 1000))
+
+kable(accuracy.fromto)
+```
+
+```{r}
 Sys.time() - time.begin
 Sys.time()
 ```
