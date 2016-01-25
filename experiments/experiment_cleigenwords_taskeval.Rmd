@@ -65,7 +65,7 @@ if (!file.exists(path.cllsa.rdata)) {
   
   res.cllsa <- CLLSA(r$corpus.concated, r$document.id.concated,
                      r$sizes.vocabulary, r$lengths.sentence,
-                     dim_common_space = 100)
+                     dim_common_space = 400)
   
   res.cllsa$representations.word <- res.cllsa$word_representations
   save(res.cllsa, file = path.cllsa.rdata)
