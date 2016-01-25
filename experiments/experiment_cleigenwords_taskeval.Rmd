@@ -182,7 +182,7 @@ kable(
   )
 ```
 
-# 頻出上位 $n$ 件のときの Precision\@5 のグラフ
+# 頻出上位 $n$ 件の単語をクエリとして使ったときの Precision\@5 のグラフ
 ```{r}
 precision <- cbind(cumsum(results[, c("correct.at.n.adist")])/seq(nrow(results)),
                    cumsum(results[, c("correct.at.n.cllsa")])/seq(nrow(results)),
