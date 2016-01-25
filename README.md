@@ -2,6 +2,7 @@ kadingir: Implementation of Eigenwords and its extensions
 =====================================================
 
 # Contents
+* CL-LSI [Littman+ 1998]
 * Eigenwords [Dhillon+ 2012] [Dhillon+ 2015]
     * One-Step CCA (OSCCA)
     * Two-Step CCA (TSCCA)
@@ -27,6 +28,7 @@ kadingir: Implementation of Eigenwords and its extensions
 * Dhillon, P. S., Foster, D. P., and Ungar, L. H. (2015). Eigenwords: Spectral word embeddings. Journal of Machine Learning Research, 16:3035–3078.
     * Source code : [paramveerdhillon/swell - GitHub](https://github.com/paramveerdhillon/swell/)
     * Output : [Codes | Paramveer Dhillon](http://www.pdhillon.com/code.html)
+* Littman, M. L., Dumais, S. T., & Landauer, T. K. (1998). Automatic cross-language information retrieval using latent semantic indexing. Cross-Language Information Retrieval, 51–62. 
     
 ## Submodules
 * [ntessore/redsvd-h - GitHub](https://github.com/ntessore/redsvd-h)
