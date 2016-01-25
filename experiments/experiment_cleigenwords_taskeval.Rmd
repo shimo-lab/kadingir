@@ -12,7 +12,7 @@ output: html_document
 time.begin <- Sys.time()
 ```
 
-```{r, include=FALSE}
+```{r, results='hide'}
 if (!file.exists("run_cleigenwords.html")) {
   rmarkdown::render("run_cleigenwords.Rmd")
 }
