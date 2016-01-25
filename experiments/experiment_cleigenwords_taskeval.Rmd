@@ -56,6 +56,19 @@ V <- rbind(V.es, V.en)
 vocab.words <- c(vocab.words.es, vocab.words.en)
 ```
 
+## Plot some figure
+```{r}
+queries <- c(paste0("(en)", c("japan", "america", "korea", "england", "spain", "germany")),
+             paste0("(es)", c("japón", "américa", "corea", "inglaterra", "españa", "alemania")))
+n.queries <- length(queries)
+
+V2 <- V
+row.names(V2) <- vocab.words
+pr.v2 <- prcomp(V2[queries,])
+plot(pr.v2$x[ , 1:2], pch = 1, col = "grey")
+text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x))
+```
+
 ## Execute Cross-Lingual LSA
 ```{r}
 path.cllsa.rdata <- "res_cllsa.Rdata"
