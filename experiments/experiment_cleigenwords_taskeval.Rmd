@@ -73,7 +73,7 @@ text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x))
 
 ## Execute Cross-Lingual LSA
 ```{r}
-path.cllsa.rdata <- "res_cllsa.Rdata"
+path.cllsa.rdata <- "res_cllsa_0125.Rdata"
 
 if (!file.exists(path.cllsa.rdata)) {
   sourceCpp("./../src/cllsa_core.cpp", rebuild = TRUE)
