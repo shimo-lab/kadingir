@@ -12,6 +12,8 @@ output: html_document
 time.begin <- Sys.time()
 ```
 
+If `run_cleigenwords.html` does NOT exists, render `run_cleigenwords.Rmd`.
+
 ```{r, results='hide'}
 if (!file.exists("run_cleigenwords.html")) {
   rmarkdown::render("run_cleigenwords.Rmd")
