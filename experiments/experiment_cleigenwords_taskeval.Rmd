@@ -109,7 +109,7 @@ correct.at.n.cllsa <- vector(mode = "logical", length = n.queries)
 correct.at.n.adist <- vector(mode = "logical", length = n.queries)
 topn <- 5  # P@topn
 distance <- "cosine"
-weight.vector <- r$svd$singular_values
+weight.vector <- NULL
 
 # Search word that have minimum edit distance with `query` from `vocab.search`
 search.adist <- function (query, vocab.search, topn = 1)
