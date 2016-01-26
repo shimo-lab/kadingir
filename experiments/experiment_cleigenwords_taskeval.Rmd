@@ -203,8 +203,9 @@ precision <- cbind(cumsum(results[, c("correct.at.n.adist")])/seq(nrow(results))
                    cumsum(results[, c("correct.at.n.cllsa")])/seq(nrow(results)),
                    cumsum(results[, c("correct.at.n.cleigenwords")])/seq(nrow(results)))
 colnames(precision) <- c("Edit distance", "CL-LSA", "CL-Eigenwords")
-matplot(precision, pch = 1:3, xlab="rank", ylab=paste0("Precision@", topn))
-legend("bottomright", legend = colnames(precision), pch = 1:3, col = 1:3)
+col <- c("black", "red", "blue")
+matplot(precision, xlab="rank", ylab=paste0("Precision@", topn), type="l", lwd = 4, lty = 1, col = col)
+legend("bottomright", legend = colnames(precision), pch = 1, col = col)
 ```
 
 ```{r}
