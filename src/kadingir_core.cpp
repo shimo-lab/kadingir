@@ -293,8 +293,8 @@ void Eigenwords::run_tscca(dSparseMatrix &tWW_h_diag,
 
 
 
-Eigendocs::Eigendocs (const MapVectorXi& _sentence,
-                      const MapVectorXi& _document_id,
+Eigendocs::Eigendocs (const std::vector<int>& _sentence,
+                      const std::vector<int>& _document_id,
                       const int _window_size,
                       const int _vocab_size,
                       const int _k,
@@ -322,7 +322,7 @@ Eigendocs::Eigendocs (const MapVectorXi& _sentence,
 
 void Eigendocs::compute()
 {
-  const unsigned long long n_documents = document_id.maxCoeff() + 1;
+  const unsigned long long n_documents = *std::max_element(document_id.begin(), document_id.end()) + 1;
 
   p_indices[0] = vocab_size;
   p_indices[1] = c_col_size;
@@ -369,7 +369,7 @@ void Eigendocs::construct_matrices (VectorXi &tWW_diag,
                                     iSparseMatrix &H)
 {
   const unsigned long long sentence_size = sentence.size();
-  const unsigned long long n_documents = document_id.maxCoeff() + 1;
+  const unsigned long long n_documents = *std::max_element(document_id.begin(), document_id.end()) + 1;
 
   unsigned long long n_pushed_triplets = 0;
 

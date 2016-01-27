@@ -61,8 +61,8 @@ public:
 class Eigendocs
 {
 private:
-  MapVectorXi sentence;
-  MapVectorXi document_id;
+  std::vector<int> sentence;
+  std::vector<int> document_id;
   int window_size;
   int vocab_size;
   int k;
@@ -87,8 +87,8 @@ public:
   unsigned long long p_indices[3];
   unsigned long long p_head_domains[3];
 
-  Eigendocs(const MapVectorXi& _sentence,
-            const MapVectorXi& _document_id,
+  Eigendocs(const std::vector<int>& _sentence,
+            const std::vector<int>& _document_id,
             const int _window_size,
             const int _vocab_size,
             const int _k,

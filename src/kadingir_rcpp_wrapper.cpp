@@ -34,8 +34,8 @@ Rcpp::List EigenwordsRedSVD(const Rcpp::IntegerVector& sentence,
 
 
 // [[Rcpp::export]]
-Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
-                           const MapVectorXi& document_id,
+Rcpp::List EigendocsRedSVD(const Rcpp::IntegerVector& sentence,
+                           const Rcpp::IntegerVector& document_id,
                            const int window_size,
                            const int vocab_size,
                            const int k,
@@ -45,7 +45,10 @@ Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
                            const bool link_c_d
                            )
 {
-  Eigendocs eigendocs = Eigendocs(sentence, document_id, window_size, vocab_size, k,
+  std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
+  std::vector<int> document_id_stdvector = Rcpp::as<std::vector<int> >(document_id);
+  
+  Eigendocs eigendocs = Eigendocs(sentence_stdvector, document_id_stdvector, window_size, vocab_size, k,
                                   link_w_d, link_c_d, gamma_G, gamma_H);
   eigendocs.compute();
 
