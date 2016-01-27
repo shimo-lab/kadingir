@@ -71,7 +71,7 @@ void construct_h_diag_matrix (VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
 }
 
 
-Eigenwords::Eigenwords (const MapVectorXi& _sentence,
+Eigenwords::Eigenwords (const std::vector<int>& _sentence,
                         const int _window_size,
                         const int _vocab_size,
                         const int _k,

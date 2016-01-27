@@ -5,6 +5,7 @@
  */
 
 
+#include <iostream>
 #include <Rcpp.h>
 #include <RcppEigen.h>
 #include "kadingir_core.hpp"
@@ -14,13 +15,15 @@
 
 
 // [[Rcpp::export]]
-Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence,
+Rcpp::List EigenwordsRedSVD(const Rcpp::IntegerVector& sentence,
                             const int window_size,
                             const int vocab_size,
                             const int k,
                             const bool mode_oscca)
 {
-  Eigenwords eigenwords = Eigenwords(sentence, window_size, vocab_size, k, mode_oscca);
+  std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
+  
+  Eigenwords eigenwords = Eigenwords(sentence_stdvector, window_size, vocab_size, k, mode_oscca);
   eigenwords.compute();
 
   return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(eigenwords.get_word_vectors()),

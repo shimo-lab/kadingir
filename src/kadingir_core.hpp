@@ -17,7 +17,7 @@ typedef Eigen::Triplet<double> Triplet;
 class Eigenwords
 {
 private:
-  MapVectorXi sentence;
+  std::vector<int> sentence;
   int window_size;
   int vocab_size;
   int k;
@@ -46,7 +46,7 @@ private:
                  iSparseMatrix &tWC);
 
 public:
-  Eigenwords(const MapVectorXi& _sentence,
+  Eigenwords(const std::vector<int>& _sentence,
              const int _window_size,
              const int _vocab_size,
              const int _k,
