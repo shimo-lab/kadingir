@@ -432,8 +432,8 @@ void Eigendocs::construct_matrices (VectorXi &tWW_diag,
 
 
 
-CLEigenwords::CLEigenwords(const MapVectorXi& _sentence_concated,
-                           const MapVectorXi& _document_id_concated,
+CLEigenwords::CLEigenwords(const std::vector<int>& _sentence_concated,
+                           const std::vector<int>& _document_id_concated,
                            const VectorXi _window_sizes,
                            const VectorXi _vocab_sizes,
                            const VectorXi _sentence_lengths,
@@ -470,7 +470,7 @@ CLEigenwords::CLEigenwords(const MapVectorXi& _sentence_concated,
     c_col_sizes[i] = 2 * lr_col_sizes[i];
   }
 
-  n_documents = document_id_concated.maxCoeff() + 1;
+  n_documents = *std::max_element(document_id_concated.begin(), document_id_concated.end()) + 1;
   n_domain = 2 * n_languages + 1;  // # of domains = 2 * (# of languages) + document
   p_indices.resize(n_domain);        // dimensions of each domain
   p_head_domains.resize(n_domain);   // head of indices of each domain

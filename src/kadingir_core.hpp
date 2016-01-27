@@ -105,8 +105,8 @@ public:
 class CLEigenwords
 {
 private:
-  MapVectorXi sentence_concated;
-  MapVectorXi document_id_concated;
+  std::vector<int> sentence_concated;
+  std::vector<int> document_id_concated;
   VectorXi window_sizes;
   VectorXi vocab_sizes;
   VectorXi sentence_lengths;
@@ -136,8 +136,8 @@ private:
   void construct_matrices (VectorXd &G_diag, dSparseMatrix &H);
 
 public:
-  CLEigenwords(const MapVectorXi& _sentence_concated,
-               const MapVectorXi& _document_id_concated,
+  CLEigenwords(const std::vector<int>& _sentence_concated,
+               const std::vector<int>& _document_id_concated,
                const VectorXi _window_sizes,
                const VectorXi _vocab_sizes,
                const VectorXi _sentence_lengths,

@@ -67,8 +67,8 @@ Rcpp::List EigendocsRedSVD(const Rcpp::IntegerVector& sentence,
 
 
 // [[Rcpp::export]]
-Rcpp::List CLEigenwordsRedSVD(const MapVectorXi& sentence_concated,
-                              const MapVectorXi& document_id_concated,
+Rcpp::List CLEigenwordsRedSVD(const Rcpp::IntegerVector& sentence_concated,
+                              const Rcpp::IntegerVector& document_id_concated,
                               const Rcpp::IntegerVector window_sizes,
                               const Rcpp::IntegerVector vocab_sizes,
                               const Rcpp::IntegerVector sentence_lengths,
@@ -81,6 +81,9 @@ Rcpp::List CLEigenwordsRedSVD(const MapVectorXi& sentence_concated,
                               const Rcpp::NumericVector weight_vsdoc
                              )
 {
+  std::vector<int> sentence_concated_stdvector = Rcpp::as<std::vector<int> >(sentence_concated);
+  std::vector<int> document_id_concated_stdvector = Rcpp::as<std::vector<int> >(document_id_concated);
+
   VectorXi window_sizes_eigen(window_sizes.length());
   for (int i = 0; i < window_sizes.length(); i++) {
     window_sizes_eigen(i) = window_sizes[i];
@@ -102,7 +105,7 @@ Rcpp::List CLEigenwordsRedSVD(const MapVectorXi& sentence_concated,
   }
 
 
-  CLEigenwords cleigenwords = CLEigenwords(sentence_concated, document_id_concated,
+  CLEigenwords cleigenwords = CLEigenwords(sentence_concated_stdvector, document_id_concated_stdvector,
                                         window_sizes_eigen, vocab_sizes_eigen,
                                         sentence_lengths_eigen, k,
                                         link_w_d, link_c_d, gamma_G, gamma_H,
