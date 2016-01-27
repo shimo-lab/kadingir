@@ -434,16 +434,16 @@ void Eigendocs::construct_matrices (VectorXi &tWW_diag,
 
 CLEigenwords::CLEigenwords(const std::vector<int>& _sentence_concated,
                            const std::vector<int>& _document_id_concated,
-                           const VectorXi _window_sizes,
-                           const VectorXi _vocab_sizes,
-                           const VectorXi _sentence_lengths,
+                           const std::vector<int> _window_sizes,
+                           const std::vector<int> _vocab_sizes,
+                           const std::vector<unsigned long long> _sentence_lengths,
                            const int _k,
                            const double _gamma_G,
                            const double _gamma_H,
                            const bool _link_w_d,
                            const bool _link_c_d,
                            const bool _weighting_tf,
-                           const VectorXd _weight_vsdoc
+                           const std::vector<double> _weight_vsdoc
                         ) : sentence_concated(_sentence_concated),
                         document_id_concated(_document_id_concated),
                         window_sizes(_window_sizes),
@@ -466,7 +466,7 @@ CLEigenwords::CLEigenwords(const std::vector<int>& _sentence_concated,
   lr_col_sizes.resize(n_languages);
   c_col_sizes.resize(n_languages);
   for (int i = 0; i < n_languages; i++) {
-    lr_col_sizes[i] = (unsigned long long)window_sizes(i) * vocab_sizes[i];
+    lr_col_sizes[i] = (unsigned long long)window_sizes[i] * vocab_sizes[i];
     c_col_sizes[i] = 2 * lr_col_sizes[i];
   }
 

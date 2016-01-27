@@ -83,33 +83,20 @@ Rcpp::List CLEigenwordsRedSVD(const Rcpp::IntegerVector& sentence_concated,
 {
   std::vector<int> sentence_concated_stdvector = Rcpp::as<std::vector<int> >(sentence_concated);
   std::vector<int> document_id_concated_stdvector = Rcpp::as<std::vector<int> >(document_id_concated);
+  std::vector<int> window_sizes_stdvector = Rcpp::as<std::vector<int> >(window_sizes);
+  std::vector<int> vocab_sizes_stdvector = Rcpp::as<std::vector<int> >(vocab_sizes);
+  std::vector<double> weight_vsdoc_stdvector = Rcpp::as<std::vector<double> >(weight_vsdoc);
 
-  VectorXi window_sizes_eigen(window_sizes.length());
-  for (int i = 0; i < window_sizes.length(); i++) {
-    window_sizes_eigen(i) = window_sizes[i];
-  }
-
-  VectorXi vocab_sizes_eigen(vocab_sizes.length());
-  for (int i = 0; i < vocab_sizes.length(); i++) {
-    vocab_sizes_eigen(i) = vocab_sizes[i];
-  }
-
-  VectorXi sentence_lengths_eigen(sentence_lengths.length());
+  std::vector<unsigned long long> sentence_lengths_stdvector(sentence_lengths.length());
   for (int i = 0; i < sentence_lengths.length(); i++) {
-    sentence_lengths_eigen(i) = sentence_lengths[i];
+    sentence_lengths_stdvector[i] = (unsigned long long)sentence_lengths[i];
   }
   
-  VectorXd weight_vsdoc_eigen(weight_vsdoc.length());
-  for (int i = 0; i < weight_vsdoc.length(); i++) {
-    weight_vsdoc_eigen(i) = weight_vsdoc[i];
-  }
-
-
   CLEigenwords cleigenwords = CLEigenwords(sentence_concated_stdvector, document_id_concated_stdvector,
-                                        window_sizes_eigen, vocab_sizes_eigen,
-                                        sentence_lengths_eigen, k,
-                                        link_w_d, link_c_d, gamma_G, gamma_H,
-                                        weighting_tf, weight_vsdoc_eigen);
+                                           window_sizes_stdvector, vocab_sizes_stdvector,
+                                           sentence_lengths_stdvector, k,
+                                           link_w_d, link_c_d, gamma_G, gamma_H,
+                                           weighting_tf, weight_vsdoc_stdvector);
   cleigenwords.compute();
 
   int n_domain = cleigenwords.get_n_domain();
