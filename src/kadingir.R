@@ -314,6 +314,9 @@ MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
   rownames(U) <- vocab
   
   if (distance == "cosine") {
+    if (!is.null(weight.vector)) {
+      U <- U %*% diag(weight.vector)
+    }
     U <- U/sqrt(rowSums(U**2))
   }
   

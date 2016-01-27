@@ -12,6 +12,14 @@ output: html_document
 time.begin <- Sys.time()
 ```
 
+If `run_cleigenwords.html` does NOT exists, render `run_cleigenwords.Rmd`.
+
+```{r, results='hide'}
+if (!file.exists("run_cleigenwords.html")) {
+  rmarkdown::render("run_cleigenwords.Rmd")
+}
+```
+
 ```{r, include=FALSE}
 library(knitr)
 library(RecordLinkage)
@@ -33,7 +41,7 @@ write(paste0(r$vocab.words[[2]], collapse = "\n"), "output_vocab_es-en_en.csv")
 `output_vocab_es-en_??.csv` 中の単語について，Google Spreadsheet の `GOOGLETRANSLATE` 関数で対訳を生成する．
 
 ```{r, results = "asis"}
-translate.table <- read.csv("translate_table_es-en_es_0121_reduced.csv", sep = ",", as.is = TRUE)[1:1000, ]
+translate.table <- read.csv("translate_table_es-en_es_0121_reduced.csv", sep = ",", as.is = TRUE)
 kable(head(translate.table[ , c("es","en")]))
 ```
 
@@ -50,16 +58,29 @@ V <- rbind(V.es, V.en)
 vocab.words <- c(vocab.words.es, vocab.words.en)
 ```
 
+## Plot some figure
+```{r}
+queries <- c(paste0("(en)", c("japan", "america", "korea", "england", "spain", "germany")),
+             paste0("(es)", c("japón", "américa", "corea", "inglaterra", "españa", "alemania")))
+n.queries <- length(queries)
+
+V2 <- V
+row.names(V2) <- vocab.words
+pr.v2 <- prcomp(V2[queries,])
+plot(pr.v2$x[ , 1:2], pch = 1, col = "grey")
+text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x))
+```
+
 ## Execute Cross-Lingual LSA
 ```{r}
-path.cllsa.rdata <- "res_cllsa.Rdata"
+path.cllsa.rdata <- "res_cllsa_0125.Rdata"
 
 if (!file.exists(path.cllsa.rdata)) {
   sourceCpp("./../src/cllsa_core.cpp", rebuild = TRUE)
   
   res.cllsa <- CLLSA(r$corpus.concated, r$document.id.concated,
                      r$sizes.vocabulary, r$lengths.sentence,
-                     dim_common_space = 100)
+                     dim_common_space = 400)
   
   res.cllsa$representations.word <- res.cllsa$word_representations
   save(res.cllsa, file = path.cllsa.rdata)
@@ -88,7 +109,7 @@ correct.at.n.cllsa <- vector(mode = "logical", length = n.queries)
 correct.at.n.adist <- vector(mode = "logical", length = n.queries)
 topn <- 5  # P@topn
 distance <- "cosine"
-weight.vector <- r$svd$singular_values
+weight.vector <- NULL
 
 # Search word that have minimum edit distance with `query` from `vocab.search`
 search.adist <- function (query, vocab.search, topn = 1)
@@ -176,14 +197,30 @@ kable(
   )
 ```
 
-# 頻出上位 $n$ 件のときの Precision\@5 のグラフ
+# 頻出上位 $n$ 件の単語をクエリとして使ったときの Precision\@5 のグラフ
 ```{r}
 precision <- cbind(cumsum(results[, c("correct.at.n.adist")])/seq(nrow(results)),
                    cumsum(results[, c("correct.at.n.cllsa")])/seq(nrow(results)),
                    cumsum(results[, c("correct.at.n.cleigenwords")])/seq(nrow(results)))
 colnames(precision) <- c("Edit distance", "CL-LSA", "CL-Eigenwords")
-matplot(precision, pch = 1:3, xlab="rank", ylab=paste0("Precision@", topn))
-legend("bottomright", legend = colnames(precision), pch = 1:3, col = 1:3)
+col <- c("black", "red", "blue")
+matplot(precision, xlab="rank", ylab=paste0("Precision@", topn), type="l", lwd = 4, lty = 1, col = col)
+legend("bottomright", legend = colnames(precision), pch = 1, col = col)
+```
+
+```{r}
+accuracy.partial <- function(begin){
+  accuracy.at <- colMeans(results[1:1000 + begin, 6:8])
+}
+
+begin.vector <- c(0, 1000, 2000, 3000, 4000, 5000, 6000)
+accuracy.fromto <- NULL
+for(begin in begin.vector) {
+  accuracy.fromto <- rbind(accuracy.fromto, accuracy.partial(begin))
+}
+row.names(accuracy.fromto) <- as.character(paste0(begin.vector + 1, ":", begin.vector + 1000))
+
+kable(accuracy.fromto)
 ```
 
 ```{r}
