@@ -363,6 +363,13 @@ void Eigendocs::compute()
   MatrixXd principal_components = svdA.matrixV();
   vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
   singular_values = svdA.singularValues();
+  
+  if (!debug) {
+      tWW_diag.resize(0);
+      tCC_diag.resize(0);
+      tDD_diag.resize(0);
+      H.resize(0, 0);
+  }
 }
 
 void Eigendocs::construct_matrices()
