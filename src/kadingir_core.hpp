@@ -27,24 +27,22 @@ private:
   unsigned long long c_col_size;
   unsigned long long lr_col_size;
 
+  VectorXi tWW_diag;
+  VectorXi tCC_diag;
+  dSparseMatrix tWW_h_diag;
+  dSparseMatrix tCC_h_diag;
+  iSparseMatrix tWC;
+  iSparseMatrix tLL;
+  iSparseMatrix tLR;
+  iSparseMatrix tRR;
+
   MatrixXd word_vectors;
   MatrixXd context_vectors;
   VectorXd singular_values;
 
-  void construct_matrices (VectorXi &tWW_diag,
-                           VectorXi &tCC_diag,
-                           iSparseMatrix &tWC,
-                           iSparseMatrix &tLL,
-                           iSparseMatrix &tLR,
-                           iSparseMatrix &tRR);
-  void run_oscca(dSparseMatrix &tWW_h_diag,
-                 iSparseMatrix &tWC,
-                 VectorXi &tCC_diag);
-  void run_tscca(dSparseMatrix &tWW_h_diag,
-                 iSparseMatrix &tLL,
-                 iSparseMatrix &tLR,
-                 iSparseMatrix &tRR,
-                 iSparseMatrix &tWC);
+  void construct_matrices ();
+  void run_oscca();
+  void run_tscca();
 
 public:
   Eigenwords(const std::vector<int>& _sentence,

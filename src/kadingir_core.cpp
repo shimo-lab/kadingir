@@ -93,35 +93,28 @@ Eigenwords::Eigenwords(
 void Eigenwords::compute()
 {
   // Construct crossprod matrices
-  VectorXi tWW_diag(vocab_size);
-  VectorXi tCC_diag(c_col_size);
-  iSparseMatrix tWC(vocab_size, c_col_size);
-  iSparseMatrix tLL(lr_col_size, lr_col_size);
-  iSparseMatrix tLR(lr_col_size, lr_col_size);
-  iSparseMatrix tRR(lr_col_size, lr_col_size);
+  tWW_diag.resize(vocab_size);
+  tCC_diag.resize(c_col_size);
+  tWC.resize(vocab_size, c_col_size);
+  tLL.resize(lr_col_size, lr_col_size);
+  tLR.resize(lr_col_size, lr_col_size);
+  tRR.resize(lr_col_size, lr_col_size);
 
-  construct_matrices(tWW_diag, tCC_diag, tWC, tLL, tLR, tRR);
+  construct_matrices();
 
 
   // Construct the matrices for CCA and execute CCA
-  dSparseMatrix tWW_h_diag(vocab_size, vocab_size);
+  tWW_h_diag.resize(vocab_size, vocab_size);
   construct_h_diag_matrix(tWW_diag, tWW_h_diag);
 
   if (mode_oscca) {
-    run_oscca(tWW_h_diag, tWC, tCC_diag);
+    run_oscca();
   } else {
-    run_tscca(tWW_h_diag, tLL, tLR, tRR, tWC);
+    run_tscca();
   }
 }
 
-void Eigenwords::construct_matrices(
-    VectorXi &tWW_diag,
-    VectorXi &tCC_diag,
-    iSparseMatrix &tWC,
-    iSparseMatrix &tLL,
-    iSparseMatrix &tLR,
-    iSparseMatrix &tRR
-  )
+void Eigenwords::construct_matrices()
 {
   const unsigned long long sentence_size = sentence.size();
   unsigned long long n_pushed_triplets = 0;
@@ -221,11 +214,11 @@ void Eigenwords::construct_matrices(
 }
 
 // Execute One Step CCA
-void Eigenwords::run_oscca(dSparseMatrix &tWW_h_diag, iSparseMatrix &tWC, VectorXi &tCC_diag)
+void Eigenwords::run_oscca()
 {
   std::cout << "Calculate OSCCA..." << std::endl;
   
-  dSparseMatrix tCC_h_diag(c_col_size, c_col_size);
+  tCC_h_diag.resize(c_col_size, c_col_size);
   construct_h_diag_matrix(tCC_diag, tCC_h_diag);
   
   dSparseMatrix a = tWW_h_diag * (tWC.cast <double> ().eval().cwiseSqrt()) * tCC_h_diag;
@@ -239,13 +232,7 @@ void Eigenwords::run_oscca(dSparseMatrix &tWW_h_diag, iSparseMatrix &tWC, Vector
 }
 
 // Execute Two Step CCA
-void Eigenwords::run_tscca(
-    dSparseMatrix &tWW_h_diag,
-    iSparseMatrix &tLL,
-    iSparseMatrix &tLR,
-    iSparseMatrix &tRR,
-    iSparseMatrix &tWC
-  )
+void Eigenwords::run_tscca()
 {
   std::cout << "Calculate TSCCA..." << std::endl;
   
