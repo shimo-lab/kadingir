@@ -61,19 +61,19 @@ Rcpp::List EigendocsCpp(const MapVectorXi& sentence,
 
 
 // [[Rcpp::export]]
-Rcpp::List CLEigenwordsRedSVD(const MapVectorXi& sentence_concated,
-                              const MapVectorXi& document_id_concated,
-                              const Rcpp::IntegerVector window_sizes,
-                              const Rcpp::IntegerVector vocab_sizes,
-                              const Rcpp::IntegerVector sentence_lengths,
-                              const int k,
-                              const double gamma_G,
-                              const double gamma_H,
-                              const bool link_w_d,
-                              const bool link_c_d,
-                              const bool weighting_tf,
-                              const Rcpp::NumericVector weight_vsdoc
-                             )
+Rcpp::List CLEigenwordsCpp(const MapVectorXi& sentence_concated,
+                           const MapVectorXi& document_id_concated,
+                           const Rcpp::IntegerVector window_sizes,
+                           const Rcpp::IntegerVector vocab_sizes,
+                           const Rcpp::IntegerVector sentence_lengths,
+                           const int k,
+                           const double gamma_G,
+                           const double gamma_H,
+                           const bool link_w_d,
+                           const bool link_c_d,
+                           const bool weighting_tf,
+                           const Rcpp::NumericVector weight_vsdoc
+                           )
 {
   VectorXi window_sizes_eigen(window_sizes.length());
   for (int i = 0; i < window_sizes.length(); i++) {
