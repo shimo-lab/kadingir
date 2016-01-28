@@ -14,11 +14,11 @@
 
 
 // [[Rcpp::export]]
-Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence,
-                            const int window_size,
-                            const int vocab_size,
-                            const int k,
-                            const bool mode_oscca)
+Rcpp::List EigenwordsCpp(const MapVectorXi& sentence,
+                         const int window_size,
+                         const int vocab_size,
+                         const int k,
+                         const bool mode_oscca)
 {
   Eigenwords eigenwords = Eigenwords(sentence, window_size, vocab_size, k, mode_oscca);
   eigenwords.compute();
