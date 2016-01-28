@@ -6,17 +6,19 @@ output: html_document
 ---
 
 Test matrices of `EigenwordsCpp`, `EigendocsCpp`, `CLEigenwordsCpp`.
- 
+
 ```{r}
 source("./../src/kadingir.R", chdir = TRUE)
 
 word_id <- sample(0:6, size = 100, replace = TRUE)
 document_id <- rep(1:10, each = 10)
 window.size <- 2
-n.train.words <- length(word_id)
 n.vocab <- length(unique(word_id))
 dim.internal <- 20
+```
 
+# Test of `EigenwordsCpp`
+```{r}
 m <- make.matrices(word_id, document_id, window.size)
 res.eigenwords <- EigenwordsCpp(as.integer(word_id), window.size, n.vocab, dim.internal, mode_oscca = TRUE, debug = TRUE)
 ```
