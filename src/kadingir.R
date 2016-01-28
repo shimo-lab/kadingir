@@ -170,7 +170,7 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 
   if (use.eigen) {
     sentence <- as.integer(sentence)
-    results.redsvd <- EigenwordsCpp(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
+    results.redsvd <- EigenwordsCpp(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"), FALSE)
     
   } else {
     r <- make.matrices(sentence, document.id, window.size)

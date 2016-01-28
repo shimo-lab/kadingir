@@ -18,7 +18,7 @@ n.vocab <- length(unique(word_id))
 dim.internal <- 20
 
 m <- make.matrices(word_id, document_id, window.size)
-res.eigenwords <- EigenwordsCpp(as.integer(word_id), window.size, n.vocab, dim.internal, mode_oscca = TRUE)
+res.eigenwords <- EigenwordsCpp(as.integer(word_id), window.size, n.vocab, dim.internal, mode_oscca = TRUE, debug = TRUE)
 ```
 
 TODO: Fix res.eigenwords
