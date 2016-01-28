@@ -8,7 +8,7 @@ n.vocab <- length(unique(sentence))
 dim.internal <- 20
 
 m <- make.matrices(sentence, window.size, n.train.words, n.vocab, skip.null.words = TRUE)
-res.eigenwords <- EigenwordsRedSVD(as.integer(sentence), window.size, n.vocab, dim.internal, mode_oscca = TRUE)
+res.eigenwords <- EigenwordsCpp(as.integer(sentence), window.size, n.vocab, dim.internal, mode_oscca = TRUE)
 
 
 ## Test matrices
