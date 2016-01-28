@@ -2,9 +2,9 @@
  * kadingir_core.cpp
  *
  * memo :
- *  - sentence の要素で 0 となっている要素は <OOV> (Out of Vocabulary, vocabulary に入っていない単語) に対応する．
+ *  - `0` in sentence indicates `<OOV>` (Out of Vocabulary, token that does not included in vocabulary).
  *  - v.asDiagonal() は疎行列ではなく密行列を返すため，仕方なく同様の処理をベタ書きしている箇所がある．
- *  - tWC のような表記は，行列 W, C の crossprod (Rでいうところの t(W) %*% C) を表す．
+ *  - tWC indicates matrix multiplication (crossprod) of W and C (In R, tWC = t(W) %*% C).
  *  - `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
  */
 
