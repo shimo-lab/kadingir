@@ -331,12 +331,12 @@ void Eigendocs::compute()
 
 
   // Construct crossprod matrices
-  VectorXi tWW_diag(vocab_size);
-  VectorXi tCC_diag(c_col_size);
-  VectorXi tDD_diag(n_documents);
-  iSparseMatrix H(p, p);
+  tWW_diag.resize(vocab_size);
+  tCC_diag.resize(c_col_size);
+  tDD_diag.resize(n_documents);
+  H.resize(p, p);
 
-  construct_matrices (tWW_diag, tCC_diag, tDD_diag, H);
+  construct_matrices();
 
 
   // Construct the matrices for CCA and execute CCA  
@@ -363,12 +363,7 @@ void Eigendocs::compute()
   singular_values = svdA.singularValues();
 }
 
-void Eigendocs::construct_matrices(
-    VectorXi &tWW_diag,
-    VectorXi &tCC_diag,
-    VectorXi &tDD_diag,
-    iSparseMatrix &H
-  )
+void Eigendocs::construct_matrices()
 {
   const unsigned long long sentence_size = sentence.size();
   const unsigned long long n_documents = *std::max_element(document_id.begin(), document_id.end()) + 1;

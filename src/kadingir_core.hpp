@@ -77,13 +77,15 @@ private:
   unsigned long long c_col_size;
   unsigned long long lr_col_size;
 
+  VectorXi tWW_diag;
+  VectorXi tCC_diag;
+  VectorXi tDD_diag;
+  iSparseMatrix H;
+
   MatrixXd vector_representations;
   VectorXd singular_values;
 
-  void construct_matrices (VectorXi &tWW_diag,
-                           VectorXi &tCC_diag,
-                           VectorXi &tDD_diag,
-                           iSparseMatrix &H);
+  void construct_matrices ();
 
 public:
   unsigned long long p;
