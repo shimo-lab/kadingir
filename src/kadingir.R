@@ -170,7 +170,7 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 
   if (use.eigen) {
     sentence <- as.integer(sentence)
-    results.redsvd <- EigenwordsRedSVD(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
+    results.redsvd <- EigenwordsCpp(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"))
     
   } else {
     r <- make.matrices(sentence, document.id, window.size)
@@ -253,9 +253,9 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   cat("Calculate Eigendocs...\n\n")
   
   if (use.eigen) {
-    results.redsvd <- EigendocsRedSVD(as.integer(sentence), as.integer(document.id),
-                                      window.size, n.vocab, dim.internal,
-                                      gamma_G = 0, gamma_H = 0, link_w_d = link_w_d, link_c_d = link_c_d)
+    results.redsvd <- EigendocsCpp(as.integer(sentence), as.integer(document.id),
+                                   window.size, n.vocab, dim.internal,
+                                   gamma_G = 0, gamma_H = 0, link_w_d = link_w_d, link_c_d = link_c_d)
 
   } else {
     r <- make.matrices(sentence, document.id, window.size)

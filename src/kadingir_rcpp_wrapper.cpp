@@ -15,11 +15,11 @@
 
 
 // [[Rcpp::export]]
-Rcpp::List EigenwordsRedSVD(const Rcpp::IntegerVector& sentence,
-                            const int window_size,
-                            const int vocab_size,
-                            const int k,
-                            const bool mode_oscca)
+Rcpp::List EigenwordsCpp(const Rcpp::IntegerVector& sentence,
+                         const int window_size,
+                         const int vocab_size,
+                         const int k,
+                         const bool mode_oscca)
 {
   std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
   
@@ -34,16 +34,16 @@ Rcpp::List EigenwordsRedSVD(const Rcpp::IntegerVector& sentence,
 
 
 // [[Rcpp::export]]
-Rcpp::List EigendocsRedSVD(const Rcpp::IntegerVector& sentence,
-                           const Rcpp::IntegerVector& document_id,
-                           const int window_size,
-                           const int vocab_size,
-                           const int k,
-                           const double gamma_G,
-                           const double gamma_H,
-                           const bool link_w_d,
-                           const bool link_c_d
-                           )
+Rcpp::List EigendocsCpp(const Rcpp::IntegerVector& sentence,
+                        const Rcpp::IntegerVector& document_id,
+                        const int window_size,
+                        const int vocab_size,
+                        const int k,
+                        const double gamma_G,
+                        const double gamma_H,
+                        const bool link_w_d,
+                        const bool link_c_d
+                        )
 {
   std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
   std::vector<int> document_id_stdvector = Rcpp::as<std::vector<int> >(document_id);
@@ -67,19 +67,19 @@ Rcpp::List EigendocsRedSVD(const Rcpp::IntegerVector& sentence,
 
 
 // [[Rcpp::export]]
-Rcpp::List CLEigenwordsRedSVD(const Rcpp::IntegerVector& sentence_concated,
-                              const Rcpp::IntegerVector& document_id_concated,
-                              const Rcpp::IntegerVector window_sizes,
-                              const Rcpp::IntegerVector vocab_sizes,
-                              const Rcpp::IntegerVector sentence_lengths,
-                              const int k,
-                              const double gamma_G,
-                              const double gamma_H,
-                              const bool link_w_d,
-                              const bool link_c_d,
-                              const bool weighting_tf,
-                              const Rcpp::NumericVector weight_vsdoc
-                             )
+Rcpp::List CLEigenwordsCpp(const Rcpp::IntegerVector& sentence_concated,
+                           const Rcpp::IntegerVector& document_id_concated,
+                           const Rcpp::IntegerVector window_sizes,
+                           const Rcpp::IntegerVector vocab_sizes,
+                           const Rcpp::IntegerVector sentence_lengths,
+                           const int k,
+                           const double gamma_G,
+                           const double gamma_H,
+                           const bool link_w_d,
+                           const bool link_c_d,
+                           const bool weighting_tf,
+                           const Rcpp::NumericVector weight_vsdoc
+                          )
 {
   std::vector<int> sentence_concated_stdvector = Rcpp::as<std::vector<int> >(sentence_concated);
   std::vector<int> document_id_concated_stdvector = Rcpp::as<std::vector<int> >(document_id_concated);

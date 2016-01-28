@@ -92,12 +92,12 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     vocab.words.concated <- c(vocab.words.concated, list(c("<OOV>", vocab.words[[i]])))
   }
   
-  results.redsvd <- CLEigenwordsRedSVD(corpus.concated, document.id.concated,
-                                       sizes.window, sizes.vocabulary, lengths.sentence,
-                                       dim.common, gamma_G = 0, gamma_H = 0,
-                                       link_w_d = link_w_d, link_c_d = link_c_d,
-                                       weighting_tf = weighting_tf,
-                                       weight_vsdoc = weight.vsdoc)
+  results.redsvd <- CLEigenwordsCpp(corpus.concated, document.id.concated,
+                                    sizes.window, sizes.vocabulary, lengths.sentence,
+                                    dim.common, gamma_G = 0, gamma_H = 0,
+                                    link_w_d = link_w_d, link_c_d = link_c_d,
+                                    weighting_tf = weighting_tf,
+                                    weight_vsdoc = weight.vsdoc)
   
   return.list <- list()
   return.list$svd <- results.redsvd
