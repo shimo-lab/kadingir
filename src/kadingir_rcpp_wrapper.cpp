@@ -20,12 +20,13 @@ Rcpp::List EigenwordsCpp(
     const int window_size,
     const int vocab_size,
     const int k,
-    const bool mode_oscca
+    const bool mode_oscca,
+    const bool debug
   )
 {
   std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
   
-  Eigenwords eigenwords = Eigenwords(sentence_stdvector, window_size, vocab_size, k, mode_oscca);
+  Eigenwords eigenwords = Eigenwords(sentence_stdvector, window_size, vocab_size, k, mode_oscca, debug);
   eigenwords.compute();
 
   return Rcpp::List::create(

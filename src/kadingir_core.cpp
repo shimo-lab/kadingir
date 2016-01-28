@@ -77,12 +77,14 @@ Eigenwords::Eigenwords(
   const int _window_size,
   const int _vocab_size,
   const int _k,
-  const bool _mode_oscca
+  const bool _mode_oscca,
+  const bool _debug
   ) : sentence(_sentence),
       window_size(_window_size),
       vocab_size(_vocab_size),
       k(_k),
-      mode_oscca(_mode_oscca)
+      mode_oscca(_mode_oscca),
+      debug(_debug)
 {
   lr_col_size = (unsigned long long)window_size * vocab_size;
   c_col_size = 2 * lr_col_size;

@@ -22,6 +22,7 @@ private:
   int vocab_size;
   int k;
   bool mode_oscca;
+  bool debug;
 
   unsigned long long c_col_size;
   unsigned long long lr_col_size;
@@ -50,7 +51,8 @@ public:
              const int _window_size,
              const int _vocab_size,
              const int _k,
-             const bool _mode_oscca);
+             const bool _mode_oscca,
+             const bool debug);
   void compute();
   MatrixXd get_word_vectors() { return word_vectors; }
   MatrixXd get_context_vectors() { return context_vectors; }
