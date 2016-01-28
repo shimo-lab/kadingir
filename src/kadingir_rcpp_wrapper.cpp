@@ -30,6 +30,9 @@ Rcpp::List EigenwordsCpp(
   eigenwords.compute();
 
   return Rcpp::List::create(
+    Rcpp::Named("tWW_diag")       = Rcpp::wrap(eigenwords.get_tww_diag()),
+    Rcpp::Named("tCC_diag")       = Rcpp::wrap(eigenwords.get_tcc_diag()),
+    Rcpp::Named("tWC")            = Rcpp::wrap(eigenwords.get_twc()),
     Rcpp::Named("word_vector")    = Rcpp::wrap(eigenwords.get_word_vectors()),
     Rcpp::Named("context_vector") = Rcpp::wrap(eigenwords.get_context_vectors()),
     Rcpp::Named("D")              = Rcpp::wrap(eigenwords.get_singular_values())

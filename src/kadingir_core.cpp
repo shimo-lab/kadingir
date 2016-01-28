@@ -109,6 +109,12 @@ void Eigenwords::compute()
 
   if (mode_oscca) {
     run_oscca();
+    
+    if (!debug) {
+      tWW_diag.resize(0);
+      tCC_diag.resize(0);
+      tWC.resize(0, 0);
+    }
   } else {
     run_tscca();
   }

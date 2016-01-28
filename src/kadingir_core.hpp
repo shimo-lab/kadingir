@@ -52,6 +52,9 @@ public:
              const bool _mode_oscca,
              const bool debug);
   void compute();
+  VectorXi get_tww_diag() { return tWW_diag; }
+  VectorXi get_tcc_diag() { return tCC_diag; }
+  dSparseMatrix get_twc() { return tWC.cast <double> (); }
   MatrixXd get_word_vectors() { return word_vectors; }
   MatrixXd get_context_vectors() { return context_vectors; }
   VectorXd get_singular_values() { return singular_values; }
