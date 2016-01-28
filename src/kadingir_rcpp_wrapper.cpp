@@ -50,14 +50,15 @@ Rcpp::List EigendocsCpp(
     const double gamma_G,
     const double gamma_H,
     const bool link_w_d,
-    const bool link_c_d
+    const bool link_c_d,
+    const bool debug
   )
 {
   std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
   std::vector<int> document_id_stdvector = Rcpp::as<std::vector<int> >(document_id);
   
   Eigendocs eigendocs = Eigendocs(sentence_stdvector, document_id_stdvector, window_size, vocab_size, k,
-                                  link_w_d, link_c_d, gamma_G, gamma_H);
+                                  link_w_d, link_c_d, gamma_G, gamma_H, debug);
   eigendocs.compute();
 
   Rcpp::NumericVector p_head_domains_return(3);

@@ -73,6 +73,7 @@ private:
   bool link_c_d;
   double gamma_G;
   double gamma_H;
+  bool debug;
 
   unsigned long long c_col_size;
   unsigned long long lr_col_size;
@@ -100,7 +101,8 @@ public:
             const bool _link_w_d,
             const bool _link_c_d,
             const double _gamma_G,
-            const double _gamma_H);
+            const double _gamma_H,
+            const bool debug);
   void compute();
   MatrixXd get_vector_representations() { return vector_representations; }
   VectorXd get_singular_values() { return singular_values; }

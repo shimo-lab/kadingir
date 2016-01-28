@@ -301,7 +301,8 @@ Eigendocs::Eigendocs(
     const bool _link_w_d,
     const bool _link_c_d,
     const double _gamma_G,
-    const double _gamma_H
+    const double _gamma_H,
+    const bool _debug
   ) : sentence(_sentence),
       document_id(_document_id),
       window_size(_window_size),
@@ -310,7 +311,8 @@ Eigendocs::Eigendocs(
       link_w_d(_link_w_d),
       link_c_d(_link_c_d),
       gamma_G(_gamma_G),
-      gamma_H(_gamma_H)
+      gamma_H(_gamma_H),
+      debug(_debug)
 {
   lr_col_size = (unsigned long long)window_size * vocab_size;
   c_col_size = 2 * lr_col_size;
