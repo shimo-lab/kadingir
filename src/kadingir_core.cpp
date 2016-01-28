@@ -15,9 +15,10 @@ const int TRIPLET_VECTOR_SIZE = 10000000;
 
 
 // Update crossprod matrix using triplets
-template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX_tripletList,
-                                                       MatrixX &tXX_temp,
-                                                       MatrixX &tXX)
+template <class MatrixX> void update_crossprod_matrix(
+    std::vector<Triplet> &tXX_tripletList,
+    MatrixX &tXX_temp,
+    MatrixX &tXX)
 {
   tXX_temp.setFromTriplets(tXX_tripletList.begin(), tXX_tripletList.end());
   tXX_tripletList.clear();
@@ -26,7 +27,7 @@ template <class MatrixX> void update_crossprod_matrix (std::vector<Triplet> &tXX
 }
 
 
-void fill_offset_table (int offsets[], int window_size)
+void fill_offset_table(int offsets[], int window_size)
 {
   int i_offset1 = 0;
   for (int offset = -window_size; offset <= window_size; offset++){
@@ -38,7 +39,7 @@ void fill_offset_table (int offsets[], int window_size)
 }
 
 
-void construct_h_diag_matrix (VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag)
+void construct_h_diag_matrix(VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag)
 {
   VectorXd tXX_h(tXX_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   tXX_h_diag.reserve(tXX_diag.size());
@@ -48,7 +49,7 @@ void construct_h_diag_matrix (VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag)
   }
 }
 
-void construct_h_diag_matrix_double (VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
+void construct_h_diag_matrix_double(VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
 {
   VectorXd tXX_h(tXX_diag.cwiseInverse().cwiseSqrt().cwiseSqrt());
   tXX_h_diag.reserve(tXX_diag.size());
@@ -60,7 +61,7 @@ void construct_h_diag_matrix_double (VectorXd &tXX_diag, dSparseMatrix &tXX_h_di
 
 
 // TODO : template で書けないか？
-void construct_h_diag_matrix (VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
+void construct_h_diag_matrix(VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
 {
   VectorXd tXX_h(tXX_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   tXX_h_diag.reserve(tXX_diag.size());
@@ -71,16 +72,17 @@ void construct_h_diag_matrix (VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
 }
 
 
-Eigenwords::Eigenwords (const std::vector<int>& _sentence,
-                        const int _window_size,
-                        const int _vocab_size,
-                        const int _k,
-                        const bool _mode_oscca
-                        ) : sentence(_sentence),
-                            window_size(_window_size),
-                            vocab_size(_vocab_size),
-                            k(_k),
-                            mode_oscca(_mode_oscca)
+Eigenwords::Eigenwords(
+  const std::vector<int>& _sentence,
+  const int _window_size,
+  const int _vocab_size,
+  const int _k,
+  const bool _mode_oscca
+  ) : sentence(_sentence),
+      window_size(_window_size),
+      vocab_size(_vocab_size),
+      k(_k),
+      mode_oscca(_mode_oscca)
 {
   lr_col_size = (unsigned long long)window_size * vocab_size;
   c_col_size = 2 * lr_col_size;
@@ -110,12 +112,14 @@ void Eigenwords::compute()
   }
 }
 
-void Eigenwords::construct_matrices (VectorXi &tWW_diag,
-                                     VectorXi &tCC_diag,
-                                     iSparseMatrix &tWC,
-                                     iSparseMatrix &tLL,
-                                     iSparseMatrix &tLR,
-                                     iSparseMatrix &tRR)
+void Eigenwords::construct_matrices(
+    VectorXi &tWW_diag,
+    VectorXi &tCC_diag,
+    iSparseMatrix &tWC,
+    iSparseMatrix &tLL,
+    iSparseMatrix &tLR,
+    iSparseMatrix &tRR
+  )
 {
   const unsigned long long sentence_size = sentence.size();
   unsigned long long n_pushed_triplets = 0;
@@ -215,9 +219,7 @@ void Eigenwords::construct_matrices (VectorXi &tWW_diag,
 }
 
 // Execute One Step CCA
-void Eigenwords::run_oscca(dSparseMatrix &tWW_h_diag,
-                           iSparseMatrix &tWC,
-                           VectorXi &tCC_diag)
+void Eigenwords::run_oscca(dSparseMatrix &tWW_h_diag, iSparseMatrix &tWC, VectorXi &tCC_diag)
 {
   std::cout << "Calculate OSCCA..." << std::endl;
   
@@ -235,11 +237,13 @@ void Eigenwords::run_oscca(dSparseMatrix &tWW_h_diag,
 }
 
 // Execute Two Step CCA
-void Eigenwords::run_tscca(dSparseMatrix &tWW_h_diag,
-                           iSparseMatrix &tLL,
-                           iSparseMatrix &tLR,
-                           iSparseMatrix &tRR,
-                           iSparseMatrix &tWC)
+void Eigenwords::run_tscca(
+    dSparseMatrix &tWW_h_diag,
+    iSparseMatrix &tLL,
+    iSparseMatrix &tLR,
+    iSparseMatrix &tRR,
+    iSparseMatrix &tWC
+  )
 {
   std::cout << "Calculate TSCCA..." << std::endl;
   
@@ -293,24 +297,25 @@ void Eigenwords::run_tscca(dSparseMatrix &tWW_h_diag,
 
 
 
-Eigendocs::Eigendocs (const std::vector<int>& _sentence,
-                      const std::vector<int>& _document_id,
-                      const int _window_size,
-                      const int _vocab_size,
-                      const int _k,
-                      const bool _link_w_d,
-                      const bool _link_c_d,
-                      const double _gamma_G,
-                      const double _gamma_H
-                      ) : sentence(_sentence),
-                          document_id(_document_id),
-                          window_size(_window_size),
-                          vocab_size(_vocab_size),
-                          k(_k),
-                          link_w_d(_link_w_d),
-                          link_c_d(_link_c_d),
-                          gamma_G(_gamma_G),
-                          gamma_H(_gamma_H)
+Eigendocs::Eigendocs(
+    const std::vector<int>& _sentence,
+    const std::vector<int>& _document_id,
+    const int _window_size,
+    const int _vocab_size,
+    const int _k,
+    const bool _link_w_d,
+    const bool _link_c_d,
+    const double _gamma_G,
+    const double _gamma_H
+  ) : sentence(_sentence),
+      document_id(_document_id),
+      window_size(_window_size),
+      vocab_size(_vocab_size),
+      k(_k),
+      link_w_d(_link_w_d),
+      link_c_d(_link_c_d),
+      gamma_G(_gamma_G),
+      gamma_H(_gamma_H)
 {
   lr_col_size = (unsigned long long)window_size * vocab_size;
   c_col_size = 2 * lr_col_size;
@@ -363,10 +368,12 @@ void Eigendocs::compute()
   singular_values = svdA.singularValues();
 }
 
-void Eigendocs::construct_matrices (VectorXi &tWW_diag,
-                                    VectorXi &tCC_diag,
-                                    VectorXi &tDD_diag,
-                                    iSparseMatrix &H)
+void Eigendocs::construct_matrices(
+    VectorXi &tWW_diag,
+    VectorXi &tCC_diag,
+    VectorXi &tDD_diag,
+    iSparseMatrix &H
+  )
 {
   const unsigned long long sentence_size = sentence.size();
   const unsigned long long n_documents = *std::max_element(document_id.begin(), document_id.end()) + 1;
@@ -432,30 +439,31 @@ void Eigendocs::construct_matrices (VectorXi &tWW_diag,
 
 
 
-CLEigenwords::CLEigenwords(const std::vector<int>& _sentence_concated,
-                           const std::vector<int>& _document_id_concated,
-                           const std::vector<int> _window_sizes,
-                           const std::vector<int> _vocab_sizes,
-                           const std::vector<unsigned long long> _sentence_lengths,
-                           const int _k,
-                           const double _gamma_G,
-                           const double _gamma_H,
-                           const bool _link_w_d,
-                           const bool _link_c_d,
-                           const bool _weighting_tf,
-                           const std::vector<double> _weight_vsdoc
-                        ) : sentence_concated(_sentence_concated),
-                        document_id_concated(_document_id_concated),
-                        window_sizes(_window_sizes),
-                        vocab_sizes(_vocab_sizes),
-                        sentence_lengths(_sentence_lengths),
-                        k(_k),
-                        gamma_G(_gamma_G),
-                        gamma_H(_gamma_H),
-                        link_w_d(_link_w_d),
-                        link_c_d(_link_c_d),
-                        weighting_tf(_weighting_tf),
-                        weight_vsdoc(_weight_vsdoc)
+CLEigenwords::CLEigenwords(
+  const std::vector<int>& _sentence_concated,
+  const std::vector<int>& _document_id_concated,
+  const std::vector<int> _window_sizes,
+  const std::vector<int> _vocab_sizes,
+  const std::vector<unsigned long long> _sentence_lengths,
+  const int _k,
+  const double _gamma_G,
+  const double _gamma_H,
+  const bool _link_w_d,
+  const bool _link_c_d,
+  const bool _weighting_tf,
+  const std::vector<double> _weight_vsdoc
+  ) : sentence_concated(_sentence_concated),
+      document_id_concated(_document_id_concated),
+      window_sizes(_window_sizes),
+      vocab_sizes(_vocab_sizes),
+      sentence_lengths(_sentence_lengths),
+      k(_k),
+      gamma_G(_gamma_G),
+      gamma_H(_gamma_H),
+      link_w_d(_link_w_d),
+      link_c_d(_link_c_d),
+      weighting_tf(_weighting_tf),
+      weight_vsdoc(_weight_vsdoc)
 {
   if (window_sizes.size() != vocab_sizes.size()) {
     std::cout << "window_sizes.size() != vocab_sizes.size()" << std::endl;
