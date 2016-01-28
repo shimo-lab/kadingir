@@ -31,16 +31,16 @@ Rcpp::List EigenwordsCpp(const MapVectorXi& sentence,
 
 
 // [[Rcpp::export]]
-Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
-                           const MapVectorXi& document_id,
-                           const int window_size,
-                           const int vocab_size,
-                           const int k,
-                           const double gamma_G,
-                           const double gamma_H,
-                           const bool link_w_d,
-                           const bool link_c_d
-                           )
+Rcpp::List EigendocsCpp(const MapVectorXi& sentence,
+                        const MapVectorXi& document_id,
+                        const int window_size,
+                        const int vocab_size,
+                        const int k,
+                        const double gamma_G,
+                        const double gamma_H,
+                        const bool link_w_d,
+                        const bool link_c_d
+                        )
 {
   Eigendocs eigendocs = Eigendocs(sentence, document_id, window_size, vocab_size, k,
                                   link_w_d, link_c_d, gamma_G, gamma_H);
