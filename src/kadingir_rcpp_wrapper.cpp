@@ -30,9 +30,9 @@ Rcpp::List EigenwordsCpp(
   eigenwords.compute();
 
   return Rcpp::List::create(
-    Rcpp::Named("word_vector") = Rcpp::wrap(eigenwords.get_word_vectors()),
+    Rcpp::Named("word_vector")    = Rcpp::wrap(eigenwords.get_word_vectors()),
     Rcpp::Named("context_vector") = Rcpp::wrap(eigenwords.get_context_vectors()),
-    Rcpp::Named("D") = Rcpp::wrap(eigenwords.get_singular_values())
+    Rcpp::Named("D")              = Rcpp::wrap(eigenwords.get_singular_values())
     );
 }
 
