@@ -1,7 +1,7 @@
 /*
- * kadingir_rcpp_wrapper.cpp 
+ * kadingir_rcpp_wrapper.cpp :
  *
- * kadingir_core.cpp の Rcpp wrapper
+ *     Rcpp wrapper of kadingir_core.cpp
  */
 
 
@@ -93,6 +93,7 @@ Rcpp::List CLEigenwordsCpp(
   std::vector<int> vocab_sizes_stdvector = Rcpp::as<std::vector<int> >(vocab_sizes);
   std::vector<double> weight_vsdoc_stdvector = Rcpp::as<std::vector<double> >(weight_vsdoc);
 
+  // Rcpp::as cannot convert Rcpp::IntegerVector to std::vector<unsigned long long>
   std::vector<unsigned long long> sentence_lengths_stdvector(sentence_lengths.length());
   for (int i = 0; i < sentence_lengths.length(); i++) {
     sentence_lengths_stdvector[i] = (unsigned long long)sentence_lengths[i];
