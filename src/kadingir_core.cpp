@@ -71,7 +71,7 @@ void construct_h_diag_matrix (VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
 }
 
 
-Eigenwords::Eigenwords (const MapVectorXi& _sentence,
+Eigenwords::Eigenwords (const std::vector<int>& _sentence,
                         const int _window_size,
                         const int _vocab_size,
                         const int _k,
@@ -293,8 +293,8 @@ void Eigenwords::run_tscca(dSparseMatrix &tWW_h_diag,
 
 
 
-Eigendocs::Eigendocs (const MapVectorXi& _sentence,
-                      const MapVectorXi& _document_id,
+Eigendocs::Eigendocs (const std::vector<int>& _sentence,
+                      const std::vector<int>& _document_id,
                       const int _window_size,
                       const int _vocab_size,
                       const int _k,
@@ -322,7 +322,7 @@ Eigendocs::Eigendocs (const MapVectorXi& _sentence,
 
 void Eigendocs::compute()
 {
-  const unsigned long long n_documents = document_id.maxCoeff() + 1;
+  const unsigned long long n_documents = *std::max_element(document_id.begin(), document_id.end()) + 1;
 
   p_indices[0] = vocab_size;
   p_indices[1] = c_col_size;
@@ -369,7 +369,7 @@ void Eigendocs::construct_matrices (VectorXi &tWW_diag,
                                     iSparseMatrix &H)
 {
   const unsigned long long sentence_size = sentence.size();
-  const unsigned long long n_documents = document_id.maxCoeff() + 1;
+  const unsigned long long n_documents = *std::max_element(document_id.begin(), document_id.end()) + 1;
 
   unsigned long long n_pushed_triplets = 0;
 
@@ -432,18 +432,18 @@ void Eigendocs::construct_matrices (VectorXi &tWW_diag,
 
 
 
-CLEigenwords::CLEigenwords(const MapVectorXi& _sentence_concated,
-                           const MapVectorXi& _document_id_concated,
-                           const VectorXi _window_sizes,
-                           const VectorXi _vocab_sizes,
-                           const VectorXi _sentence_lengths,
+CLEigenwords::CLEigenwords(const std::vector<int>& _sentence_concated,
+                           const std::vector<int>& _document_id_concated,
+                           const std::vector<int> _window_sizes,
+                           const std::vector<int> _vocab_sizes,
+                           const std::vector<unsigned long long> _sentence_lengths,
                            const int _k,
                            const double _gamma_G,
                            const double _gamma_H,
                            const bool _link_w_d,
                            const bool _link_c_d,
                            const bool _weighting_tf,
-                           const VectorXd _weight_vsdoc
+                           const std::vector<double> _weight_vsdoc
                         ) : sentence_concated(_sentence_concated),
                         document_id_concated(_document_id_concated),
                         window_sizes(_window_sizes),
@@ -466,11 +466,11 @@ CLEigenwords::CLEigenwords(const MapVectorXi& _sentence_concated,
   lr_col_sizes.resize(n_languages);
   c_col_sizes.resize(n_languages);
   for (int i = 0; i < n_languages; i++) {
-    lr_col_sizes[i] = (unsigned long long)window_sizes(i) * vocab_sizes[i];
+    lr_col_sizes[i] = (unsigned long long)window_sizes[i] * vocab_sizes[i];
     c_col_sizes[i] = 2 * lr_col_sizes[i];
   }
 
-  n_documents = document_id_concated.maxCoeff() + 1;
+  n_documents = *std::max_element(document_id_concated.begin(), document_id_concated.end()) + 1;
   n_domain = 2 * n_languages + 1;  // # of domains = 2 * (# of languages) + document
   p_indices.resize(n_domain);        // dimensions of each domain
   p_head_domains.resize(n_domain);   // head of indices of each domain

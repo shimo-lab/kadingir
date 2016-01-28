@@ -17,7 +17,7 @@ typedef Eigen::Triplet<double> Triplet;
 class Eigenwords
 {
 private:
-  MapVectorXi sentence;
+  std::vector<int> sentence;
   int window_size;
   int vocab_size;
   int k;
@@ -46,7 +46,7 @@ private:
                  iSparseMatrix &tWC);
 
 public:
-  Eigenwords(const MapVectorXi& _sentence,
+  Eigenwords(const std::vector<int>& _sentence,
              const int _window_size,
              const int _vocab_size,
              const int _k,
@@ -61,8 +61,8 @@ public:
 class Eigendocs
 {
 private:
-  MapVectorXi sentence;
-  MapVectorXi document_id;
+  std::vector<int> sentence;
+  std::vector<int> document_id;
   int window_size;
   int vocab_size;
   int k;
@@ -87,8 +87,8 @@ public:
   unsigned long long p_indices[3];
   unsigned long long p_head_domains[3];
 
-  Eigendocs(const MapVectorXi& _sentence,
-            const MapVectorXi& _document_id,
+  Eigendocs(const std::vector<int>& _sentence,
+            const std::vector<int>& _document_id,
             const int _window_size,
             const int _vocab_size,
             const int _k,
@@ -105,18 +105,18 @@ public:
 class CLEigenwords
 {
 private:
-  MapVectorXi sentence_concated;
-  MapVectorXi document_id_concated;
-  VectorXi window_sizes;
-  VectorXi vocab_sizes;
-  VectorXi sentence_lengths;
+  std::vector<int> sentence_concated;
+  std::vector<int> document_id_concated;
+  std::vector<int> window_sizes;
+  std::vector<int> vocab_sizes;
+  std::vector<unsigned long long> sentence_lengths;
   int k;
   double gamma_G;
   double gamma_H;
   bool link_w_d;
   bool link_c_d;
   bool weighting_tf;
-  VectorXd weight_vsdoc;
+  std::vector<double> weight_vsdoc;
 
   int n_languages;
   unsigned long long n_documents;
@@ -136,18 +136,18 @@ private:
   void construct_matrices (VectorXd &G_diag, dSparseMatrix &H);
 
 public:
-  CLEigenwords(const MapVectorXi& _sentence_concated,
-               const MapVectorXi& _document_id_concated,
-               const VectorXi _window_sizes,
-               const VectorXi _vocab_sizes,
-               const VectorXi _sentence_lengths,
+  CLEigenwords(const std::vector<int>& _sentence_concated,
+               const std::vector<int>& _document_id_concated,
+               const std::vector<int> _window_sizes,
+               const std::vector<int> _vocab_sizes,
+               const std::vector<unsigned long long> _sentence_lengths,
                const int _k,
                const double _gamma_G,
                const double _gamma_H,
                const bool _link_w_d,
                const bool _link_c_d,
                const bool _weighting_tf,
-               const VectorXd _weight_vsdoc
+               const std::vector<double> _weight_vsdoc
   );
   void compute();
   MatrixXd get_vector_representations() { return vector_representations; }

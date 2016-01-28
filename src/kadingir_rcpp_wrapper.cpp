@@ -5,6 +5,7 @@
  */
 
 
+#include <iostream>
 #include <Rcpp.h>
 #include <RcppEigen.h>
 #include "kadingir_core.hpp"
@@ -14,13 +15,15 @@
 
 
 // [[Rcpp::export]]
-Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence,
+Rcpp::List EigenwordsRedSVD(const Rcpp::IntegerVector& sentence,
                             const int window_size,
                             const int vocab_size,
                             const int k,
                             const bool mode_oscca)
 {
-  Eigenwords eigenwords = Eigenwords(sentence, window_size, vocab_size, k, mode_oscca);
+  std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
+  
+  Eigenwords eigenwords = Eigenwords(sentence_stdvector, window_size, vocab_size, k, mode_oscca);
   eigenwords.compute();
 
   return Rcpp::List::create(Rcpp::Named("word_vector") = Rcpp::wrap(eigenwords.get_word_vectors()),
@@ -31,8 +34,8 @@ Rcpp::List EigenwordsRedSVD(const MapVectorXi& sentence,
 
 
 // [[Rcpp::export]]
-Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
-                           const MapVectorXi& document_id,
+Rcpp::List EigendocsRedSVD(const Rcpp::IntegerVector& sentence,
+                           const Rcpp::IntegerVector& document_id,
                            const int window_size,
                            const int vocab_size,
                            const int k,
@@ -42,7 +45,10 @@ Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
                            const bool link_c_d
                            )
 {
-  Eigendocs eigendocs = Eigendocs(sentence, document_id, window_size, vocab_size, k,
+  std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
+  std::vector<int> document_id_stdvector = Rcpp::as<std::vector<int> >(document_id);
+  
+  Eigendocs eigendocs = Eigendocs(sentence_stdvector, document_id_stdvector, window_size, vocab_size, k,
                                   link_w_d, link_c_d, gamma_G, gamma_H);
   eigendocs.compute();
 
@@ -61,8 +67,8 @@ Rcpp::List EigendocsRedSVD(const MapVectorXi& sentence,
 
 
 // [[Rcpp::export]]
-Rcpp::List CLEigenwordsRedSVD(const MapVectorXi& sentence_concated,
-                              const MapVectorXi& document_id_concated,
+Rcpp::List CLEigenwordsRedSVD(const Rcpp::IntegerVector& sentence_concated,
+                              const Rcpp::IntegerVector& document_id_concated,
                               const Rcpp::IntegerVector window_sizes,
                               const Rcpp::IntegerVector vocab_sizes,
                               const Rcpp::IntegerVector sentence_lengths,
@@ -75,32 +81,22 @@ Rcpp::List CLEigenwordsRedSVD(const MapVectorXi& sentence_concated,
                               const Rcpp::NumericVector weight_vsdoc
                              )
 {
-  VectorXi window_sizes_eigen(window_sizes.length());
-  for (int i = 0; i < window_sizes.length(); i++) {
-    window_sizes_eigen(i) = window_sizes[i];
-  }
+  std::vector<int> sentence_concated_stdvector = Rcpp::as<std::vector<int> >(sentence_concated);
+  std::vector<int> document_id_concated_stdvector = Rcpp::as<std::vector<int> >(document_id_concated);
+  std::vector<int> window_sizes_stdvector = Rcpp::as<std::vector<int> >(window_sizes);
+  std::vector<int> vocab_sizes_stdvector = Rcpp::as<std::vector<int> >(vocab_sizes);
+  std::vector<double> weight_vsdoc_stdvector = Rcpp::as<std::vector<double> >(weight_vsdoc);
 
-  VectorXi vocab_sizes_eigen(vocab_sizes.length());
-  for (int i = 0; i < vocab_sizes.length(); i++) {
-    vocab_sizes_eigen(i) = vocab_sizes[i];
-  }
-
-  VectorXi sentence_lengths_eigen(sentence_lengths.length());
+  std::vector<unsigned long long> sentence_lengths_stdvector(sentence_lengths.length());
   for (int i = 0; i < sentence_lengths.length(); i++) {
-    sentence_lengths_eigen(i) = sentence_lengths[i];
+    sentence_lengths_stdvector[i] = (unsigned long long)sentence_lengths[i];
   }
   
-  VectorXd weight_vsdoc_eigen(weight_vsdoc.length());
-  for (int i = 0; i < weight_vsdoc.length(); i++) {
-    weight_vsdoc_eigen(i) = weight_vsdoc[i];
-  }
-
-
-  CLEigenwords cleigenwords = CLEigenwords(sentence_concated, document_id_concated,
-                                        window_sizes_eigen, vocab_sizes_eigen,
-                                        sentence_lengths_eigen, k,
-                                        link_w_d, link_c_d, gamma_G, gamma_H,
-                                        weighting_tf, weight_vsdoc_eigen);
+  CLEigenwords cleigenwords = CLEigenwords(sentence_concated_stdvector, document_id_concated_stdvector,
+                                           window_sizes_stdvector, vocab_sizes_stdvector,
+                                           sentence_lengths_stdvector, k,
+                                           link_w_d, link_c_d, gamma_G, gamma_H,
+                                           weighting_tf, weight_vsdoc_stdvector);
   cleigenwords.compute();
 
   int n_domain = cleigenwords.get_n_domain();
