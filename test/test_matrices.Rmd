@@ -8,10 +8,13 @@ output: html_document
 Test matrices of `EigenwordsCpp`, `EigendocsCpp`, `CLEigenwordsCpp`.
 
 ```{r}
+library(Matrix)
+
 source("./../src/kadingir.R", chdir = TRUE)
 
 word_id <- sample(0:6, size = 100, replace = TRUE)
 document_id <- rep(1:10, each = 10)
+n <- length(word_id)
 window.size <- 2
 n.vocab <- length(unique(word_id))
 dim.common <- 20
@@ -36,6 +39,21 @@ norm2(res.eigenwords$tWC,      t(m$W) %*% m$C)
 
 # Test of `EigendocsCpp`
 ```{r}
-res.eigendocs <- EigendocsCpp(as.integer(word_id), as.integer(document_id), window.size, n.vocab, dim.common, , debug = TRUE)
+res.eigendocs <- EigendocsCpp(as.integer(word_id), as.integer(document_id),
+                              window.size, n.vocab, dim.common, 0, 0, TRUE, TRUE, debug = TRUE)
+G.diag.rcpp <- res.eigendocs$G_diag
+H.rcpp <- res.eigendocs$H
 
+X <- bdiag(m$W, m$C, m$D)
+identity.n <- Diagonal(n)  # nxn-identity matrix
+zero.n <- Matrix(0, nrow = n, ncol = n)  # nxn-zero matrix
+W <- rBind(cBind(zero.n, identity.n, identity.n),
+           cBind(identity.n, zero.n, identity.n),
+           cBind(identity.n, identity.n, zero.n))
+M <- diag(rowSums(W))
+G.diag.r <- diag(t(X) %*% M %*% X)
+H.r <- triu(t(X) %*% W %*% X)
+
+norm2(G.diag.rcpp, G.diag.r)
+norm2(H.rcpp, H.r)
 ```
