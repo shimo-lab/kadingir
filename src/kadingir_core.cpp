@@ -578,7 +578,7 @@ void CLEigenwords::construct_matrices()
     m_diag_languages[i_languages].resize(sentence_length);
     
     for (unsigned long long i = 0; i < sentence_length; i++) {
-      int document_id = document_id_concated[sum_sentence_lengths + i];
+      const int document_id = document_id_concated[sum_sentence_lengths + i];
       
       if (document_id >= 0) {
         // From bilingual corpus
