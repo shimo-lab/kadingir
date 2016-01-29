@@ -509,11 +509,11 @@ void CLEigenwords::compute()
   }
 
   // Construct matrices: G, H
-  VectorXd G_diag(p);
+  G_diag.resize(p);
   G_diag.setZero();
-  dSparseMatrix H(p, p);
+  H.resize(p, p);
 
-  construct_matrices(G_diag, H);
+  construct_matrices();
 
   // Construct the matrices for CCA
   std::cout << "Calculate CDMCA..." << std::endl;
@@ -560,7 +560,7 @@ void CLEigenwords::construct_inverse_word_count_table()
 }
 
 
-void CLEigenwords::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
+void CLEigenwords::construct_matrices()
 {
 
   unsigned long long sum_sentence_lengths = 0;

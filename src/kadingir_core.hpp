@@ -140,11 +140,14 @@ private:
   std::vector<unsigned long long> lr_col_sizes;
   std::vector<std::vector<double> >  inverse_word_count_table;
 
+  VectorXd G_diag;
+  dSparseMatrix H;
+
   MatrixXd vector_representations;
   VectorXd singular_values;
 
   void construct_inverse_word_count_table();
-  void construct_matrices (VectorXd &G_diag, dSparseMatrix &H);
+  void construct_matrices();
 
 public:
   CLEigenwords(const std::vector<int>& _sentence_concated,
