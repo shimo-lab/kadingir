@@ -19,7 +19,13 @@ window.size <- 2
 n.vocab <- length(unique(word_id))
 dim.common <- 20
 
-norm2 <- function(a, b) { sum((a - b)**2) }
+check.identical <- function(a, b) {
+  if (all(a == b)) {
+    print("passed.")
+  } else {
+    stop("Two matrices are not identical.")
+  }
+}
 ```
 
 # Test of `EigenwordsCpp`
@@ -31,9 +37,9 @@ res.eigenwords <- EigenwordsCpp(as.integer(word_id), window.size, n.vocab, dim.c
 ```{r}
 matrix.norm2 <- function(a, b) { sum((a - b)**2) }
 
-norm2(res.eigenwords$tWW_diag, diag(t(m$W) %*% m$W))
-norm2(res.eigenwords$tCC_diag, diag(t(m$C) %*% m$C))
-norm2(res.eigenwords$tWC,      t(m$W) %*% m$C)
+check.identical(res.eigenwords$tWW_diag, diag(t(m$W) %*% m$W))
+check.identical(res.eigenwords$tCC_diag, diag(t(m$C) %*% m$C))
+check.identical(res.eigenwords$tWC,      t(m$W) %*% m$C)
 ```
 
 
@@ -54,6 +60,6 @@ M <- diag(rowSums(W))
 G.diag.r <- diag(t(X) %*% M %*% X)
 H.r <- triu(t(X) %*% W %*% X)
 
-norm2(G.diag.rcpp, G.diag.r)
-norm2(H.rcpp, H.r)
+check.identical(G.diag.rcpp, G.diag.r)
+check.identical(H.rcpp, H.r)
 ```
