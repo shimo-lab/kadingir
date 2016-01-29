@@ -448,7 +448,8 @@ CLEigenwords::CLEigenwords(
   const bool _link_w_d,
   const bool _link_c_d,
   const bool _weighting_tf,
-  const std::vector<double> _weight_vsdoc
+  const std::vector<double> _weight_vsdoc,
+  const bool _debug
   ) : sentence_concated(_sentence_concated),
       document_id_concated(_document_id_concated),
       window_sizes(_window_sizes),
@@ -460,7 +461,8 @@ CLEigenwords::CLEigenwords(
       link_w_d(_link_w_d),
       link_c_d(_link_c_d),
       weighting_tf(_weighting_tf),
-      weight_vsdoc(_weight_vsdoc)
+      weight_vsdoc(_weight_vsdoc),
+      debug(_debug)
 {
   if (window_sizes.size() != vocab_sizes.size()) {
     std::cout << "window_sizes.size() != vocab_sizes.size()" << std::endl;

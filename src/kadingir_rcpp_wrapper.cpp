@@ -91,7 +91,8 @@ Rcpp::List CLEigenwordsCpp(
     const bool link_w_d,
     const bool link_c_d,
     const bool weighting_tf,
-    const Rcpp::NumericVector weight_vsdoc
+    const Rcpp::NumericVector weight_vsdoc,
+    const bool debug
   )
 {
   std::vector<int> sentence_concated_stdvector = Rcpp::as<std::vector<int> >(sentence_concated);
@@ -110,7 +111,7 @@ Rcpp::List CLEigenwordsCpp(
                                            window_sizes_stdvector, vocab_sizes_stdvector,
                                            sentence_lengths_stdvector, k,
                                            link_w_d, link_c_d, gamma_G, gamma_H,
-                                           weighting_tf, weight_vsdoc_stdvector);
+                                           weighting_tf, weight_vsdoc_stdvector, debug);
   cleigenwords.compute();
 
   int n_domain = cleigenwords.get_n_domain();

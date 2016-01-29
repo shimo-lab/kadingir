@@ -127,6 +127,7 @@ private:
   bool link_c_d;
   bool weighting_tf;
   std::vector<double> weight_vsdoc;
+  bool debug;
 
   int n_languages;
   unsigned long long n_documents;
@@ -157,7 +158,8 @@ public:
                const bool _link_w_d,
                const bool _link_c_d,
                const bool _weighting_tf,
-               const std::vector<double> _weight_vsdoc
+               const std::vector<double> _weight_vsdoc,
+               const bool debug
   );
   void compute();
   MatrixXd get_vector_representations() { return vector_representations; }
