@@ -14,19 +14,28 @@ word_id <- sample(0:6, size = 100, replace = TRUE)
 document_id <- rep(1:10, each = 10)
 window.size <- 2
 n.vocab <- length(unique(word_id))
-dim.internal <- 20
+dim.common <- 20
+
+norm2 <- function(a, b) { sum((a - b)**2) }
 ```
 
 # Test of `EigenwordsCpp`
 ```{r}
 m <- make.matrices(word_id, document_id, window.size)
-res.eigenwords <- EigenwordsCpp(as.integer(word_id), window.size, n.vocab, dim.internal, mode_oscca = TRUE, debug = TRUE)
+res.eigenwords <- EigenwordsCpp(as.integer(word_id), window.size, n.vocab, dim.common, mode_oscca = TRUE, debug = TRUE)
 ```
 
 ```{r}
 matrix.norm2 <- function(a, b) { sum((a - b)**2) }
 
-matrix.norm2(res.eigenwords$tWW_diag, diag(t(m$W) %*% m$W))
-matrix.norm2(res.eigenwords$tCC_diag, diag(t(m$C) %*% m$C))
-matrix.norm2(res.eigenwords$tWC,      t(m$W) %*% m$C)
+norm2(res.eigenwords$tWW_diag, diag(t(m$W) %*% m$W))
+norm2(res.eigenwords$tCC_diag, diag(t(m$C) %*% m$C))
+norm2(res.eigenwords$tWC,      t(m$W) %*% m$C)
+```
+
+
+# Test of `EigendocsCpp`
+```{r}
+res.eigendocs <- EigendocsCpp(as.integer(word_id), as.integer(document_id), window.size, n.vocab, dim.common, , debug = TRUE)
+
 ```
