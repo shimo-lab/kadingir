@@ -619,12 +619,13 @@ void CLEigenwords::construct_matrices()
     int offsets[2 * window_size];
     fill_offset_table(offsets, window_size);
 
-    // For tokens of each languages
+    // For all tokens of a certain language
+    // In following comments, `l` indicates index of languages (i.e. `i_languages`).
     for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
 
       const int word0 = sentence_concated[i_sentence_concated];
       const int docid = document_id_concated[i_sentence_concated];
-      double H_ij_vsdoc;  // J^{(i_languages)}_{i_sentence, docid}
+      double H_ij_vsdoc;  // J^{(l)}_{i_sentence, docid}
 
       if (docid >= 0) {
         if (weighting_tf) {
@@ -636,10 +637,10 @@ void CLEigenwords::construct_matrices()
         H_ij_vsdoc = 0;
       }
 
-      G_diag(word0 + p_v) += m_diag_languages[i_languages][i_sentence];
-      G_diag(docid + p_d) += 2 * H_ij_vsdoc;
+      G_diag(word0 + p_v) += m_diag_languages[i_languages][i_sentence];  // Element of t(W_l) %*% W_l
+      G_diag(docid + p_d) += 2 * H_ij_vsdoc;  // Element of t(D) %*% D
 
-      H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij_vsdoc));  // Element of t(Wi) %*% Ji
+      H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij_vsdoc));  // Element of t(W_l) %*% J_l
 
       // For each words of context window
       for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
@@ -651,10 +652,10 @@ void CLEigenwords::construct_matrices()
         
         const unsigned long long word1 = sentence_concated[i_word1_concated] + vocab_size * i_offset1;
         
-        G_diag(word1 + p_c) += m_diag_languages[i_languages][i_word1];
+        G_diag(word1 + p_c) += m_diag_languages[i_languages][i_word1];  // Element of t(C_l) %*% C_l
         
-        H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(Wi) %*% Ci
-        H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij_vsdoc));  // Element of t(Ci) %*% Ji
+        H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(W_l) %*% C_l
+        H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij_vsdoc));  // Element of t(C_l) %*% J_l
       }
       
       n_pushed_triplets += 2*window_size + 1;
