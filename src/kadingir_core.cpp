@@ -624,7 +624,7 @@ void CLEigenwords::construct_matrices()
 
       const unsigned long long word0 = sentence_concated[i_sentence_concated];
       const unsigned long long docid = document_id_concated[i_sentence_concated];
-      double H_ij;
+      double H_ij_vsdoc;  // J^{(i_languages)}_{i_sentence, docid}
 
       if (weighting_tf) {
         H_ij = inverse_word_count_table[i_languages][docid];
@@ -636,7 +636,7 @@ void CLEigenwords::construct_matrices()
       G_diag(word0 + p_v) += m_diag_languages[i_languages][i_sentence];
       G_diag(docid + p_d) += 2;
 
-      H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij));  // Element of t(Wi) %*% Ji
+      H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij_vsdoc));  // Element of t(Wi) %*% Ji
 
       // For each words of context window
       for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
@@ -651,7 +651,7 @@ void CLEigenwords::construct_matrices()
         G_diag(word1 + p_c) += m_diag_languages[i_languages][i_word1];
         
         H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(Wi) %*% Ci
-        H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij));  // Element of t(Ci) %*% Ji
+        H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij_vsdoc));  // Element of t(Ci) %*% Ji
       }
       
       n_pushed_triplets += 2*window_size + 1;
