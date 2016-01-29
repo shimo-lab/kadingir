@@ -67,8 +67,10 @@ check.identical(H.rcpp, H.r)
 
 # Test of `CLEigenwordsCpp`
 ```{r}
-word.id.1 <- sample(0:6, size = 40, replace = TRUE)
-word.id.2 <- sample(0:8, size = 60, replace = TRUE)
+n.vocab <- c(7, 9)
+n.token <- c(40, 60)
+word.id.1 <- sample(seq(n.vocab[1]) - 1, size = n.token[1], replace = TRUE)
+word.id.2 <- sample(seq(n.vocab[2]) - 1, size = n.token[2], replace = TRUE)
 word.id.concated <- c(word.id.1, word.id.2)
 document.id.1 <- rep(0:3, each = 10)
 document.id.2 <- rep(0:5, each = 10)
@@ -76,8 +78,8 @@ document.id.concated <- c(document.id.1, document.id.2)
 
 results.cleigenwords <- CLEigenwordsCpp(word.id.concated, document.id.concated,
                                         c(window.size, window.size),
-                                        c(7, 9),
-                                        c(40, 60),
+                                        n.vocab,
+                                        n.token,
                                         dim.common, gamma_G = 0, gamma_H = 0,
                                         link_w_d = TRUE, link_c_d = TRUE,
                                         weighting_tf = FALSE,
