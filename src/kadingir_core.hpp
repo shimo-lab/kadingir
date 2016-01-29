@@ -22,36 +22,39 @@ private:
   int vocab_size;
   int k;
   bool mode_oscca;
+  bool debug;
 
   unsigned long long c_col_size;
   unsigned long long lr_col_size;
+
+  VectorXi tWW_diag;
+  VectorXi tCC_diag;
+  dSparseMatrix tWW_h_diag;
+  dSparseMatrix tCC_h_diag;
+  iSparseMatrix tWC;
+  iSparseMatrix tLL;
+  iSparseMatrix tLR;
+  iSparseMatrix tRR;
 
   MatrixXd word_vectors;
   MatrixXd context_vectors;
   VectorXd singular_values;
 
-  void construct_matrices (VectorXi &tWW_diag,
-                           VectorXi &tCC_diag,
-                           iSparseMatrix &tWC,
-                           iSparseMatrix &tLL,
-                           iSparseMatrix &tLR,
-                           iSparseMatrix &tRR);
-  void run_oscca(dSparseMatrix &tWW_h_diag,
-                 iSparseMatrix &tWC,
-                 VectorXi &tCC_diag);
-  void run_tscca(dSparseMatrix &tWW_h_diag,
-                 iSparseMatrix &tLL,
-                 iSparseMatrix &tLR,
-                 iSparseMatrix &tRR,
-                 iSparseMatrix &tWC);
+  void construct_matrices ();
+  void run_oscca();
+  void run_tscca();
 
 public:
   Eigenwords(const std::vector<int>& _sentence,
              const int _window_size,
              const int _vocab_size,
              const int _k,
-             const bool _mode_oscca);
+             const bool _mode_oscca,
+             const bool debug);
   void compute();
+  VectorXi get_tww_diag() { return tWW_diag; }
+  VectorXi get_tcc_diag() { return tCC_diag; }
+  dSparseMatrix get_twc() { return tWC.cast <double> (); }
   MatrixXd get_word_vectors() { return word_vectors; }
   MatrixXd get_context_vectors() { return context_vectors; }
   VectorXd get_singular_values() { return singular_values; }
@@ -70,17 +73,21 @@ private:
   bool link_c_d;
   double gamma_G;
   double gamma_H;
+  bool debug;
 
   unsigned long long c_col_size;
   unsigned long long lr_col_size;
 
+  VectorXi tWW_diag;
+  VectorXi tCC_diag;
+  VectorXi tDD_diag;
+  iSparseMatrix H;
+  VectorXi G_diag;
+
   MatrixXd vector_representations;
   VectorXd singular_values;
 
-  void construct_matrices (VectorXi &tWW_diag,
-                           VectorXi &tCC_diag,
-                           VectorXi &tDD_diag,
-                           iSparseMatrix &H);
+  void construct_matrices ();
 
 public:
   unsigned long long p;
@@ -95,8 +102,11 @@ public:
             const bool _link_w_d,
             const bool _link_c_d,
             const double _gamma_G,
-            const double _gamma_H);
+            const double _gamma_H,
+            const bool debug);
   void compute();
+  VectorXi get_g_diag() { return G_diag; }
+  dSparseMatrix get_h() { return H.cast <double> (); }
   MatrixXd get_vector_representations() { return vector_representations; }
   VectorXd get_singular_values() { return singular_values; }
 };
@@ -117,6 +127,7 @@ private:
   bool link_c_d;
   bool weighting_tf;
   std::vector<double> weight_vsdoc;
+  bool debug;
 
   int n_languages;
   unsigned long long n_documents;
@@ -129,11 +140,14 @@ private:
   std::vector<unsigned long long> lr_col_sizes;
   std::vector<std::vector<double> >  inverse_word_count_table;
 
+  VectorXd G_diag;
+  dSparseMatrix H;
+
   MatrixXd vector_representations;
   VectorXd singular_values;
 
   void construct_inverse_word_count_table();
-  void construct_matrices (VectorXd &G_diag, dSparseMatrix &H);
+  void construct_matrices();
 
 public:
   CLEigenwords(const std::vector<int>& _sentence_concated,
@@ -147,9 +161,12 @@ public:
                const bool _link_w_d,
                const bool _link_c_d,
                const bool _weighting_tf,
-               const std::vector<double> _weight_vsdoc
+               const std::vector<double> _weight_vsdoc,
+               const bool debug
   );
   void compute();
+  VectorXd get_g_diag() { return G_diag; }
+  dSparseMatrix get_h() { return H; }
   MatrixXd get_vector_representations() { return vector_representations; }
   VectorXd get_singular_values() { return singular_values; }
   int get_n_domain() { return n_domain; }

@@ -77,12 +77,14 @@ Eigenwords::Eigenwords(
   const int _window_size,
   const int _vocab_size,
   const int _k,
-  const bool _mode_oscca
+  const bool _mode_oscca,
+  const bool _debug
   ) : sentence(_sentence),
       window_size(_window_size),
       vocab_size(_vocab_size),
       k(_k),
-      mode_oscca(_mode_oscca)
+      mode_oscca(_mode_oscca),
+      debug(_debug)
 {
   lr_col_size = (unsigned long long)window_size * vocab_size;
   c_col_size = 2 * lr_col_size;
@@ -91,35 +93,34 @@ Eigenwords::Eigenwords(
 void Eigenwords::compute()
 {
   // Construct crossprod matrices
-  VectorXi tWW_diag(vocab_size);
-  VectorXi tCC_diag(c_col_size);
-  iSparseMatrix tWC(vocab_size, c_col_size);
-  iSparseMatrix tLL(lr_col_size, lr_col_size);
-  iSparseMatrix tLR(lr_col_size, lr_col_size);
-  iSparseMatrix tRR(lr_col_size, lr_col_size);
+  tWW_diag.resize(vocab_size);
+  tCC_diag.resize(c_col_size);
+  tWC.resize(vocab_size, c_col_size);
+  tLL.resize(lr_col_size, lr_col_size);
+  tLR.resize(lr_col_size, lr_col_size);
+  tRR.resize(lr_col_size, lr_col_size);
 
-  construct_matrices(tWW_diag, tCC_diag, tWC, tLL, tLR, tRR);
+  construct_matrices();
 
 
   // Construct the matrices for CCA and execute CCA
-  dSparseMatrix tWW_h_diag(vocab_size, vocab_size);
+  tWW_h_diag.resize(vocab_size, vocab_size);
   construct_h_diag_matrix(tWW_diag, tWW_h_diag);
 
   if (mode_oscca) {
-    run_oscca(tWW_h_diag, tWC, tCC_diag);
+    run_oscca();
+    
+    if (!debug) {
+      tWW_diag.resize(0);
+      tCC_diag.resize(0);
+      tWC.resize(0, 0);
+    }
   } else {
-    run_tscca(tWW_h_diag, tLL, tLR, tRR, tWC);
+    run_tscca();
   }
 }
 
-void Eigenwords::construct_matrices(
-    VectorXi &tWW_diag,
-    VectorXi &tCC_diag,
-    iSparseMatrix &tWC,
-    iSparseMatrix &tLL,
-    iSparseMatrix &tLR,
-    iSparseMatrix &tRR
-  )
+void Eigenwords::construct_matrices()
 {
   const unsigned long long sentence_size = sentence.size();
   unsigned long long n_pushed_triplets = 0;
@@ -219,11 +220,11 @@ void Eigenwords::construct_matrices(
 }
 
 // Execute One Step CCA
-void Eigenwords::run_oscca(dSparseMatrix &tWW_h_diag, iSparseMatrix &tWC, VectorXi &tCC_diag)
+void Eigenwords::run_oscca()
 {
   std::cout << "Calculate OSCCA..." << std::endl;
   
-  dSparseMatrix tCC_h_diag(c_col_size, c_col_size);
+  tCC_h_diag.resize(c_col_size, c_col_size);
   construct_h_diag_matrix(tCC_diag, tCC_h_diag);
   
   dSparseMatrix a = tWW_h_diag * (tWC.cast <double> ().eval().cwiseSqrt()) * tCC_h_diag;
@@ -237,13 +238,7 @@ void Eigenwords::run_oscca(dSparseMatrix &tWW_h_diag, iSparseMatrix &tWC, Vector
 }
 
 // Execute Two Step CCA
-void Eigenwords::run_tscca(
-    dSparseMatrix &tWW_h_diag,
-    iSparseMatrix &tLL,
-    iSparseMatrix &tLR,
-    iSparseMatrix &tRR,
-    iSparseMatrix &tWC
-  )
+void Eigenwords::run_tscca()
 {
   std::cout << "Calculate TSCCA..." << std::endl;
   
@@ -306,7 +301,8 @@ Eigendocs::Eigendocs(
     const bool _link_w_d,
     const bool _link_c_d,
     const double _gamma_G,
-    const double _gamma_H
+    const double _gamma_H,
+    const bool _debug
   ) : sentence(_sentence),
       document_id(_document_id),
       window_size(_window_size),
@@ -315,7 +311,8 @@ Eigendocs::Eigendocs(
       link_w_d(_link_w_d),
       link_c_d(_link_c_d),
       gamma_G(_gamma_G),
-      gamma_H(_gamma_H)
+      gamma_H(_gamma_H),
+      debug(_debug)
 {
   lr_col_size = (unsigned long long)window_size * vocab_size;
   c_col_size = 2 * lr_col_size;
@@ -336,16 +333,16 @@ void Eigendocs::compute()
 
 
   // Construct crossprod matrices
-  VectorXi tWW_diag(vocab_size);
-  VectorXi tCC_diag(c_col_size);
-  VectorXi tDD_diag(n_documents);
-  iSparseMatrix H(p, p);
+  tWW_diag.resize(vocab_size);
+  tCC_diag.resize(c_col_size);
+  tDD_diag.resize(n_documents);
+  H.resize(p, p);
 
-  construct_matrices (tWW_diag, tCC_diag, tDD_diag, H);
+  construct_matrices();
 
 
   // Construct the matrices for CCA and execute CCA  
-  VectorXi G_diag(p);
+  G_diag.resize(p);
   
   if (link_w_d && link_c_d) {
     G_diag << 2*tWW_diag, 2*tCC_diag, 2*tDD_diag;
@@ -366,14 +363,14 @@ void Eigendocs::compute()
   MatrixXd principal_components = svdA.matrixV();
   vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
   singular_values = svdA.singularValues();
+  
+  if (!debug) {
+      G_diag.resize(0);
+      H.resize(0, 0);
+  }
 }
 
-void Eigendocs::construct_matrices(
-    VectorXi &tWW_diag,
-    VectorXi &tCC_diag,
-    VectorXi &tDD_diag,
-    iSparseMatrix &H
-  )
+void Eigendocs::construct_matrices()
 {
   const unsigned long long sentence_size = sentence.size();
   const unsigned long long n_documents = *std::max_element(document_id.begin(), document_id.end()) + 1;
@@ -451,7 +448,8 @@ CLEigenwords::CLEigenwords(
   const bool _link_w_d,
   const bool _link_c_d,
   const bool _weighting_tf,
-  const std::vector<double> _weight_vsdoc
+  const std::vector<double> _weight_vsdoc,
+  const bool _debug
   ) : sentence_concated(_sentence_concated),
       document_id_concated(_document_id_concated),
       window_sizes(_window_sizes),
@@ -463,7 +461,8 @@ CLEigenwords::CLEigenwords(
       link_w_d(_link_w_d),
       link_c_d(_link_c_d),
       weighting_tf(_weighting_tf),
-      weight_vsdoc(_weight_vsdoc)
+      weight_vsdoc(_weight_vsdoc),
+      debug(_debug)
 {
   if (window_sizes.size() != vocab_sizes.size()) {
     std::cout << "window_sizes.size() != vocab_sizes.size()" << std::endl;
@@ -510,11 +509,11 @@ void CLEigenwords::compute()
   }
 
   // Construct matrices: G, H
-  VectorXd G_diag(p);
+  G_diag.resize(p);
   G_diag.setZero();
-  dSparseMatrix H(p, p);
+  H.resize(p, p);
 
-  construct_matrices(G_diag, H);
+  construct_matrices();
 
   // Construct the matrices for CCA
   std::cout << "Calculate CDMCA..." << std::endl;
@@ -523,6 +522,11 @@ void CLEigenwords::compute()
   construct_h_diag_matrix_double(G_diag, G_inv_sqrt);
   
   dSparseMatrix A = (G_inv_sqrt * (H.cast <double> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
+
+  if (!debug) {
+    G_diag.resize(0);
+    H.resize(0, 0);
+  }
 
   // Execute CDMCA
   std::cout << "Calculate Randomized SVD..." << std::endl;
@@ -561,7 +565,7 @@ void CLEigenwords::construct_inverse_word_count_table()
 }
 
 
-void CLEigenwords::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
+void CLEigenwords::construct_matrices()
 {
 
   unsigned long long sum_sentence_lengths = 0;
@@ -623,7 +627,7 @@ void CLEigenwords::construct_matrices (VectorXd &G_diag, dSparseMatrix &H)
       H_ij *= weight_vsdoc[i_languages];
 
       G_diag(word0 + p_v) += m_diag_languages[i_languages][i_sentence];
-      G_diag(docid + p_d) += 1;
+      G_diag(docid + p_d) += 2;
 
       H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij));  // Element of t(Wi) %*% Ji
 

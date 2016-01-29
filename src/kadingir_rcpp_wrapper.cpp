@@ -20,18 +20,22 @@ Rcpp::List EigenwordsCpp(
     const int window_size,
     const int vocab_size,
     const int k,
-    const bool mode_oscca
+    const bool mode_oscca,
+    const bool debug
   )
 {
   std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
   
-  Eigenwords eigenwords = Eigenwords(sentence_stdvector, window_size, vocab_size, k, mode_oscca);
+  Eigenwords eigenwords = Eigenwords(sentence_stdvector, window_size, vocab_size, k, mode_oscca, debug);
   eigenwords.compute();
 
   return Rcpp::List::create(
-    Rcpp::Named("word_vector") = Rcpp::wrap(eigenwords.get_word_vectors()),
+    Rcpp::Named("tWW_diag")       = Rcpp::wrap(eigenwords.get_tww_diag()),
+    Rcpp::Named("tCC_diag")       = Rcpp::wrap(eigenwords.get_tcc_diag()),
+    Rcpp::Named("tWC")            = Rcpp::wrap(eigenwords.get_twc()),
+    Rcpp::Named("word_vector")    = Rcpp::wrap(eigenwords.get_word_vectors()),
     Rcpp::Named("context_vector") = Rcpp::wrap(eigenwords.get_context_vectors()),
-    Rcpp::Named("D") = Rcpp::wrap(eigenwords.get_singular_values())
+    Rcpp::Named("D")              = Rcpp::wrap(eigenwords.get_singular_values())
     );
 }
 
@@ -46,14 +50,15 @@ Rcpp::List EigendocsCpp(
     const double gamma_G,
     const double gamma_H,
     const bool link_w_d,
-    const bool link_c_d
+    const bool link_c_d,
+    const bool debug
   )
 {
   std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
   std::vector<int> document_id_stdvector = Rcpp::as<std::vector<int> >(document_id);
   
   Eigendocs eigendocs = Eigendocs(sentence_stdvector, document_id_stdvector, window_size, vocab_size, k,
-                                  link_w_d, link_c_d, gamma_G, gamma_H);
+                                  link_w_d, link_c_d, gamma_G, gamma_H, debug);
   eigendocs.compute();
 
   Rcpp::NumericVector p_head_domains_return(3);
@@ -63,6 +68,8 @@ Rcpp::List EigendocsCpp(
 
 
   return Rcpp::List::create(
+    Rcpp::Named("G_diag") = Rcpp::wrap(eigendocs.get_g_diag()),
+    Rcpp::Named("H") = Rcpp::wrap(eigendocs.get_h()),
     Rcpp::Named("V") = Rcpp::wrap(eigendocs.get_vector_representations()),
     Rcpp::Named("singular_values") = Rcpp::wrap(eigendocs.get_singular_values()),
     Rcpp::Named("p_head_domains") = p_head_domains_return,
@@ -84,7 +91,8 @@ Rcpp::List CLEigenwordsCpp(
     const bool link_w_d,
     const bool link_c_d,
     const bool weighting_tf,
-    const Rcpp::NumericVector weight_vsdoc
+    const Rcpp::NumericVector weight_vsdoc,
+    const bool debug
   )
 {
   std::vector<int> sentence_concated_stdvector = Rcpp::as<std::vector<int> >(sentence_concated);
@@ -103,7 +111,7 @@ Rcpp::List CLEigenwordsCpp(
                                            window_sizes_stdvector, vocab_sizes_stdvector,
                                            sentence_lengths_stdvector, k,
                                            link_w_d, link_c_d, gamma_G, gamma_H,
-                                           weighting_tf, weight_vsdoc_stdvector);
+                                           weighting_tf, weight_vsdoc_stdvector, debug);
   cleigenwords.compute();
 
   int n_domain = cleigenwords.get_n_domain();
@@ -113,6 +121,8 @@ Rcpp::List CLEigenwordsCpp(
   }
 
   return Rcpp::List::create(
+    Rcpp::Named("G_diag") = Rcpp::wrap(cleigenwords.get_g_diag()),
+    Rcpp::Named("H") = Rcpp::wrap(cleigenwords.get_h()),
     Rcpp::Named("V") = Rcpp::wrap(cleigenwords.get_vector_representations()),
     Rcpp::Named("singular_values") = Rcpp::wrap(cleigenwords.get_singular_values()),
     Rcpp::Named("p_head_domains") = p_head_domains_return,

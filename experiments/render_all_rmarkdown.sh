@@ -5,4 +5,5 @@ do
     rcommand="rmarkdown::render('"$rmdfile"')"
     echo $rcommand
     time R -e $rcommand >> log_render_all_rmarkdown.txt
+    echo "============================================"
 done
