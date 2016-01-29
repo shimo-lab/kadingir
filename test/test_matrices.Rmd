@@ -63,3 +63,53 @@ H.r <- triu(t(X) %*% W %*% X)
 check.identical(G.diag.rcpp, G.diag.r)
 check.identical(H.rcpp, H.r)
 ```
+
+
+# Test of `CLEigenwordsCpp`
+```{r}
+word.id.1 <- sample(0:6, size = 40, replace = TRUE)
+word.id.2 <- sample(0:8, size = 60, replace = TRUE)
+word.id.concated <- c(word.id.1, word.id.2)
+document.id.1 <- rep(0:3, each = 10)
+document.id.2 <- rep(0:5, each = 10)
+document.id.concated <- c(document.id.1, document.id.2)
+
+results.cleigenwords <- CLEigenwordsCpp(word.id.concated, document.id.concated,
+                                        c(window.size, window.size),
+                                        c(7, 9),
+                                        c(40, 60),
+                                        dim.common, gamma_G = 0, gamma_H = 0,
+                                        link_w_d = TRUE, link_c_d = TRUE,
+                                        weighting_tf = FALSE,
+                                        weight_vsdoc = c(1, 1),
+                                        debug = TRUE)
+G.diag.rcpp <- results.cleigenwords$G_diag
+H.rcpp <- results.cleigenwords$H
+
+n1 <- length(word.id.1)
+n2 <- length(word.id.2)
+n.documents <- max(document.id.concated) + 1
+m1 <- make.matrices(word.id.1, document.id.1, window.size)
+m2 <- make.matrices(word.id.2, document.id.2, window.size)
+
+identity.n1 <- Diagonal(n1)
+identity.n2 <- Diagonal(n2)
+zeros <- function(n1, n2) { Matrix(0, nrow = n1, ncol = n2) }
+
+J1 <- sparseMatrix(i = seq(n1), j = document.id.1 + 1, x = rep(1, n1), dims = c(n1, n.documents))
+J2 <- sparseMatrix(i = seq(n2), j = document.id.2 + 1, x = rep(1, n2), dims = c(n2, n.documents))
+W <- rBind(cBind(zeros(n1, n1), identity.n1,   zeros(n1, n2), zeros(n1, n2), J1),
+           cBind(identity.n1,   zeros(n1, n1), zeros(n1, n2), zeros(n1, n2), J1),
+           cBind(zeros(n2, n1), zeros(n2, n1), zeros(n2, n2), identity.n2,   J2),
+           cBind(zeros(n2, n1), zeros(n2, n1), identity.n2,   zeros(n2, n2), J2),
+           cBind(t(J1),         t(J1),         t(J2),         t(J2),         zeros(n.documents, n.documents)))
+D <- Diagonal(n.documents)
+X <- bdiag(m1$W, m1$C, m2$W, m2$C, D)
+
+M <- diag(rowSums(W))
+G.diag.r <- diag(t(X) %*% M %*% X)
+H.r <- triu(t(X) %*% W %*% X)
+
+check.identical(G.diag.rcpp, G.diag.r)
+check.identical(H.rcpp, H.r)
+```
