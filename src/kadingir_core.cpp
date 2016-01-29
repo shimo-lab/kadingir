@@ -622,16 +622,19 @@ void CLEigenwords::construct_matrices()
     // For tokens of each languages
     for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
 
-      const unsigned long long word0 = sentence_concated[i_sentence_concated];
-      const unsigned long long docid = document_id_concated[i_sentence_concated];
+      const int word0 = sentence_concated[i_sentence_concated];
+      const int docid = document_id_concated[i_sentence_concated];
       double H_ij_vsdoc;  // J^{(i_languages)}_{i_sentence, docid}
 
-      if (weighting_tf) {
-        H_ij = inverse_word_count_table[i_languages][docid];
+      if (docid >= 0) {
+        if (weighting_tf) {
+          H_ij_vsdoc = weight_vsdoc[i_languages] * inverse_word_count_table[i_languages][docid];
+        } else {
+          H_ij_vsdoc = weight_vsdoc[i_languages];
+        }
       } else {
-        H_ij = 1;
+        H_ij_vsdoc = 0;
       }
-      H_ij *= weight_vsdoc[i_languages];
 
       G_diag(word0 + p_v) += m_diag_languages[i_languages][i_sentence];
       G_diag(docid + p_d) += 2;
