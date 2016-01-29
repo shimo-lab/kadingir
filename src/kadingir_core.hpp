@@ -165,6 +165,8 @@ public:
                const bool debug
   );
   void compute();
+  VectorXd get_g_diag() { return G_diag; }
+  dSparseMatrix get_h() { return H; }
   MatrixXd get_vector_representations() { return vector_representations; }
   VectorXd get_singular_values() { return singular_values; }
   int get_n_domain() { return n_domain; }

@@ -121,6 +121,8 @@ Rcpp::List CLEigenwordsCpp(
   }
 
   return Rcpp::List::create(
+    Rcpp::Named("G_diag") = Rcpp::wrap(cleigenwords.get_g_diag()),
+    Rcpp::Named("H") = Rcpp::wrap(cleigenwords.get_h()),
     Rcpp::Named("V") = Rcpp::wrap(cleigenwords.get_vector_representations()),
     Rcpp::Named("singular_values") = Rcpp::wrap(cleigenwords.get_singular_values()),
     Rcpp::Named("p_head_domains") = p_head_domains_return,
