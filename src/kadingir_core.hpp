@@ -82,6 +82,7 @@ private:
   VectorXi tCC_diag;
   VectorXi tDD_diag;
   iSparseMatrix H;
+  VectorXi G_diag;
 
   MatrixXd vector_representations;
   VectorXd singular_values;
@@ -104,6 +105,8 @@ public:
             const double _gamma_H,
             const bool debug);
   void compute();
+  VectorXi get_g_diag() { return G_diag; }
+  dSparseMatrix get_h() { return H.cast <double> (); }
   MatrixXd get_vector_representations() { return vector_representations; }
   VectorXd get_singular_values() { return singular_values; }
 };

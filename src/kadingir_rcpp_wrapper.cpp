@@ -68,6 +68,8 @@ Rcpp::List EigendocsCpp(
 
 
   return Rcpp::List::create(
+    Rcpp::Named("G_diag") = Rcpp::wrap(eigendocs.get_g_diag()),
+    Rcpp::Named("H") = Rcpp::wrap(eigendocs.get_h()),
     Rcpp::Named("V") = Rcpp::wrap(eigendocs.get_vector_representations()),
     Rcpp::Named("singular_values") = Rcpp::wrap(eigendocs.get_singular_values()),
     Rcpp::Named("p_head_domains") = p_head_domains_return,

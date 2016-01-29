@@ -342,7 +342,7 @@ void Eigendocs::compute()
 
 
   // Construct the matrices for CCA and execute CCA  
-  VectorXi G_diag(p);
+  G_diag.resize(p);
   
   if (link_w_d && link_c_d) {
     G_diag << 2*tWW_diag, 2*tCC_diag, 2*tDD_diag;
@@ -368,6 +368,7 @@ void Eigendocs::compute()
       tWW_diag.resize(0);
       tCC_diag.resize(0);
       tDD_diag.resize(0);
+      G_diag.resize(0);
       H.resize(0, 0);
   }
 }
