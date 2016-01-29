@@ -365,9 +365,6 @@ void Eigendocs::compute()
   singular_values = svdA.singularValues();
   
   if (!debug) {
-      tWW_diag.resize(0);
-      tCC_diag.resize(0);
-      tDD_diag.resize(0);
       G_diag.resize(0);
       H.resize(0, 0);
   }
