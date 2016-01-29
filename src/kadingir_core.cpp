@@ -523,6 +523,11 @@ void CLEigenwords::compute()
   
   dSparseMatrix A = (G_inv_sqrt * (H.cast <double> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
 
+  if (!debug) {
+    G_diag.resize(0);
+    H.resize(0, 0);
+  }
+
   // Execute CDMCA
   std::cout << "Calculate Randomized SVD..." << std::endl;
   RedSVD::RedSVD<dSparseMatrix> svdA(A, k, 20);
