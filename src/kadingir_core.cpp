@@ -637,7 +637,7 @@ void CLEigenwords::construct_matrices()
       }
 
       G_diag(word0 + p_v) += m_diag_languages[i_languages][i_sentence];
-      G_diag(docid + p_d) += 2;
+      G_diag(docid + p_d) += 2 * H_ij_vsdoc;
 
       H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij_vsdoc));  // Element of t(Wi) %*% Ji
 
