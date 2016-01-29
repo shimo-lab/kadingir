@@ -578,12 +578,19 @@ void CLEigenwords::construct_matrices()
     m_diag_languages[i_languages].resize(sentence_length);
     
     for (unsigned long long i = 0; i < sentence_length; i++) {
-      if (weighting_tf) {
-        m_diag_languages[i_languages][i] = 1 + inverse_word_count_table[i_languages][document_id_concated[sum_sentence_lengths + i]];
+      int document_id = document_id_concated[sum_sentence_lengths + i];
+      
+      if (document_id >= 0) {
+        // From bilingual corpus
+        if (weighting_tf) {
+          m_diag_languages[i_languages][i] = 1 + weight_vsdoc[i_languages] * inverse_word_count_table[i_languages][document_id];
+        } else {
+          m_diag_languages[i_languages][i] = 1 + weight_vsdoc[i_languages];
+        }
       } else {
-        m_diag_languages[i_languages][i] = 2;
+        // From monolingual corpus
+        m_diag_languages[i_languages][i] = 1;
       }
-      m_diag_languages[i_languages][i] *= weight_vsdoc[i_languages];
     }
     
     sum_sentence_lengths += sentence_length;
