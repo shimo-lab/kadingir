@@ -13,7 +13,7 @@ library(Matrix)
 source("./../src/kadingir.R", chdir = TRUE)
 
 word_id <- sample(0:6, size = 100, replace = TRUE)
-document_id <- rep(1:10, each = 10)
+document_id <- rep(0:9, each = 10)
 n <- length(word_id)
 window.size <- 2
 n.vocab <- length(unique(word_id))
