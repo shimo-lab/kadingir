@@ -22,7 +22,7 @@ r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(10000, 10000),
                   plot = TRUE,
                   weighting_tf = FALSE,
                   weight.vsdoc = c(1.0, 1.0),
-                  rate.sample.chunk = c(0.1, 1.0), size.chunk = c(10, 1000))
+                  rate.sample.chunk = c(1.0, 1.0), size.chunk = c(1000, 1000))
 
 save(r, file = "res_cleigenwords.Rdata")
 ```
