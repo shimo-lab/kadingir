@@ -652,7 +652,7 @@ void CLEigenwords::construct_matrices()
         
         const unsigned long long word1 = sentence_concated[i_word1_concated] + vocab_size * i_offset1;
         
-        G_diag(word1 + p_c) += m_diag_languages[i_languages][i_word1];  // Element of t(C_l) %*% C_l
+        G_diag(word1 + p_c) += m_diag_languages[i_languages][i_sentence];  // Element of t(C_l) %*% C_l
         
         H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(W_l) %*% C_l
         H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij_vsdoc));  // Element of t(C_l) %*% J_l
