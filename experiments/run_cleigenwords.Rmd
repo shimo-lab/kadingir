@@ -43,8 +43,8 @@ vocab.words <- c(vocab.words1, vocab.words2)
 (en)I = (es)yo
 
 ```{r}
-MostSimilar(V, vocab.words, positive=c("(en)he"), distance = "cosine", language.search = "en")
-MostSimilar(V, vocab.words, positive=c("(en)he"), distance = "cosine", language.search = "es")
+MostSimilar(V, vocab.words, positive=c("(en)we"), distance = "cosine", language.search = "en")
+MostSimilar(V, vocab.words, positive=c("(en)we"), distance = "cosine", language.search = "es")
 MostSimilar(V, vocab.words, positive=c("(es)yo"), distance = "cosine", language.search = "en")
 MostSimilar(V, vocab.words, positive=c("(es)yo"), distance = "cosine", language.search = "es")
 MostSimilar(V, vocab.words, positive=c("(en)him", "(es)yo"), negative=c("(en)he"), distance = "cosine")
