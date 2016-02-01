@@ -9,7 +9,8 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
                          sizes.window, aliases.languages, weight.vsdoc,
                          plot = FALSE,
                          link_w_d = TRUE, link_c_d = TRUE,
-                         weighting_tf = FALSE)
+                         weighting_tf = FALSE,
+                         rate.sample.chunk = NULL, size.chunk = NULL)
 {
   time.start <- Sys.time()
   
@@ -32,6 +33,21 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     sentence.str <- unlist(lines.splited)
     lengths.lines.splited <- sapply(lines.splited, length)
     document.id[[i]] <- rep(seq(lines.splited), lengths.lines.splited) - 1L
+
+    if (!is.null(rate.sample.chunk)) {
+      ## For experiment of semi-supervised-like setting
+      n.document <- max(document.id[[i]])
+      n.chunk <- n.document %/% size.chunk[i]
+      as.parallel.chunk <- sample(c(TRUE, FALSE), size = n.chunk, prob = c(rate.sample.chunk[i], 1-rate.sample.chunk[i]), replace = TRUE)
+      for (i.chunk in seq(n.chunk)) {
+        if (!as.parallel.chunk[i.chunk]) {
+          ## Fill document.id of monolingual documents with negative values (-1)
+          i.head.chunk <- size.chunk[i] * (i.chunk - 1)
+          index.monolingual <- document.id[[i]] %in% (1:size.chunk[i] + i.head.chunk - 1L)
+          document.id[[i]][index.monolingual] <- -1L
+        }
+      }
+    }
 
     if (plot) {
       hist(lengths.lines.splited, breaks = 100)
@@ -73,6 +89,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     cat("Size of vocabulary :", sizes.vocabulary[i], "\n")
     cat("Weight (vs doc)    :", weight.vsdoc[i], "\n")
     cat("min count          :", min.counts[[i]], "\n")
+    cat("% of Parallel      :", 100 * mean(document.id[[i]] >= 0), "\n")
     
     cat("\n")
   }
