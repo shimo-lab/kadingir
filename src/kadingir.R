@@ -26,8 +26,10 @@ make.matrices <- function(sentence, document.id, window.size) {
                     x = rep(1, times = nrow(indices)),
                     dims = c(n.train.words, n.vocab))
 
-  D <- sparseMatrix(i = indices[ , 1], j = indices[ , 3],
-                    x = rep(1, times = nrow(indices)),
+  D.triplet <- cbind(indices[ , 1], indices[ , 3], rep(1, times = nrow(indices)))
+  D.triplet <- D.triplet[D.triplet[ , 2] >= 1, ]
+  D <- sparseMatrix(i = D.triplet[ , 1], j = D.triplet[ , 2],
+                    x = D.triplet[ , 3],
                     dims = c(n.train.words, max(document.id)))
   
   ## Construction of C
