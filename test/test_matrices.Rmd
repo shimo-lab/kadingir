@@ -72,7 +72,7 @@ n.token <- c(40, 60)
 word.id.1 <- sample(seq(n.vocab[1]) - 1, size = n.token[1], replace = TRUE)
 word.id.2 <- sample(seq(n.vocab[2]) - 1, size = n.token[2], replace = TRUE)
 word.id.concated <- c(word.id.1, word.id.2)
-document.id.1 <- rep(0:3, each = 10)
+document.id.1 <- rep(-1:2, each = 10)
 document.id.2 <- rep(0:5, each = 10)
 document.id.concated <- c(document.id.1, document.id.2)
 
@@ -98,8 +98,13 @@ identity.n1 <- Diagonal(n1)
 identity.n2 <- Diagonal(n2)
 zeros <- function(n1, n2) { Matrix(0, nrow = n1, ncol = n2) }
 
-J1 <- sparseMatrix(i = seq(n1), j = document.id.1 + 1, x = rep(1, n1), dims = c(n1, n.documents))
-J2 <- sparseMatrix(i = seq(n2), j = document.id.2 + 1, x = rep(1, n2), dims = c(n2, n.documents))
+J1.triplet <- cbind(seq(n1), document.id.1 + 1, rep(1, n1))
+J1.triplet <- J1.triplet[J1.triplet[ , 2] >= 1, ]
+J1 <- sparseMatrix(i = J1.triplet[ , 1], j = J1.triplet[ , 2], x = J1.triplet[ , 3], dims = c(n1, n.documents))
+
+J2.triplet <- cbind(seq(n2), document.id.2 + 1, rep(1, n2))
+J2.triplet <- J2.triplet[J2.triplet[ , 2] >= 1, ]
+J2 <- sparseMatrix(i = J2.triplet[ , 1], j = J2.triplet[ , 2], x = J2.triplet[ , 3], dims = c(n2, n.documents))
 W <- rBind(cBind(zeros(n1, n1), identity.n1,   zeros(n1, n2), zeros(n1, n2), J1),
            cBind(identity.n1,   zeros(n1, n1), zeros(n1, n2), zeros(n1, n2), J1),
            cBind(zeros(n2, n1), zeros(n2, n1), zeros(n2, n2), identity.n2,   J2),
