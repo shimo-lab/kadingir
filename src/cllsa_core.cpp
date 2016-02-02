@@ -35,9 +35,11 @@ Rcpp::List CLLSA(const Rcpp::IntegerVector& corpus_id_concated,
     const unsigned long long sentence_length = sentence_lengths[i_lang];
     
     for (unsigned long long i_word = 0; i_word < sentence_length; i_word++) {
-      const unsigned long long ii = ii_start + corpus_id_concated[i_concated];
-      const unsigned long long jj = document_id_concated[i_concated];
-      word_document_matrix_tripletlist.push_back(Triplet(ii, jj, 1));
+      if (document_id_concated[i_concated] >= 0) {
+        const unsigned long long ii = ii_start + corpus_id_concated[i_concated];
+        const unsigned long long jj = document_id_concated[i_concated];
+        word_document_matrix_tripletlist.push_back(Triplet(ii, jj, 1));
+      }
       i_concated++;
     }
     ii_start += vocab_size;
