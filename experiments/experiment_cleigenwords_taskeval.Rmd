@@ -60,7 +60,7 @@ vocab.words <- c(vocab.words.es, vocab.words.en)
 
 ## Execute Cross-Lingual LSA
 ```{r}
-path.cllsa.rdata <- "res_cllsa_0125.Rdata"
+path.cllsa.rdata <- "res_cllsa.Rdata"
 
 if (!file.exists(path.cllsa.rdata)) {
   sourceCpp("./../src/cllsa_core.cpp", rebuild = TRUE)
