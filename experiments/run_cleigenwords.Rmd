@@ -39,6 +39,21 @@ V <- rbind(V1, V2)
 vocab.words <- c(vocab.words1, vocab.words2)
 ```
 
+## Plot some figure
+```{r}
+queries <- c(paste0("(en)", c("is", "this", "and", "all", "parliament", "one")),
+             paste0("(es)", c("es", "este", "y", "todos", "parlamento", "uno")))
+# queries <- c(paste0("(en)", c("japan", "america", "korea", "england", "spain", "germany")),
+#              paste0("(es)", c("japón", "américa", "corea", "inglaterra", "españa", "alemania")))
+n.queries <- length(queries)
+
+VV <- V
+row.names(VV) <- vocab.words
+pr.v2 <- prcomp(VV[queries,])
+plot(pr.v2$x[ , 1:2], pch = 1, col = "grey")
+text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x))
+```
+
 # 類似単語の検索
 (en)I = (es)yo
 
