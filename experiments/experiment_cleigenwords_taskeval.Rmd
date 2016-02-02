@@ -23,6 +23,9 @@ if (!file.exists("run_cleigenwords.html")) {
 ```{r, include=FALSE}
 library(knitr)
 library(RecordLinkage)
+library(foreach)
+library(doParallel)
+
 source("./../src/kadingir.R", chdir = TRUE)
 ```
 
@@ -85,15 +88,12 @@ MostSimilar(res.cllsa$representations.word, vocab.words,
 
 # Evaluation
 ```{r}
+cl <- makeCluster(24)
+registerDoParallel(cl)
+
 queries <- paste0("(es)", as.character(translate.table[ , "es"]))
 n.queries <- length(queries)
 answers.machinetranslate <- paste0("(en)", as.character(translate.table[ , "en"]))
-answers.cleigenwords <- vector(mode = "character", length = n.queries)
-answers.cllsa <- vector(mode = "character", length = n.queries)
-answers.adist <- vector(mode = "character", length = n.queries)
-correct.at.n.cleigenwords <- vector(mode = "logical", length = n.queries)
-correct.at.n.cllsa <- vector(mode = "logical", length = n.queries)
-correct.at.n.adist <- vector(mode = "logical", length = n.queries)
 topn <- 5  # P@topn
 distance <- "cosine"
 weight.vector <- NULL
@@ -101,7 +101,7 @@ weight.vector <- NULL
 # Search word that have minimum edit distance with `query` from `vocab.search`
 search.adist <- function (query, vocab.search, topn = 1)
 {
-  vector.adist <- levenshteinDist(query, vocab.search)
+  vector.adist <- RecordLinkage::levenshteinDist(query, vocab.search)
   names(vector.adist) <- vocab.search
   
   if (topn == 1) {
@@ -112,7 +112,7 @@ search.adist <- function (query, vocab.search, topn = 1)
 }
 
 
-for (i.query in seq(queries)) {
+results <- foreach (i.query = seq(queries), .combine = rbind) %dopar% {
   query <- queries[i.query]
   query.nolang <- substr(query, 5, 100)  # `query` with no language identifier
   answer.collect <- tolower(answers.machinetranslate[i.query])
@@ -128,25 +128,23 @@ for (i.query in seq(queries)) {
   
   # Edit distance
   answers.adist.query <- search.adist(query.nolang, r$vocab.words[[2]], topn = 5)
-  
-  answers.cleigenwords[i.query] <- word.most.similar.cleigenwords
-  answers.cllsa[i.query] <- word.most.similar.cllsa
-  correct.at.n.cleigenwords[i.query] <- answer.collect %in% tolower(answers.cleigenwords.query)
-  correct.at.n.cllsa[i.query] <- answer.collect %in% tolower(answers.cllsa.query)
-  correct.at.n.adist[i.query] <- answer.collect.nolang %in% tolower(answers.adist.query)
-  answers.adist[i.query] <- answers.adist.query[1]
+
+  data.frame(
+    queries = query,
+    answer.machinetranslate = answer.collect,
+    answer.cleigenwords = word.most.similar.cleigenwords,
+    answer.cllsa = word.most.similar.cllsa,
+    answer.adist = answers.adist.query[1],
+    correct.at.n.cleigenwords = answer.collect %in% tolower(answers.cleigenwords.query),
+    correct.at.n.cllsa = answer.collect %in% tolower(answers.cllsa.query),
+    correct.at.n.adist = answer.collect.nolang %in% tolower(answers.adist.query)
+  )
 }
 
-answers.adist <- paste0("(en)", answers.adist)
+stopCluster(cl)
+registerDoSEQ()
 
-results <- data.frame(queries = queries,
-                      answer.machinetranslate = answers.machinetranslate,
-                      answer.cleigenwords = answers.cleigenwords,
-                      answer.cllsa = answers.cllsa,
-                      answer.adist = answers.adist,
-                      correct.at.n.cleigenwords = correct.at.n.cleigenwords,
-                      correct.at.n.cllsa = correct.at.n.cllsa,
-                      correct.at.n.adist= correct.at.n.adist)
+results$answer.adist <- paste0("(en)", results$answer.adist)
 ```
 
 ```{r, results = "asis"}
