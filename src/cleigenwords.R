@@ -89,7 +89,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     cat("Size of vocabulary :", sizes.vocabulary[i], "\n")
     cat("Weight (vs doc)    :", weight.vsdoc[i], "\n")
     cat("min count          :", min.counts[[i]], "\n")
-    cat("% of Parallel      :", 100 * mean(document.id[[i]] >= 0), "\n")
+    cat("% of docid >= 0    :", 100 * mean(document.id[[i]] >= 0), "\n")
     
     cat("\n")
   }
