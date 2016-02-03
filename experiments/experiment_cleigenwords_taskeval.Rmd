@@ -88,7 +88,7 @@ MostSimilar(V.cllsa, vocab.words, positive = c("(en)he"), distance = "cosine", l
 
 # Evaluation
 ```{r}
-cl <- makeCluster(24)
+cl <- makeCluster(12)
 registerDoParallel(cl)
 
 queries <- paste0("(es)", as.character(translate.table[ , "es"]))
