@@ -5,8 +5,6 @@ date: "`r Sys.time()`"
 output: html_document
 ---
 
-提案手法である Cross-Lingual Eigenwords の評価を行う
-
 # Preparation
 ```{r}
 time.begin <- Sys.time()
@@ -182,7 +180,7 @@ kable(
   )
 ```
 
-# 頻出上位 $n$ 件の単語をクエリとして使ったときの Precision\@5 のグラフ
+# Precision\@5 for top-$n$ frequently used words
 ```{r}
 precision <- cbind(cumsum(results[, c("correct.at.n.adist")])/seq(nrow(results)),
                    cumsum(results[, c("correct.at.n.cllsa")])/seq(nrow(results)),
