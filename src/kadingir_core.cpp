@@ -2,7 +2,7 @@
  * kadingir_core.cpp
  *
  * memo :
- *  - `0` in sentence indicates `<OOV>` (Out of Vocabulary, token that does not included in vocabulary).
+ *  - `0` in sentence indicates `<OOV>` (Out of Vocabulary, tokens that are not included in vocabulary).
  *  - v.asDiagonal() は疎行列ではなく密行列を返すため，仕方なく同様の処理をベタ書きしている箇所がある．
  *  - tWC indicates matrix multiplication (crossprod) of W and C (In R, tWC = t(W) %*% C).
  *  - `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
