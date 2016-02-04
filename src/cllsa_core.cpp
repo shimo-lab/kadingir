@@ -17,10 +17,10 @@ const int TRIPLET_VECTOR_SIZE = 100000000;
 // Rcpp implementation of Cross-Lingual Latent Semantic Analysis
 //   with Randomized SVD
 // [[Rcpp::export]]
-Rcpp::List CLLSA(const Rcpp::IntegerVector& corpus_id_concated,
-                 const Rcpp::IntegerVector& document_id_concated,
+Rcpp::List CLLSA(const Rcpp::IntegerVector& id_wordtype_concated,
+                 const Rcpp::IntegerVector& id_document_concated,
                  const Rcpp::IntegerVector vocab_sizes,
-                 const Rcpp::IntegerVector sentence_lengths,
+                 const Rcpp::IntegerVector id_wordtype_lengths,
                  const int dim_common_space)
 {
   unsigned long long ii_start = 0;
@@ -32,12 +32,12 @@ Rcpp::List CLLSA(const Rcpp::IntegerVector& corpus_id_concated,
   
   for (int i_lang = 0; i_lang < vocab_sizes.length(); i_lang++) {
     const unsigned long long vocab_size = vocab_sizes[i_lang];
-    const unsigned long long sentence_length = sentence_lengths[i_lang];
+    const unsigned long long id_wordtype_length = id_wordtype_lengths[i_lang];
     
-    for (unsigned long long i_word = 0; i_word < sentence_length; i_word++) {
-      if (document_id_concated[i_concated] >= 0) {
-        const unsigned long long ii = ii_start + corpus_id_concated[i_concated];
-        const unsigned long long jj = document_id_concated[i_concated];
+    for (unsigned long long i_word = 0; i_word < id_wordtype_length; i_word++) {
+      if (id_document_concated[i_concated] >= 0) {
+        const unsigned long long ii = ii_start + id_wordtype_concated[i_concated];
+        const unsigned long long jj = id_document_concated[i_concated];
         word_document_matrix_tripletlist.push_back(Triplet(ii, jj, 1));
       }
       i_concated++;
@@ -46,7 +46,7 @@ Rcpp::List CLLSA(const Rcpp::IntegerVector& corpus_id_concated,
   }
   
   const unsigned long long nrow = Rcpp::sum(vocab_sizes);
-  const unsigned long long ncol = Rcpp::max(document_id_concated) + 1;
+  const unsigned long long ncol = Rcpp::max(id_document_concated) + 1;
   std::cout << nrow << " x " << ncol << "-matrix" << std::endl;
   Eigen::SparseMatrix<double> word_document_matrix(nrow, ncol);
   word_document_matrix.setFromTriplets(word_document_matrix_tripletlist.begin(), word_document_matrix_tripletlist.end());
