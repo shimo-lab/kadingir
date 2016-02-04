@@ -17,7 +17,7 @@ typedef Eigen::Triplet<double> Triplet;
 class Eigenwords
 {
 private:
-  std::vector<int> sentence;
+  std::vector<int> id_wordtype;
   int window_size;
   int vocab_size;
   int k;
@@ -45,7 +45,7 @@ private:
   void run_tscca();
 
 public:
-  Eigenwords(const std::vector<int>& _sentence,
+  Eigenwords(const std::vector<int>& _id_wordtype,
              const int _window_size,
              const int _vocab_size,
              const int _k,
@@ -64,8 +64,8 @@ public:
 class Eigendocs
 {
 private:
-  std::vector<int> sentence;
-  std::vector<int> document_id;
+  std::vector<int> id_wordtype;
+  std::vector<int> id_document;
   int window_size;
   int vocab_size;
   int k;
@@ -94,8 +94,8 @@ public:
   unsigned long long p_indices[3];
   unsigned long long p_head_domains[3];
 
-  Eigendocs(const std::vector<int>& _sentence,
-            const std::vector<int>& _document_id,
+  Eigendocs(const std::vector<int>& _id_wordtype,
+            const std::vector<int>& _id_document,
             const int _window_size,
             const int _vocab_size,
             const int _k,
@@ -115,11 +115,11 @@ public:
 class CLEigenwords
 {
 private:
-  std::vector<int> sentence_concated;
-  std::vector<int> document_id_concated;
+  std::vector<int> id_wordtype_concated;
+  std::vector<int> id_document_concated;
   std::vector<int> window_sizes;
   std::vector<int> vocab_sizes;
-  std::vector<unsigned long long> sentence_lengths;
+  std::vector<unsigned long long> id_wordtype_lengths;
   int k;
   double gamma_G;
   double gamma_H;
@@ -150,11 +150,11 @@ private:
   void construct_matrices();
 
 public:
-  CLEigenwords(const std::vector<int>& _sentence_concated,
-               const std::vector<int>& _document_id_concated,
+  CLEigenwords(const std::vector<int>& _id_wordtype_concated,
+               const std::vector<int>& _id_document_concated,
                const std::vector<int> _window_sizes,
                const std::vector<int> _vocab_sizes,
-               const std::vector<unsigned long long> _sentence_lengths,
+               const std::vector<unsigned long long> _id_wordtype_lengths,
                const int _k,
                const double _gamma_G,
                const double _gamma_H,

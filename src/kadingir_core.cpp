@@ -2,7 +2,7 @@
  * kadingir_core.cpp
  *
  * memo :
- *  - `0` in sentence indicates `<OOV>` (Out of Vocabulary, tokens that are not included in vocabulary).
+ *  - `0` in id_wordtype indicates `<OOV>` (Out of Vocabulary, tokens that are not included in vocabulary).
  *  - v.asDiagonal() は疎行列ではなく密行列を返すため，仕方なく同様の処理をベタ書きしている箇所がある．
  *  - tWC indicates matrix multiplication (crossprod) of W and C (In R, tWC = t(W) %*% C).
  *  - `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
@@ -73,13 +73,13 @@ void construct_h_diag_matrix(VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
 
 
 Eigenwords::Eigenwords(
-  const std::vector<int>& _sentence,
+  const std::vector<int>& _id_wordtype,
   const int _window_size,
   const int _vocab_size,
   const int _k,
   const bool _mode_oscca,
   const bool _debug
-  ) : sentence(_sentence),
+  ) : id_wordtype(_id_wordtype),
       window_size(_window_size),
       vocab_size(_vocab_size),
       k(_k),
@@ -122,7 +122,7 @@ void Eigenwords::compute()
 
 void Eigenwords::construct_matrices()
 {
-  const unsigned long long sentence_size = sentence.size();
+  const unsigned long long id_wordtype_size = id_wordtype.size();
   unsigned long long n_pushed_triplets = 0;
 
   std::vector<Triplet> tWC_tripletList, tLL_tripletList, tLR_tripletList, tRR_tripletList;
@@ -144,17 +144,17 @@ void Eigenwords::construct_matrices()
   fill_offset_table(offsets, window_size);
   
   
-  for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
-    const unsigned long long word0 = sentence[i_sentence];
+  for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
+    const unsigned long long word0 = id_wordtype[i_id_wordtype];
     tWW_diag(word0) += 1;
     
     for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
-      const long long i_word1 = i_sentence + offsets[i_offset1];
+      const long long i_word1 = i_id_wordtype + offsets[i_offset1];
       
-      // If `i_word1` is out of indices of sentence
-      if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
+      // If `i_word1` is out of indices of id_wordtype
+      if ((i_word1 < 0) || (i_word1 >= id_wordtype_size)) continue;
       
-      const unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
+      const unsigned long long word1 = id_wordtype[i_word1] + vocab_size * i_offset1;
       
       if (mode_oscca) {
         // One Step CCA
@@ -163,12 +163,12 @@ void Eigenwords::construct_matrices()
       } else {
         // Two step CCA
         for (int i_offset2 = 0; i_offset2 < 2 * window_size; i_offset2++) {
-          const long long i_word2 = i_sentence + offsets[i_offset2];
+          const long long i_word2 = i_id_wordtype + offsets[i_offset2];
           
-          // If `i_word2` is out of indices of sentence
-          if ((i_word2 < 0) || (i_word2 >= sentence_size)) continue;
+          // If `i_word2` is out of indices of id_wordtype
+          if ((i_word2 < 0) || (i_word2 >= id_wordtype_size)) continue;
           
-          const unsigned long long word2 = sentence[i_word2] + vocab_size * i_offset2;
+          const unsigned long long word2 = id_wordtype[i_word2] + vocab_size * i_offset2;
           
           const bool word1_in_left_context = word1 < lr_col_size;
           const bool word2_in_left_context = word2 < lr_col_size;
@@ -193,7 +193,7 @@ void Eigenwords::construct_matrices()
     n_pushed_triplets++;
     
     // Commit temporary matrices
-    if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
+    if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_id_wordtype == id_wordtype_size - 1)) {
       update_crossprod_matrix(tWC_tripletList, tWC_temp, tWC);
             
       if (!mode_oscca) {
@@ -293,8 +293,8 @@ void Eigenwords::run_tscca()
 
 
 Eigendocs::Eigendocs(
-    const std::vector<int>& _sentence,
-    const std::vector<int>& _document_id,
+    const std::vector<int>& _id_wordtype,
+    const std::vector<int>& _id_document,
     const int _window_size,
     const int _vocab_size,
     const int _k,
@@ -303,8 +303,8 @@ Eigendocs::Eigendocs(
     const double _gamma_G,
     const double _gamma_H,
     const bool _debug
-  ) : sentence(_sentence),
-      document_id(_document_id),
+  ) : id_wordtype(_id_wordtype),
+      id_document(_id_document),
       window_size(_window_size),
       vocab_size(_vocab_size),
       k(_k),
@@ -324,7 +324,7 @@ Eigendocs::Eigendocs(
 
 void Eigendocs::compute()
 {
-  const unsigned long long n_documents = *std::max_element(document_id.begin(), document_id.end()) + 1;
+  const unsigned long long n_documents = *std::max_element(id_document.begin(), id_document.end()) + 1;
 
   p_indices[0] = vocab_size;
   p_indices[1] = c_col_size;
@@ -372,8 +372,8 @@ void Eigendocs::compute()
 
 void Eigendocs::construct_matrices()
 {
-  const unsigned long long sentence_size = sentence.size();
-  const unsigned long long n_documents = *std::max_element(document_id.begin(), document_id.end()) + 1;
+  const unsigned long long id_wordtype_size = id_wordtype.size();
+  const unsigned long long n_documents = *std::max_element(id_document.begin(), id_document.end()) + 1;
 
   unsigned long long n_pushed_triplets = 0;
 
@@ -390,9 +390,9 @@ void Eigendocs::construct_matrices()
   int offsets[2*window_size];
   fill_offset_table(offsets, window_size);
     
-  for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
-    const unsigned long long word0 = sentence[i_sentence];
-    const unsigned long long d_id = document_id[i_sentence];
+  for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
+    const unsigned long long word0 = id_wordtype[i_id_wordtype];
+    const unsigned long long d_id  = id_document[i_id_wordtype];
 
     tWW_diag(word0) += 1;
     tDD_diag(d_id) += 1;
@@ -402,12 +402,12 @@ void Eigendocs::construct_matrices()
     }
     
     for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
-      const long long i_word1 = i_sentence + offsets[i_offset1];
+      const long long i_word1 = i_id_wordtype + offsets[i_offset1];
       
-      // If `i_word1` is out of indices of sentence
-      if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
+      // If `i_word1` is out of indices of id_wordtype
+      if ((i_word1 < 0) || (i_word1 >= id_wordtype_size)) continue;
       
-      const unsigned long long word1 = sentence[i_word1] + vocab_size * i_offset1;
+      const unsigned long long word1 = id_wordtype[i_word1] + vocab_size * i_offset1;
 
       tCC_diag(word1) += 1;
 
@@ -420,7 +420,7 @@ void Eigendocs::construct_matrices()
     n_pushed_triplets += 2*window_size + 1;
     
     // Commit temporary matrices
-    if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
+    if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_id_wordtype == id_wordtype_size - 1)) {
       update_crossprod_matrix(H_tripletList, H_temp, H);
 
       n_pushed_triplets = 0;
@@ -437,11 +437,11 @@ void Eigendocs::construct_matrices()
 
 
 CLEigenwords::CLEigenwords(
-  const std::vector<int>& _sentence_concated,
-  const std::vector<int>& _document_id_concated,
+  const std::vector<int>& _id_wordtype_concated,
+  const std::vector<int>& _id_document_concated,
   const std::vector<int> _window_sizes,
   const std::vector<int> _vocab_sizes,
-  const std::vector<unsigned long long> _sentence_lengths,
+  const std::vector<unsigned long long> _id_wordtype_lengths,
   const int _k,
   const double _gamma_G,
   const double _gamma_H,
@@ -450,11 +450,11 @@ CLEigenwords::CLEigenwords(
   const bool _weighting_tf,
   const std::vector<double> _weight_vsdoc,
   const bool _debug
-  ) : sentence_concated(_sentence_concated),
-      document_id_concated(_document_id_concated),
+  ) : id_wordtype_concated(_id_wordtype_concated),
+      id_document_concated(_id_document_concated),
       window_sizes(_window_sizes),
       vocab_sizes(_vocab_sizes),
-      sentence_lengths(_sentence_lengths),
+      id_wordtype_lengths(_id_wordtype_lengths),
       k(_k),
       gamma_G(_gamma_G),
       gamma_H(_gamma_H),
@@ -477,7 +477,7 @@ CLEigenwords::CLEigenwords(
     c_col_sizes[i] = 2 * lr_col_sizes[i];
   }
 
-  n_documents = *std::max_element(document_id_concated.begin(), document_id_concated.end()) + 1;
+  n_documents = *std::max_element(id_document_concated.begin(), id_document_concated.end()) + 1;
   n_domain = 2 * n_languages + 1;  // # of domains = 2 * (# of languages) + document
   p_indices.resize(n_domain);        // dimensions of each domain
   p_head_domains.resize(n_domain);   // head of indices of each domain
@@ -543,7 +543,7 @@ void CLEigenwords::construct_inverse_word_count_table()
   
   VectorXi word_count_table(n_documents);
   inverse_word_count_table.resize(n_languages);
-  unsigned long long sum_sentence_lengths = 0;
+  unsigned long long sum_id_wordtype_lengths = 0;
   
   for (int i_languages = 0; i_languages < n_languages; i_languages++) {
     inverse_word_count_table[i_languages].resize(n_documents);
@@ -553,10 +553,10 @@ void CLEigenwords::construct_inverse_word_count_table()
       word_count_table(i) = 0;
     }
     
-    for (unsigned long long i = 0; i < sentence_lengths[i_languages]; i++) {
-      word_count_table(document_id_concated[sum_sentence_lengths + i]) += 1;
+    for (unsigned long long i = 0; i < id_wordtype_lengths[i_languages]; i++) {
+      word_count_table(id_document_concated[sum_id_wordtype_lengths + i]) += 1;
     }
-    sum_sentence_lengths += sentence_lengths[i_languages];
+    sum_id_wordtype_lengths += id_wordtype_lengths[i_languages];
     
     for (unsigned long long i = 0; i < n_documents; i++) {
       inverse_word_count_table[i_languages][i] = 1.0 / (double)word_count_table(i);
@@ -568,22 +568,22 @@ void CLEigenwords::construct_inverse_word_count_table()
 void CLEigenwords::construct_matrices()
 {
 
-  unsigned long long sum_sentence_lengths = 0;
+  unsigned long long sum_id_wordtype_lengths = 0;
   
   // Calculate diagonal elements of M  
   std::vector<std::vector<double> > m_diag_languages(n_languages);
 
   for (int i_languages = 0; i_languages < n_languages; i_languages++) {
-    const unsigned long long sentence_length = sentence_lengths[i_languages];
-    m_diag_languages[i_languages].resize(sentence_length);
+    const unsigned long long id_wordtype_length = id_wordtype_lengths[i_languages];
+    m_diag_languages[i_languages].resize(id_wordtype_length);
     
-    for (unsigned long long i = 0; i < sentence_length; i++) {
-      const int document_id = document_id_concated[sum_sentence_lengths + i];
+    for (unsigned long long i = 0; i < id_wordtype_length; i++) {
+      const int id_document = id_document_concated[sum_id_wordtype_lengths + i];
       
-      if (document_id >= 0) {
+      if (id_document >= 0) {
         // From bilingual corpus
         if (weighting_tf) {
-          m_diag_languages[i_languages][i] = 1 + weight_vsdoc[i_languages] * inverse_word_count_table[i_languages][document_id];
+          m_diag_languages[i_languages][i] = 1 + weight_vsdoc[i_languages] * inverse_word_count_table[i_languages][id_document];
         } else {
           m_diag_languages[i_languages][i] = 1 + weight_vsdoc[i_languages];
         }
@@ -593,7 +593,7 @@ void CLEigenwords::construct_matrices()
       }
     }
     
-    sum_sentence_lengths += sentence_length;
+    sum_id_wordtype_lengths += id_wordtype_length;
   }
 
   std::vector<Triplet> H_tripletList;
@@ -601,7 +601,7 @@ void CLEigenwords::construct_matrices()
 
   dSparseMatrix H_temp(p, p);
 
-  unsigned long long i_sentence_concated = 0;
+  unsigned long long i_id_wordtype_concated = 0;
   unsigned long long n_pushed_triplets = 0;
   
   // For each languages
@@ -612,7 +612,7 @@ void CLEigenwords::construct_matrices()
     const unsigned long long p_d = p_head_domains[n_domain - 1];        // Head of D
     const unsigned long long window_size = window_sizes[i_languages];
     const unsigned long long vocab_size = vocab_sizes[i_languages];
-    const unsigned long long sentence_size = sentence_lengths[i_languages];
+    const unsigned long long id_wordtype_size = id_wordtype_lengths[i_languages];
 
 
     // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
@@ -621,11 +621,11 @@ void CLEigenwords::construct_matrices()
 
     // For all tokens of a certain language
     // In following comments, `l` indicates index of languages (i.e. `i_languages`).
-    for (unsigned long long i_sentence = 0; i_sentence < sentence_size; i_sentence++) {
+    for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
 
-      const int word0 = sentence_concated[i_sentence_concated];
-      const int docid = document_id_concated[i_sentence_concated];
-      double H_ij_vsdoc;  // J^{(l)}_{i_sentence, docid}
+      const int word0 = id_wordtype_concated[i_id_wordtype_concated];
+      const int docid = id_document_concated[i_id_wordtype_concated];
+      double H_ij_vsdoc;  // J^{(l)}_{i_id_wordtype, docid}
 
       if (docid >= 0) {
         if (weighting_tf) {
@@ -637,22 +637,22 @@ void CLEigenwords::construct_matrices()
         H_ij_vsdoc = 0;
       }
 
-      G_diag(word0 + p_v) += m_diag_languages[i_languages][i_sentence];  // Element of t(W_l) %*% W_l
+      G_diag(word0 + p_v) += m_diag_languages[i_languages][i_id_wordtype];  // Element of t(W_l) %*% W_l
       G_diag(docid + p_d) += 2 * H_ij_vsdoc;  // Element of t(D) %*% D
 
       H_tripletList.push_back(Triplet(word0 + p_v,  docid + p_d,  H_ij_vsdoc));  // Element of t(W_l) %*% J_l
 
       // For each words of context window
       for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
-        const long long i_word1 = i_sentence + offsets[i_offset1];
-        const long long i_word1_concated = i_sentence_concated + offsets[i_offset1];
+        const long long i_word1 = i_id_wordtype + offsets[i_offset1];
+        const long long i_word1_concated = i_id_wordtype_concated + offsets[i_offset1];
       
-        // If `i_word1` is out of indices of sentence
-        if ((i_word1 < 0) || (i_word1 >= sentence_size)) continue;
+        // If `i_word1` is out of indices of id_wordtype
+        if ((i_word1 < 0) || (i_word1 >= id_wordtype_size)) continue;
         
-        const unsigned long long word1 = sentence_concated[i_word1_concated] + vocab_size * i_offset1;
+        const unsigned long long word1 = id_wordtype_concated[i_word1_concated] + vocab_size * i_offset1;
         
-        G_diag(word1 + p_c) += m_diag_languages[i_languages][i_sentence];  // Element of t(C_l) %*% C_l
+        G_diag(word1 + p_c) += m_diag_languages[i_languages][i_id_wordtype];  // Element of t(C_l) %*% C_l
         
         H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(W_l) %*% C_l
         H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij_vsdoc));  // Element of t(C_l) %*% J_l
@@ -661,13 +661,13 @@ void CLEigenwords::construct_matrices()
       n_pushed_triplets += 2*window_size + 1;
       
       // Commit temporary matrices
-      if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_sentence == sentence_size - 1)) {
+      if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_id_wordtype == id_wordtype_size - 1)) {
         update_crossprod_matrix(H_tripletList, H_temp, H);
         
         n_pushed_triplets = 0;
       }
 
-      i_sentence_concated++;
+      i_id_wordtype_concated++;
     }
   }
 
