@@ -13,9 +13,7 @@ time.begin <- Sys.time()
 If `run_cleigenwords.html` does NOT exists, render `run_cleigenwords.Rmd`.
 
 ```{r, results='hide'}
-if (!file.exists("run_cleigenwords.html")) {
-  rmarkdown::render("run_cleigenwords.Rmd")
-}
+rmarkdown::render("run_cleigenwords.Rmd")
 ```
 
 ```{r, include=FALSE}
@@ -63,7 +61,9 @@ vocab.words <- c(vocab.words.es, vocab.words.en)
 ```{r}
 path.cllsa.rdata <- "res_cllsa.Rdata"
 
-if (!file.exists(path.cllsa.rdata)) {
+if (TRUE || !file.exists(path.cllsa.rdata)) {
+  cat("Calculate CL-LSA...\n")
+
   sourceCpp("./../src/cllsa_core.cpp", rebuild = TRUE)
   
   res.cllsa <- CLLSA(r$corpus.concated, r$document.id.concated,
