@@ -97,7 +97,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   }
   
   for (i in seq(document.id)) {
-    cat("% of docid[", i, "] >= 0 :", 100 * mean(document.id[[i]] >= 0), "\n")
+    cat("% of docid[", i, "] >= 0 : ", 100 * mean(document.id[[i]] >= 0), "\n", sep = "")
   }
 
   cat("Calculate CLEigenwords...\n\n")
