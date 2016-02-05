@@ -34,21 +34,6 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     lengths.lines.splited <- sapply(lines.splited, length)
     document.id[[i]] <- rep(seq(lines.splited), lengths.lines.splited) - 1L
 
-    if (!is.null(rate.sample.chunk)) {
-      ## For experiment of semi-supervised-like setting
-      n.document <- max(document.id[[i]])
-      n.chunk <- n.document %/% size.chunk[i]
-      as.parallel.chunk <- sample(c(TRUE, FALSE), size = n.chunk, prob = c(rate.sample.chunk[i], 1-rate.sample.chunk[i]), replace = TRUE)
-      for (i.chunk in seq(n.chunk)) {
-        if (!as.parallel.chunk[i.chunk]) {
-          ## Fill document.id of monolingual documents with negative values (-1)
-          i.head.chunk <- size.chunk[i] * (i.chunk - 1)
-          index.monolingual <- document.id[[i]] %in% (1:size.chunk[i] + i.head.chunk - 1L)
-          document.id[[i]][index.monolingual] <- -1L
-        }
-      }
-    }
-
     if (plot) {
       hist(lengths.lines.splited, breaks = 100)
     }
@@ -89,14 +74,33 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     cat("Size of vocabulary :", sizes.vocabulary[i], "\n")
     cat("Weight (vs doc)    :", weight.vsdoc[i], "\n")
     cat("min count          :", min.counts[[i]], "\n")
-    cat("% of docid >= 0    :", 100 * mean(document.id[[i]] >= 0), "\n")
     
     cat("\n")
   }
   
+  if (!is.null(rate.sample.chunk)) {
+    ## For experiment of semi-supervised-like setting
+    n.document <- max(sapply(document.id, max))
+    n.chunk <- n.document %/% size.chunk
+    as.parallel.chunk <- sample(c(TRUE, FALSE), size = n.chunk, prob = c(rate.sample.chunk, 1-rate.sample.chunk), replace = TRUE)
+    for (i.chunk in seq(n.chunk)) {
+      if (!as.parallel.chunk[i.chunk]) {
+        ## Fill document.id of monolingual documents with negative values (-1)
+        i.head.chunk <- size.chunk * (i.chunk - 1)
+        for (i in seq(document.id)) {
+          index.monolingual <- document.id[[i]] %in% (1:size.chunk + i.head.chunk - 1L)
+          document.id[[i]][index.monolingual] <- -1L
+        }
+      }
+    }
+  }
   
+  for (i in seq(document.id)) {
+    cat("% of docid[", i, "] >= 0 :", 100 * mean(document.id[[i]] >= 0), "\n")
+  }
+
   cat("Calculate CLEigenwords...\n\n")
-    
+  
   corpus.concated <- as.integer(unlist(sentences))
   document.id.concated <- as.integer(unlist(document.id))
   sizes.window <- as.integer(sizes.window)
