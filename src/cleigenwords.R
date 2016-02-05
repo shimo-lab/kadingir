@@ -69,6 +69,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     cat("Alias              :", aliases.languages[i], "\n")
     cat("Path               :", paths.corpus[i], "\n")
     cat("Size of sentence   :", length(sentences[[i]]), "\n")
+    cat("Coverage           :", 100 * mean(sentences[[i]] > 0), "\n")
     cat("# of documents     :", max(document.id[[i]]) + 1L, "\n")
     cat("size.window        :", sizes.window[i], "\n")
     cat("Size of vocabulary :", sizes.vocabulary[i], "\n")
