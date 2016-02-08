@@ -94,7 +94,7 @@ n.queries <- length(queries)
 answers.machinetranslate <- paste0("(en)", as.character(translate.table[ , "en"]))
 topn <- 5  # P@topn
 distance <- "cosine"
-weight.vector <- NULL
+weight.vector <- r$svd$singular_values  # sqrt of weighting vector (ex. d(x, y):= t(x) %*% diag(weight.vector**2) %*% y)
 
 # Search word that have minimum edit distance with `query` from `vocab.search`
 search.adist <- function (query, vocab.search, topn = 1)
