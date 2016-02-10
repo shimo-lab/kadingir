@@ -39,6 +39,10 @@ V <- rbind(V1, V2)
 vocab.words <- c(vocab.words1, vocab.words2)
 ```
 
+```{r}
+r$svd$V[c(p[1], p[2]+1, p[3]+1, p[4]+1, p[5]+1), 1:20]
+```
+
 ## Plot some figure
 ```{r}
 queries <- c(paste0("(en)", c("I", "you", "he", "she", "my", "your", "her")),
