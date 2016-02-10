@@ -20,7 +20,9 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   vocab.words <- list()
   min.counts <- list()
   
-  for (i in seq(paths.corpus)) {
+  n.languages <- length(paths.corpus)
+  
+  for (i in seq(n.languages)) {
     path.corpus <- paths.corpus[i]
     
     cat(path.corpus, "\n")
@@ -65,7 +67,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   cat("Link: W - D        :", link_w_d, "\n")
   cat("Link: C - D        :", link_c_d, "\n\n")
   
-  for (i in seq(paths.corpus)) {
+  for (i in seq(n.languages)) {
     cat("===== Corpus #", i, " =====\n", sep="")
     cat("Alias              :", aliases.languages[i], "\n")
     cat("Path               :", paths.corpus[i], "\n")
