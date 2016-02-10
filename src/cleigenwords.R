@@ -84,18 +84,11 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   
   if (!is.null(rate.sample.chunk)) {
     ## For experiment of semi-supervised-like setting
-    n.document <- max(sapply(document.id, max))
-    n.chunk <- n.document %/% size.chunk
-    as.parallel.chunk <- sample(c(TRUE, FALSE), size = n.chunk, prob = c(rate.sample.chunk, 1-rate.sample.chunk), replace = TRUE)
-    for (i.chunk in seq(n.chunk)) {
-      if (!as.parallel.chunk[i.chunk]) {
-        ## Fill document.id of monolingual documents with negative values (-1)
-        i.head.chunk <- size.chunk * (i.chunk - 1)
-        for (i in seq(document.id)) {
-          index.monolingual <- document.id[[i]] %in% (1:size.chunk + i.head.chunk - 1L)
-          document.id[[i]][index.monolingual] <- -1L
-        }
-      }
+    document.id.max.bilingual <- document.id[[1]][round(rate.sample.chunk * length(document.id[[1]]))]
+    
+    for (i.lang in seq(n.languages)) {
+      index.monolingual <- document.id[[i.lang]] > document.id.max.bilingual
+      document.id[[i.lang]][index.monolingual] <- -1L
     }
   }
   
