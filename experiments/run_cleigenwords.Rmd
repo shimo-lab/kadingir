@@ -41,10 +41,8 @@ vocab.words <- c(vocab.words1, vocab.words2)
 
 ## Plot some figure
 ```{r}
-queries <- c(paste0("(en)", c("is", "this", "and", "all", "parliament", "one")),
-             paste0("(es)", c("es", "este", "y", "todos", "parlamento", "uno")))
-# queries <- c(paste0("(en)", c("japan", "america", "korea", "england", "spain", "germany")),
-#              paste0("(es)", c("japón", "américa", "corea", "inglaterra", "españa", "alemania")))
+queries <- c(paste0("(en)", c("I", "you", "he", "she", "my", "your", "her")),
+             paste0("(es)", c("yo", "tú", "él", "ella", "mi", "tu", "su")))
 n.queries <- length(queries)
 
 VV <- V
