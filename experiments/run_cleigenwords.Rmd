@@ -45,8 +45,8 @@ r$svd$V[c(p[1], p[2]+1, p[3]+1, p[4]+1, p[5]+1), 1:20]
 
 ## Plot some figure
 ```{r}
-queries <- c(paste0("(en)", c("I", "you", "he", "she", "my", "your", "her")),
-             paste0("(es)", c("yo", "tú", "él", "ella", "mi", "tu", "su")))
+queries <- c(paste0("(en)", c("i", "you", "he", "she", "my", "your", "her")),
+             paste0("(es)", c("yo", "tu", "él", "ella", "mi", "su")))
 n.queries <- length(queries)
 
 VV <- V
