@@ -9,8 +9,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
                          sizes.window, aliases.languages, weight.vsdoc,
                          plot = FALSE,
                          link_w_d = TRUE, link_c_d = TRUE,
-                         weighting_tf = FALSE,
-                         rate.sample.chunk = NULL, size.chunk = NULL)
+                         weighting_tf = FALSE)
 {
   time.start <- Sys.time()
   
@@ -62,8 +61,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   
   cat("Dim of common space:", dim.common, "\n")
   cat("Weight by TF?      :", weighting_tf, "\n")
-  cat("rate.sample.chunk  :", rate.sample.chunk, "\n")
-  
+
   cat("Link: W - D        :", link_w_d, "\n")
   cat("Link: C - D        :", link_c_d, "\n\n")
   
@@ -80,20 +78,6 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     cat("min count          :", min.counts[[i]], "\n")
     
     cat("\n")
-  }
-  
-  if (!is.null(rate.sample.chunk)) {
-    ## For experiment of semi-supervised-like setting
-    document.id.max.bilingual <- document.id[[1]][round(rate.sample.chunk * length(document.id[[1]]))]
-    
-    for (i.lang in seq(n.languages)) {
-      index.monolingual <- document.id[[i.lang]] > document.id.max.bilingual
-      document.id[[i.lang]][index.monolingual] <- -1L
-    }
-  }
-  
-  for (i in seq(document.id)) {
-    cat("% of docid[", i, "] >= 0 : ", 100 * mean(document.id[[i]] >= 0), "\n", sep = "")
   }
 
   cat("Calculate CLEigenwords...\n\n")

@@ -21,8 +21,7 @@ r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(10000, 10000),
                   sizes.window = c(2, 2), aliases.languages=c("es", "en"),
                   plot = TRUE,
                   weighting_tf = FALSE,
-                  weight.vsdoc = 1e6 * c(1.0, 1.0),
-                  rate.sample.chunk = 0.1, size.chunk = 10000)
+                  weight.vsdoc = 1e6 * c(1.0, 1.0))
 
 save(r, file = "res_cleigenwords.Rdata")
 ```
