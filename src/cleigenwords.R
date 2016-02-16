@@ -46,15 +46,13 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     vocab.words[[i]] <- names(d.table.sorted[seq(sizes.vocabulary[i] - 1)])  # For out-of-vocabulary word, -1
     sentences[[i]] <- match(sentence.str, vocab.words[[i]], nomatch = 0)  # Fill zero for out-of-vocabulary words
     min.counts[[i]] <- d.table.sorted[[sizes.vocabulary[i] - 1]]
-    rm(sentence.str)
 
     if (plot) {
       plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
       abline(v = sizes.vocabulary[i])
     }
     
-    rm(d.table)
-    rm(d.table.sorted)
+    rm(sentence.str, d.table, d.table.sorted)
   }
   
   cat("\n\n")
