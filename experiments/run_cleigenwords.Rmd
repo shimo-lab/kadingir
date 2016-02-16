@@ -12,6 +12,7 @@ source("./../src/kadingir.R", chdir = TRUE)
 source("./../src/cleigenwords.R", chdir = TRUE)
 ```
 
+# Execute CL-Eigenwords
 ```{r}
 paths.corpus <- list(es = list(parallel    = "./../data/europarl/europarl-v7.es-en.es.tokenized.parallel",
                                monolingual = "./../data/europarl/europarl-v7.es-en.es.tokenized.monolingual"),
@@ -40,11 +41,12 @@ V <- rbind(V1, V2)
 vocab.words <- c(vocab.words1, vocab.words2)
 ```
 
+## Example of vector representation
 ```{r}
 r$svd$V[c(p[1], p[2]+1, p[3]+1, p[4]+1, p[5]+1), 1:20]
 ```
 
-## Plot some figure
+## biplot
 ```{r}
 queries <- c(paste0("(en)", c("i", "you", "he", "she", "my", "your", "her")),
              paste0("(es)", c("yo", "tu", "él", "ella", "mi", "su")))
@@ -57,7 +59,7 @@ plot(pr.v2$x[ , 1:2], pch = 1, col = "grey")
 text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x))
 ```
 
-# 類似単語の検索
+# Example of lexical translation task
 (en)I = (es)yo
 
 ```{r}
@@ -68,12 +70,13 @@ MostSimilar(V, vocab.words, positive=c("(es)yo"), distance = "cosine", language.
 MostSimilar(V, vocab.words, positive=c("(en)him", "(es)yo"), negative=c("(en)he"), distance = "cosine")
 ```
 
-# 英語の単語ベクトルについてのタスクを試す
+# Execute some (monolingual) tasks for vector representation of english words
 ```{r}
 TestGoogleTasks(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]], n.cores = 12)
 TestWordsim353(r$svd$V[(p[3]+1):p[4], ], r$vocab.words[[2]])
 ```
 
+# Run time
 ```{r}
 Sys.time() - time.begin
 Sys.time()
