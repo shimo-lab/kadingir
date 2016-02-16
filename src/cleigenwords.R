@@ -9,8 +9,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
                          sizes.window, aliases.languages, weight.vsdoc,
                          plot = FALSE,
                          link_w_d = TRUE, link_c_d = TRUE,
-                         weighting_tf = FALSE,
-                         rate.sample.chunk = NULL, size.chunk = NULL)
+                         weighting_tf = FALSE)
 {
   time.start <- Sys.time()
   
@@ -20,57 +19,77 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   vocab.words <- list()
   min.counts <- list()
   
-  n.languages <- length(paths.corpus)
+  n.languages <- length(aliases.languages)
   
   for (i in seq(n.languages)) {
-    path.corpus <- paths.corpus[i]
+    language <- aliases.languages[i]
+    path.corpus <- paths.corpus[[language]]
     
-    cat(path.corpus, "\n")
-    
-    f <- file(path.corpus, "r")
-    lines <- readLines(con = f, -1)
-    close(f)
-    
-    lines.splited <- strsplit(lines, " ")
-    sentence.str <- unlist(lines.splited)
-    lengths.lines.splited <- sapply(lines.splited, length)
-    document.id[[i]] <- rep(seq(lines.splited), lengths.lines.splited) - 1L
+    # Preprocess parallel corpus
+    if (exists("parallel", where = path.corpus)) {
+      cat(path.corpus[["parallel"]], "\n")
+      f.parallel <- file(path.corpus[["parallel"]], "r")
+      lines.parallel <- readLines(con = f.parallel, -1)
+      close(f.parallel)
+    } else {
+      stop(paste0("Error: No parallel corpus of language ", language, "."))
+    }
 
-    if (plot) {
-      hist(lengths.lines.splited, breaks = 100)
+    # Preprocess monolingual corpus
+    if (exists("monolingual", where = path.corpus)) {
+      cat(path.corpus[["monolingual"]], "\n")
+      f.monolingual <- file(path.corpus[["monolingual"]], "r")
+      lines.monolingual <- readLines(con = f.monolingual, -1)
+      close(f.monolingual)
+    } else {
+      lines.monolingual <- ""
     }
     
-    rm(lines)
+    lines.parallel.splited <- strsplit(lines.parallel, " ")
+    lines.monolingual.splited <- strsplit(lines.monolingual, " ")
+    sentence.str <- unlist(c(lines.parallel.splited, lines.monolingual.splited))
+    lengths.lines.parallel.splited <- sapply(lines.parallel.splited, length)
+    length.lines.monolingual.splited <- sum(sapply(lines.monolingual.splited, length))
+    
+    document.id.parallel <- rep(seq(lines.parallel.splited) - 1L, lengths.lines.parallel.splited)
+    document.id.monolingual <- rep(-1L, length.lines.monolingual.splited)
+    document.id[[i]] <- c(document.id.parallel, document.id.monolingual)
+
+    if (plot) {
+      hist(lengths.lines.parallel.splited, breaks = 100)
+    }
+    
+    rm(lines.monolingual, lines.parallel, length.lines.monolingual.splited, lengths.lines.parallel.splited)
     
     d.table <- table(sentence.str)
     d.table.sorted <- sort(d.table, decreasing = TRUE)
     vocab.words[[i]] <- names(d.table.sorted[seq(sizes.vocabulary[i] - 1)])  # For out-of-vocabulary word, -1
     sentences[[i]] <- match(sentence.str, vocab.words[[i]], nomatch = 0)  # Fill zero for out-of-vocabulary words
     min.counts[[i]] <- d.table.sorted[[sizes.vocabulary[i] - 1]]
-    rm(sentence.str)
 
     if (plot) {
       plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
       abline(v = sizes.vocabulary[i])
     }
     
-    rm(d.table)
-    rm(d.table.sorted)
+    rm(sentence.str, d.table, d.table.sorted)
   }
   
   cat("\n\n")
   
   cat("Dim of common space:", dim.common, "\n")
   cat("Weight by TF?      :", weighting_tf, "\n")
-  cat("rate.sample.chunk  :", rate.sample.chunk, "\n")
-  
+
   cat("Link: W - D        :", link_w_d, "\n")
   cat("Link: C - D        :", link_c_d, "\n\n")
   
   for (i in seq(n.languages)) {
+    language <- aliases.languages[i]
+    
     cat("===== Corpus #", i, " =====\n", sep="")
-    cat("Alias              :", aliases.languages[i], "\n")
-    cat("Path               :", paths.corpus[i], "\n")
+    cat("Alias              :", language, "\n")
+    cat("Monolingual corpus :", paths.corpus[[language]][["monolingual"]], "\n")
+    cat("Parallel corpus    :", paths.corpus[[language]][["parallel"]], "\n")
     cat("Size of sentence   :", length(sentences[[i]]), "\n")
     cat("Coverage           :", 100 * mean(sentences[[i]] > 0), "\n")
     cat("# of documents     :", max(document.id[[i]]) + 1L, "\n")
@@ -78,22 +97,9 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     cat("Size of vocabulary :", sizes.vocabulary[i], "\n")
     cat("Weight (vs doc)    :", weight.vsdoc[i], "\n")
     cat("min count          :", min.counts[[i]], "\n")
+    cat("% of docid >= 0    :", 100 * mean(document.id[[i]] >= 0), "\n")
     
     cat("\n")
-  }
-  
-  if (!is.null(rate.sample.chunk)) {
-    ## For experiment of semi-supervised-like setting
-    document.id.max.bilingual <- document.id[[1]][round(rate.sample.chunk * length(document.id[[1]]))]
-    
-    for (i.lang in seq(n.languages)) {
-      index.monolingual <- document.id[[i.lang]] > document.id.max.bilingual
-      document.id[[i.lang]][index.monolingual] <- -1L
-    }
-  }
-  
-  for (i in seq(document.id)) {
-    cat("% of docid[", i, "] >= 0 : ", 100 * mean(document.id[[i]] >= 0), "\n", sep = "")
   }
 
   cat("Calculate CLEigenwords...\n\n")
