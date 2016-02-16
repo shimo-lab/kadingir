@@ -51,8 +51,8 @@ r$svd$V[row.sample, 1:20]
 
 ## biplot
 ```{r}
-queries <- c(paste0("(en)", c("i", "you", "he", "she", "my", "your", "her")),
-             paste0("(es)", c("yo", "tu", "él", "ella", "mi", "su")))
+queries <- c(paste0("(en)", c("i", "you", "he", "she", "my", "your", "her", "we")),
+             paste0("(es)", c("yo", "tu", "él", "ella", "mi", "su", "nosotros")))
 n.queries <- length(queries)
 
 print(queries[queries %in% vocab.words])
