@@ -14,8 +14,8 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   time.start <- Sys.time()
   
   ## Preprocess training data
-  sentences <- list()
-  document.id <- list()
+  id.wordtype <- list()
+  id.document <- list()
   vocab.words <- list()
   min.counts <- list()
   
@@ -47,13 +47,13 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     
     lines.parallel.splited <- strsplit(lines.parallel, " ")
     lines.monolingual.splited <- strsplit(lines.monolingual, " ")
-    sentence.str <- unlist(c(lines.parallel.splited, lines.monolingual.splited))
+    str.wordtype <- unlist(c(lines.parallel.splited, lines.monolingual.splited))
     lengths.lines.parallel.splited <- sapply(lines.parallel.splited, length)
     length.lines.monolingual.splited <- sum(sapply(lines.monolingual.splited, length))
     
-    document.id.parallel <- rep(seq(lines.parallel.splited) - 1L, lengths.lines.parallel.splited)
-    document.id.monolingual <- rep(-1L, length.lines.monolingual.splited)
-    document.id[[i]] <- c(document.id.parallel, document.id.monolingual)
+    id.document.parallel <- rep(seq(lines.parallel.splited) - 1L, lengths.lines.parallel.splited)
+    id.document.monolingual <- rep(-1L, length.lines.monolingual.splited)
+    id.document[[i]] <- c(id.document.parallel, id.document.monolingual)
 
     if (plot) {
       hist(lengths.lines.parallel.splited, breaks = 100)
@@ -61,18 +61,18 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     
     rm(lines.monolingual, lines.parallel, length.lines.monolingual.splited, lengths.lines.parallel.splited)
     
-    d.table <- table(sentence.str)
-    d.table.sorted <- sort(d.table, decreasing = TRUE)
-    vocab.words[[i]] <- names(d.table.sorted[seq(sizes.vocabulary[i] - 1)])  # For out-of-vocabulary word, -1
-    sentences[[i]] <- match(sentence.str, vocab.words[[i]], nomatch = 0)  # Fill zero for out-of-vocabulary words
-    min.counts[[i]] <- d.table.sorted[[sizes.vocabulary[i] - 1]]
+    table.wordtype <- table(str.wordtype)
+    table.wordtype.sorted <- sort(table.wordtype, decreasing = TRUE)
+    vocab.words[[i]] <- names(table.wordtype.sorted[seq(sizes.vocabulary[i] - 1)])  # For out-of-vocabulary word, -1
+    id.wordtype[[i]] <- match(str.wordtype, vocab.words[[i]], nomatch = 0)  # Fill zero for out-of-vocabulary words
+    min.counts[[i]] <- table.wordtype.sorted[[sizes.vocabulary[i] - 1]]
 
     if (plot) {
-      plot(d.table.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
+      plot(table.wordtype.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
       abline(v = sizes.vocabulary[i])
     }
     
-    rm(sentence.str, d.table, d.table.sorted)
+    rm(str.wordtype, table.wordtype, table.wordtype.sorted)
   }
   
   cat("\n\n")
@@ -90,25 +90,25 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     cat("Alias              :", language, "\n")
     cat("Monolingual corpus :", paths.corpus[[language]][["monolingual"]], "\n")
     cat("Parallel corpus    :", paths.corpus[[language]][["parallel"]], "\n")
-    cat("Size of sentence   :", length(sentences[[i]]), "\n")
-    cat("Coverage           :", 100 * mean(sentences[[i]] > 0), "\n")
-    cat("# of documents     :", max(document.id[[i]]) + 1L, "\n")
+    cat("# of tokens        :", length(id.wordtype[[i]]), "\n")
+    cat("Coverage           :", 100 * mean(id.wordtype[[i]] > 0), "\n")
+    cat("# of documents     :", max(id.document[[i]]) + 1L, "\n")
     cat("size.window        :", sizes.window[i], "\n")
     cat("Size of vocabulary :", sizes.vocabulary[i], "\n")
     cat("Weight (vs doc)    :", weight.vsdoc[i], "\n")
     cat("min count          :", min.counts[[i]], "\n")
-    cat("% of docid >= 0    :", 100 * mean(document.id[[i]] >= 0), "\n")
+    cat("% of docid >= 0    :", 100 * mean(id.document[[i]] >= 0), "\n")
     
     cat("\n")
   }
 
   cat("Calculate CLEigenwords...\n\n")
   
-  corpus.concated <- as.integer(unlist(sentences))
-  document.id.concated <- as.integer(unlist(document.id))
+  id.wordtype.concated <- as.integer(unlist(id.wordtype))
+  id.document.concated <- as.integer(unlist(id.document))
   sizes.window <- as.integer(sizes.window)
   sizes.vocabulary <- as.integer(sizes.vocabulary)
-  lengths.sentence <- lengths(sentences)
+  lengths.corpus <- lengths(id.wordtype)
   n.languages <- length(paths.corpus)
   
   vocab.words.concated <- list()
@@ -116,8 +116,8 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     vocab.words.concated <- c(vocab.words.concated, list(c("<OOV>", vocab.words[[i]])))
   }
   
-  results.redsvd <- CLEigenwordsCpp(corpus.concated, document.id.concated,
-                                    sizes.window, sizes.vocabulary, lengths.sentence,
+  results.redsvd <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
+                                    sizes.window, sizes.vocabulary, lengths.corpus,
                                     dim.common, gamma_G = 0, gamma_H = 0,
                                     link_w_d = link_w_d, link_c_d = link_c_d,
                                     weighting_tf = weighting_tf,
@@ -131,12 +131,12 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     plot(results.redsvd$singular_values, log = "y", main = "Singular Values")
   }
 
-  return.list$corpus.concated <- corpus.concated
-  return.list$document.id.concated <- document.id.concated
+  return.list$id.wordtype.concated <- id.wordtype.concated
+  return.list$id.document.concated <- id.document.concated
   return.list$vocab.words <- vocab.words.concated
   return.list$document_id <- seq(nrow(results.redsvd$document_vector))
-  return.list$n.languages <- length(lengths.sentence)
-  return.list$lengths.sentence <- lengths.sentence
+  return.list$n.languages <- length(lengths.corpus)
+  return.list$lengths.corpus <- lengths.corpus
   return.list$sizes.vocabulary <- sizes.vocabulary
   
   
