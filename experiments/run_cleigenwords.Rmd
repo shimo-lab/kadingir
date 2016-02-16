@@ -50,7 +50,7 @@ n.queries <- length(queries)
 
 VV <- V
 row.names(VV) <- vocab.words
-pr.v2 <- prcomp(VV[queries,])
+pr.v2 <- prcomp(VV[queries[queries %in% vocab.words],])
 plot(pr.v2$x[ , 1:2], pch = 1, col = "grey")
 text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x))
 ```
