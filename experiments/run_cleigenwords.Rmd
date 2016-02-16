@@ -13,8 +13,10 @@ source("./../src/cleigenwords.R", chdir = TRUE)
 ```
 
 ```{r}
-paths.corpus <- c("./../data/europarl/europarl-v7.es-en.es.tokenized",
-                  "./../data/europarl/europarl-v7.es-en.en.tokenized")
+paths.corpus <- list(es = list(parallel    = "./../data/europarl/europarl-v7.es-en.es.tokenized.parallel",
+                               monolingual = "./../data/europarl/europarl-v7.es-en.es.tokenized.monolingual"),
+                     en = list(parallel    = "./../data/europarl/europarl-v7.es-en.en.tokenized.parallel",
+                               monolingual = "./../data/europarl/europarl-v7.es-en.en.tokenized.monolingual"))
 
 r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(10000, 10000),
                   dim.common = 400,
