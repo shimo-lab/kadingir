@@ -79,10 +79,10 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   
   cat("Dim of common space:", dim.common, "\n")
   cat("Weight by TF?      :", weighting_tf, "\n")
-
   cat("Link: W - D        :", link_w_d, "\n")
   cat("Link: C - D        :", link_c_d, "\n\n")
-  
+
+  # Print informations of each languages
   for (i in seq(n.languages)) {
     language <- aliases.languages[i]
     
@@ -98,12 +98,9 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     cat("Weight (vs doc)    :", weight.vsdoc[i], "\n")
     cat("min count          :", min.counts[[i]], "\n")
     cat("% of docid >= 0    :", 100 * mean(id.document[[i]] >= 0), "\n")
-    
     cat("\n")
   }
 
-  cat("Calculate CLEigenwords...\n\n")
-  
   id.wordtype.concated <- as.integer(unlist(id.wordtype))
   id.document.concated <- as.integer(unlist(id.document))
   sizes.window <- as.integer(sizes.window)
@@ -115,7 +112,8 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   for (i in seq(n.languages)) {
     vocab.words.concated <- c(vocab.words.concated, list(c("<OOV>", vocab.words[[i]])))
   }
-  
+
+  cat("Calculate CLEigenwords...\n\n")
   results.redsvd <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
                                     sizes.window, sizes.vocabulary, lengths.corpus,
                                     dim.common, gamma_G = 0, gamma_H = 0,
@@ -123,14 +121,13 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
                                     weighting_tf = weighting_tf,
                                     weight_vsdoc = weight.vsdoc,
                                     debug = FALSE)
-  
-  return.list <- list()
-  return.list$svd <- results.redsvd
 
   if (plot) {
     plot(results.redsvd$singular_values, log = "y", main = "Singular Values")
   }
 
+  return.list <- list()
+  return.list$svd <- results.redsvd
   return.list$id.wordtype.concated <- id.wordtype.concated
   return.list$id.document.concated <- id.document.concated
   return.list$vocab.words <- vocab.words.concated
@@ -138,10 +135,9 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   return.list$n.languages <- length(lengths.corpus)
   return.list$lengths.corpus <- lengths.corpus
   return.list$sizes.vocabulary <- sizes.vocabulary
-  
-  
+
   diff.time <- Sys.time() - time.start
   print(diff.time)
-  
+
   return(return.list)
 }
