@@ -1,12 +1,12 @@
 ### Implementation of Eigenwords and its extensions
 
-packages <- c("Matrix", "svd", "Rcpp", "RcppEigen", "foreach", "doParallel")
-for (package in packages) {
-  if (!require(package, character.only = TRUE)) {
-    install.packages(package)
-  }
-}
+library(Matrix)
 require(RRedsvd)
+library(svd)
+library(Rcpp)
+library(RcppEigen)
+library(foreach)
+library(doParallel)
 
 sourceCpp("kadingir_rcpp_wrapper.cpp", rebuild = TRUE)
 
