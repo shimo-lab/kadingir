@@ -116,44 +116,10 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   cat("Calculate Eigendocs...\n\n")
   
-  if (use.eigen) {
-    results.redsvd <- EigendocsCpp(as.integer(sentence), as.integer(document.id),
-                                   window.size, n.vocab, dim.internal,
-                                   gamma_G = 0, gamma_H = 0, link_w_d = link_w_d, link_c_d = link_c_d, FALSE)
 
-  } else {
-    r <- make.matrices(sentence, document.id, window.size)
-    
-    cat("Size of W :")
-    print(object.size(r$W), unit = "MB")
-    cat("Size of C :")
-    print(object.size(r$C), unit = "MB")
-    cat("Size of D :")
-    print(object.size(r$D), unit = "MB")
-    
-    tWC <- crossprod(r$W, r$C)
-    tWD <- crossprod(r$W, r$D)
-    tCD <- crossprod(r$C, r$D)
-    
-    p1 <- nrow(tWC)
-    p2 <- nrow(tCD)
-    p3 <- ncol(tWD)
-    p <- p1 + p2 + p3
-    
-    G.sqrt.inv <- 1/sqrt(2) * Diagonal(x = c(diag(crossprod(r$W))^(-1/2), diag(crossprod(r$C))^(-1/2), diag(crossprod(r$D))^(-1/2)))
-    H <- Matrix(0, p, p)
-    
-    H[1:p1, (p1+1):(p1+p2)] <- tWC
-    H[1:p1, (p1+p2+1):p] <- tWD
-    H[(p1+1):(p1+p2), (p1+p2+1):p] <- tCD
-    H <- H + t(H)
-    
-    S <- G.sqrt.inv %*% H %*% G.sqrt.inv
-    eigen.S <- eigen(S)
-
-    results.redsvd <- list(word_vector     = eigen.S$vectors[1:p1, 1:dim.internal],
-                           document_vector = eigen.S$vectors[(p1+p2+1):p, 1:dim.internal])
-  }
+  results.redsvd <- EigendocsCpp(as.integer(sentence), as.integer(document.id),
+                                 window.size, n.vocab, dim.internal,
+                                 gamma_G = 0, gamma_H = 0, link_w_d = link_w_d, link_c_d = link_c_d, FALSE)
   
   if (plot) {
     plot(results.redsvd$singular_values, log = "y", main = "Singular Values")
