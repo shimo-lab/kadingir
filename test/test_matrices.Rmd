@@ -28,6 +28,49 @@ check.identical <- function(a, b) {
 }
 ```
 
+```{r}
+make.matrices <- function(sentence, document.id, window.size) {
+
+  sentence <- sentence + 1L  # To make min(sentence) == 1 for R indexing
+  document.id <- document.id + 1L  # To make min(document.id) == 1 for R indexing
+  
+  n.train.words <- length(sentence)
+  n.vocab <- max(sentence)
+  
+  ## Construction of W
+  indices <- cbind(seq(sentence), sentence, document.id)
+
+  W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
+                    x = rep(1, times = nrow(indices)),
+                    dims = c(n.train.words, n.vocab))
+
+  D.triplet <- cbind(indices[ , 1], indices[ , 3], rep(1, times = nrow(indices)))
+  D.triplet <- D.triplet[D.triplet[ , 2] >= 1, ]
+  D <- sparseMatrix(i = D.triplet[ , 1], j = D.triplet[ , 2],
+                    x = D.triplet[ , 3],
+                    dims = c(n.train.words, max(document.id)))
+  
+  ## Construction of C
+  offsets <- c(-window.size:-1, 1:window.size)
+  C <- Matrix(F, nrow = n.train.words, ncol = 0)
+
+  for (i.offset in seq(offsets)) {
+    offset <- offsets[i.offset]
+    indices.temp <- cbind(seq(sentence) - offset, sentence)
+
+    # Ignore invalid indices and indices of null words
+    indices.temp <- indices.temp[(indices.temp[ , 1] > 0) & (indices.temp[ , 1] <= n.train.words), ]
+
+    C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2],
+                           x = rep(1, times = nrow(indices.temp)),
+                           dims = c(n.train.words, n.vocab))
+    C <- cbind2(C, C.temp)
+  }
+
+  return(list(W = W, C = C, D = D))
+}
+```
+
 # Test of `EigenwordsCpp`
 ```{r}
 m <- make.matrices(word_id, document_id, window.size)
