@@ -1,6 +1,5 @@
 ---
 title: "Experiment of CL-Eigenwords"
-author: "OSHIKIRI Takamasa"
 date: "`r Sys.time()`"
 output: html_document
 ---
