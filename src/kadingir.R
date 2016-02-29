@@ -70,41 +70,6 @@ TruncatedSVD <- function(A, k, sparse) {
 }
 
 
-
-TSCCA <- function(W, C, k) {
-  L <- C[ , 1:(ncol(C)/2)]
-  R <- C[ , (ncol(C)/2 + 1):ncol(C)]
-
-  redsvd.LR <- OSCCA(L, R, k)
-  U <- redsvd.LR$U
-  V <- redsvd.LR$V
-  
-  Cww <- crossprod(W)
-  Css <- rbind2(
-    cbind2(
-      t(U) %*% crossprod(L) %*% U,
-      t(U) %*% crossprod(L, R) %*% V
-    ),
-    cbind2(
-      t(V) %*% crossprod(R, L) %*% U,
-      t(V) %*% crossprod(R) %*% V
-    )
-  )
-  Cws <- cbind2(
-    crossprod(W, L) %*% U,
-    crossprod(W, R) %*% V
-  )
-
-  Cxx.h <- diag(diag(Cww)^(-1/2))
-  A <- Cxx.h %*% Cws %*% diag(diag(Css)^(-1/2))
-
-  return.list <- TruncatedSVD(A, k, sparse = FALSE)
-  return.list$word_vector <- Cxx.h %*% return.list$U
-
-  return(return.list)
-}
-
-
 Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
                        window.size = 2, mode = "oscca", use.eigen = TRUE, plot = FALSE) {
   
