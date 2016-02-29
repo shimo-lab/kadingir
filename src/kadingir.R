@@ -70,31 +70,6 @@ TruncatedSVD <- function(A, k, sparse) {
 }
 
 
-OSCCA <- function(X, Y, k) {
-  ## CCA using randomized SVD
-  ##  In the same way as [Dhillon+2015],
-  ##  ignore off-diagonal elements of Cxx & Cyy
-  ##
-  ##  Arguments :
-  ##    X : matrix or list of matrices
-  ##    Y : matrix or list of matrices
-  ##    k : number of desired singular values
-  
-  Cxx <- sqrt(crossprod(X))
-  Cxy <- sqrt(crossprod(X, Y))
-  Cyy <- sqrt(crossprod(Y))
-
-  Cxx.h <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2))
-  
-  A <- Cxx.h %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
-  
-  cat("Calculate redsvd...")
-  return.list <- TruncatedSVD(A, k, sparse = TRUE)
-  return.list$word_vector <- Cxx.h %*% return.list$U
-
-  return(return.list)
-}
-
 
 TSCCA <- function(W, C, k) {
   L <- C[ , 1:(ncol(C)/2)]
