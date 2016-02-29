@@ -13,7 +13,7 @@ sourceCpp("kadingir_rcpp_wrapper.cpp", rebuild = TRUE)
 
 
 Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
-                       window.size = 2, mode = "oscca", use.eigen = TRUE, plot = FALSE) {
+                       window.size = 2, mode = "oscca", plot = FALSE) {
   
   time.start <- Sys.time()
   
@@ -67,7 +67,7 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 
 
 Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
-                      window.size = 2, use.eigen = TRUE, plot = FALSE) {
+                      window.size = 2, plot = FALSE) {
 
   link_w_d <- TRUE
   link_c_d <- TRUE
