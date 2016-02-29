@@ -52,23 +52,6 @@ make.matrices <- function(sentence, document.id, window.size) {
   return(list(W = W, C = C, D = D))
 }
 
-TruncatedSVD <- function(A, k, sparse) {
-  print("TruncatedSVD()...")
-  
-  if (sparse) {
-    results.svd <- redsvd(A, k)
-  } else {
-    results.propack.svd <- propack.svd(as.matrix(A), neig=k)
-    results.svd <- list()
-    results.svd$U <- results.propack.svd$u
-    results.svd$V <- results.propack.svd$v
-    results.svd$D <- results.propack.svd$d
-  }
-  print("End of TruncatedSVD()")
-
-  return(results.svd)
-}
-
 
 Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
                        window.size = 2, mode = "oscca", use.eigen = TRUE, plot = FALSE) {
