@@ -50,30 +50,10 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", n.vocab, "\n")
   cat("mode               :", mode, "\n\n")
+
   
-
-  if (use.eigen) {
-    sentence <- as.integer(sentence)
-    results.redsvd <- EigenwordsCpp(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"), FALSE)
-    
-  } else {
-    r <- make.matrices(sentence, document.id, window.size)
-
-    cat("Size of W :")
-    print(object.size(r$W), unit = "MB")
-    cat("Size of C :")
-    print(object.size(r$C), unit = "MB")
-    
-    ## Execute CCA
-    if (mode == "oscca") { # One-step CCA
-      cat("Calculate OSCCA...\n\n")
-      results.redsvd <- OSCCA(r$W, r$C, dim.internal)
-      
-    } else if (mode == "tscca") { # Two-Step CCA
-      cat("Calculate TSCCA...\n\n")
-      results.redsvd <- TSCCA(r$W, r$C, dim.internal)
-    }
-  }
+  sentence <- as.integer(sentence)
+  results.redsvd <- EigenwordsCpp(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"), FALSE)
   
   return.list <- list()
   return.list$svd <- results.redsvd
