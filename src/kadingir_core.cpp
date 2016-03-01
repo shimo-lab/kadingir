@@ -643,13 +643,13 @@ void CLEigenwords::construct_matrices()
       if (id_document >= 0) {
         // From bilingual corpus
         if (weighting_tf) {
-          m_diag_languages[i_languages][i] = 1 + weight_vsdoc[i_languages] * inverse_word_count_table[i_languages][id_document];
+          m_diag_languages[i_languages][i] = weight_v_c + weight_vsdoc[i_languages] * inverse_word_count_table[i_languages][id_document];
         } else {
-          m_diag_languages[i_languages][i] = 1 + weight_vsdoc[i_languages];
+          m_diag_languages[i_languages][i] = weight_v_c + weight_vsdoc[i_languages];
         }
       } else {
         // From monolingual corpus
-        m_diag_languages[i_languages][i] = 1;
+        m_diag_languages[i_languages][i] = weight_v_c;
       }
     }
     
@@ -714,7 +714,7 @@ void CLEigenwords::construct_matrices()
         
         G_diag(word1 + p_c) += m_diag_languages[i_languages][i_id_wordtype];  // Element of t(C_l) %*% C_l
         
-        H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, 1.0));   // Element of t(W_l) %*% C_l
+        H_tripletList.push_back(Triplet(word0 + p_v, word1 + p_c, weight_v_c));  // Element of t(W_l) %*% C_l
         H_tripletList.push_back(Triplet(word1 + p_c, docid + p_d, H_ij_vsdoc));  // Element of t(C_l) %*% J_l
       }
       
