@@ -79,6 +79,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   
   cat("Dim of common space:", dim.common, "\n")
   cat("Weight by TF?      :", weighting_tf, "\n")
+  cat("Link: V - C        :", link_v_c, "\n")
   cat("Link: W - D        :", link_w_d, "\n")
   cat("Link: C - D        :", link_c_d, "\n")
   cat("\n")
