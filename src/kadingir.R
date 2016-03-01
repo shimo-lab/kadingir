@@ -57,6 +57,10 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
     results.eigenwords <- EigenwordsTSCCACpp(sentence, window.size, n.vocab, dim.internal, FALSE)
   }
   
+  if (plot) {
+    plot(results.eigenwords$singular_values, log = "y", main = "Singular values")
+  }
+  
   return.list <- results.eigenwords
   return.list$vocab.words <- c("<OOV>", vocab.words)
   
