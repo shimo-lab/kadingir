@@ -72,29 +72,130 @@ void construct_h_diag_matrix(VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
 }
 
 
-Eigenwords::Eigenwords(
+EigenwordsOSCCA::EigenwordsOSCCA(
   const std::vector<int>& _id_wordtype,
   const int _window_size,
   const int _vocab_size,
   const int _k,
-  const bool _mode_oscca,
+  const bool _debug
+) : id_wordtype(_id_wordtype),
+    window_size(_window_size),
+    vocab_size(_vocab_size),
+    k(_k),
+    debug(_debug)
+{
+  lr_col_size = (unsigned long long)window_size * vocab_size;
+  c_col_size = 2 * lr_col_size;
+}
+
+void EigenwordsOSCCA::compute()
+{
+  // Construct crossprod matrices
+  tWW_diag.resize(vocab_size);
+  tCC_diag.resize(c_col_size);
+  tWC.resize(vocab_size, c_col_size);
+
+  construct_matrices();
+  
+  
+  // Construct the matrices for CCA and execute CCA
+  tWW_h_diag.resize(vocab_size, vocab_size);
+  construct_h_diag_matrix(tWW_diag, tWW_h_diag);
+  
+  
+  std::cout << "Calculate OSCCA..." << std::endl;
+  
+  tCC_h_diag.resize(c_col_size, c_col_size);
+  construct_h_diag_matrix(tCC_diag, tCC_h_diag);
+  
+  dSparseMatrix a = tWW_h_diag * (tWC.cast <double> ().eval().cwiseSqrt()) * tCC_h_diag;
+  
+  std::cout << "Calculate Randomized SVD..." << std::endl;
+  RedSVD::RedSVD<dSparseMatrix> svdA(a, k, 20);
+  
+  word_vectors    = tWW_h_diag * svdA.matrixU();
+  context_vectors = tCC_h_diag * svdA.matrixV();
+  singular_values = svdA.singularValues();
+  
+  
+  if (!debug) {
+    tWW_diag.resize(0);
+    tCC_diag.resize(0);
+    tWC.resize(0, 0);
+  }
+}
+
+void EigenwordsOSCCA::construct_matrices()
+{
+  const unsigned long long id_wordtype_size = id_wordtype.size();
+  unsigned long long n_pushed_triplets = 0;
+  
+  std::vector<Triplet> tWC_tripletList;
+  tWC_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+
+  iSparseMatrix tWC_temp(vocab_size, c_col_size);
+
+  tWW_diag.setZero();
+  tCC_diag.setZero();
+  
+  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
+  int offsets[2*window_size];
+  fill_offset_table(offsets, window_size);
+  
+  
+  for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
+    const unsigned long long word0 = id_wordtype[i_id_wordtype];
+    tWW_diag(word0) += 1;
+    
+    for (int i_offset1 = 0; i_offset1 < 2 * window_size; i_offset1++) {
+      const long long i_word1 = i_id_wordtype + offsets[i_offset1];
+      
+      // If `i_word1` is out of indices of id_wordtype
+      if ((i_word1 < 0) || (i_word1 >= id_wordtype_size)) continue;
+      
+      const unsigned long long word1 = id_wordtype[i_word1] + vocab_size * i_offset1;
+      
+      tCC_diag(word1) += 1;
+      tWC_tripletList.push_back(Triplet(word0, word1, 1));
+    }
+    
+    n_pushed_triplets++;
+    
+    // Commit temporary matrices
+    if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_id_wordtype == id_wordtype_size - 1)) {
+      update_crossprod_matrix(tWC_tripletList, tWC_temp, tWC);
+      n_pushed_triplets = 0;
+    }
+  }
+  
+  tWC.makeCompressed();
+
+  std::cout << "matrix,  # of nonzero,  # of rows,  # of cols" << std::endl;
+  std::cout << "tWC,  " << tWC.nonZeros() << ",  " << tWC.rows() << ",  " << tWC.cols() << std::endl;
+  std::cout << std::endl;
+}
+
+
+EigenwordsTSCCA::EigenwordsTSCCA(
+  const std::vector<int>& _id_wordtype,
+  const int _window_size,
+  const int _vocab_size,
+  const int _k,
   const bool _debug
   ) : id_wordtype(_id_wordtype),
       window_size(_window_size),
       vocab_size(_vocab_size),
       k(_k),
-      mode_oscca(_mode_oscca),
       debug(_debug)
 {
   lr_col_size = (unsigned long long)window_size * vocab_size;
   c_col_size = 2 * lr_col_size;
 }
 
-void Eigenwords::compute()
+void EigenwordsTSCCA::compute()
 {
   // Construct crossprod matrices
   tWW_diag.resize(vocab_size);
-  tCC_diag.resize(c_col_size);
   tWC.resize(vocab_size, c_col_size);
   tLL.resize(lr_col_size, lr_col_size);
   tLR.resize(lr_col_size, lr_col_size);
@@ -107,20 +208,10 @@ void Eigenwords::compute()
   tWW_h_diag.resize(vocab_size, vocab_size);
   construct_h_diag_matrix(tWW_diag, tWW_h_diag);
 
-  if (mode_oscca) {
-    run_oscca();
-    
-    if (!debug) {
-      tWW_diag.resize(0);
-      tCC_diag.resize(0);
-      tWC.resize(0, 0);
-    }
-  } else {
-    run_tscca();
-  }
+  run_tscca();
 }
 
-void Eigenwords::construct_matrices()
+void EigenwordsTSCCA::construct_matrices()
 {
   const unsigned long long id_wordtype_size = id_wordtype.size();
   unsigned long long n_pushed_triplets = 0;
@@ -137,7 +228,6 @@ void Eigenwords::construct_matrices()
   iSparseMatrix tRR_temp(lr_col_size, lr_col_size);
 
   tWW_diag.setZero();
-  tCC_diag.setZero();
 
   // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
   int offsets[2*window_size];
@@ -156,36 +246,31 @@ void Eigenwords::construct_matrices()
       
       const unsigned long long word1 = id_wordtype[i_word1] + vocab_size * i_offset1;
       
-      if (mode_oscca) {
-        // One Step CCA
-        tCC_diag(word1) += 1;
+      // Two step CCA
+      for (int i_offset2 = 0; i_offset2 < 2 * window_size; i_offset2++) {
+        const long long i_word2 = i_id_wordtype + offsets[i_offset2];
         
-      } else {
-        // Two step CCA
-        for (int i_offset2 = 0; i_offset2 < 2 * window_size; i_offset2++) {
-          const long long i_word2 = i_id_wordtype + offsets[i_offset2];
-          
-          // If `i_word2` is out of indices of id_wordtype
-          if ((i_word2 < 0) || (i_word2 >= id_wordtype_size)) continue;
-          
-          const unsigned long long word2 = id_wordtype[i_word2] + vocab_size * i_offset2;
-          
-          const bool word1_in_left_context = word1 < lr_col_size;
-          const bool word2_in_left_context = word2 < lr_col_size;
-          const bool is_upper_triangular = word1 <= word2;
-          
-          if (word1_in_left_context && word2_in_left_context && is_upper_triangular) {
-            // (word1, word2) is an element of upper-triangular part of tLL
-            tLL_tripletList.push_back(Triplet(word1, word2, 1));
-          } else if (word1_in_left_context && !word2_in_left_context) {
-            // (word1, word2) is an element of tLR
-            tLR_tripletList.push_back(Triplet(word1, word2 - lr_col_size, 1));
-          } else if (!word1_in_left_context && !word2_in_left_context && is_upper_triangular) {
-            // (word1, word2) is an element of upper-triangular part of tRR
-            tRR_tripletList.push_back(Triplet(word1 - lr_col_size, word2 - lr_col_size, 1));
-          }
+        // If `i_word2` is out of indices of id_wordtype
+        if ((i_word2 < 0) || (i_word2 >= id_wordtype_size)) continue;
+        
+        const unsigned long long word2 = id_wordtype[i_word2] + vocab_size * i_offset2;
+        
+        const bool word1_in_left_context = word1 < lr_col_size;
+        const bool word2_in_left_context = word2 < lr_col_size;
+        const bool is_upper_triangular = word1 <= word2;
+        
+        if (word1_in_left_context && word2_in_left_context && is_upper_triangular) {
+          // (word1, word2) is an element of upper-triangular part of tLL
+          tLL_tripletList.push_back(Triplet(word1, word2, 1));
+        } else if (word1_in_left_context && !word2_in_left_context) {
+          // (word1, word2) is an element of tLR
+          tLR_tripletList.push_back(Triplet(word1, word2 - lr_col_size, 1));
+        } else if (!word1_in_left_context && !word2_in_left_context && is_upper_triangular) {
+          // (word1, word2) is an element of upper-triangular part of tRR
+          tRR_tripletList.push_back(Triplet(word1 - lr_col_size, word2 - lr_col_size, 1));
         }
       }
+      
       
       tWC_tripletList.push_back(Triplet(word0, word1, 1));
     }
@@ -195,13 +280,11 @@ void Eigenwords::construct_matrices()
     // Commit temporary matrices
     if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_id_wordtype == id_wordtype_size - 1)) {
       update_crossprod_matrix(tWC_tripletList, tWC_temp, tWC);
-            
-      if (!mode_oscca) {
-        update_crossprod_matrix(tLL_tripletList, tLL_temp, tLL);
-        update_crossprod_matrix(tLR_tripletList, tLR_temp, tLR);
-        update_crossprod_matrix(tRR_tripletList, tRR_temp, tRR);
-      }
-
+      
+      update_crossprod_matrix(tLL_tripletList, tLL_temp, tLL);
+      update_crossprod_matrix(tLR_tripletList, tLR_temp, tLR);
+      update_crossprod_matrix(tRR_tripletList, tRR_temp, tRR);
+      
       n_pushed_triplets = 0;
     }
   }
@@ -219,26 +302,8 @@ void Eigenwords::construct_matrices()
   std::cout << std::endl;
 }
 
-// Execute One Step CCA
-void Eigenwords::run_oscca()
-{
-  std::cout << "Calculate OSCCA..." << std::endl;
-  
-  tCC_h_diag.resize(c_col_size, c_col_size);
-  construct_h_diag_matrix(tCC_diag, tCC_h_diag);
-  
-  dSparseMatrix a = tWW_h_diag * (tWC.cast <double> ().eval().cwiseSqrt()) * tCC_h_diag;
-  
-  std::cout << "Calculate Randomized SVD..." << std::endl;
-  RedSVD::RedSVD<dSparseMatrix> svdA(a, k, 20);
-  
-  word_vectors = tWW_h_diag * svdA.matrixU();
-  context_vectors = tCC_h_diag * svdA.matrixV();
-  singular_values = svdA.singularValues();
-}
-
 // Execute Two Step CCA
-void Eigenwords::run_tscca()
+void EigenwordsTSCCA::run_tscca()
 {
   std::cout << "Calculate TSCCA..." << std::endl;
   
