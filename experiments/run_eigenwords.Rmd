@@ -29,28 +29,28 @@ save(res.eigenwords, file = "res_eigenwords.Rdata")
 
 # Check vector representation by some queries
 ```{r}
-MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
+MostSimilar(res.eigenwords$word_vector, res.eigenwords$vocab.words,
             positive=c("man"), distance = "cosine")
 ```
 
 ```{r}
-MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
+MostSimilar(res.eigenwords$word_vector, res.eigenwords$vocab.words,
             positive=c("work"), distance = "cosine")
 ```
 
 ```{r}
-MostSimilar(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words,
+MostSimilar(res.eigenwords$word_vector, res.eigenwords$vocab.words,
             positive=c("king", "woman"), negative=c("man"), distance = "cosine")
 ```
 
 
 # Test some tasks for check
 ```{r}
-TestGoogleTasks(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words, n.cores = 12)
+TestGoogleTasks(res.eigenwords$word_vector, res.eigenwords$vocab.words, n.cores = 12)
 ```
 
 ```{r}
-TestWordsim353(res.eigenwords$svd$word_vector, res.eigenwords$vocab.words)
+TestWordsim353(res.eigenwords$word_vector, res.eigenwords$vocab.words)
 ```
 
 ```{r}
