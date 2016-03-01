@@ -122,18 +122,17 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   cat("Calculate Eigendocs...\n\n")
   
 
-  results.redsvd <- EigendocsCpp(as.integer(sentence), as.integer(document.id),
-                                 window.size, n.vocab, dim.internal,
-                                 link_w_d = link_w_d, link_c_d = link_c_d, FALSE)
+  results.eigendocs <- EigendocsCpp(as.integer(sentence), as.integer(document.id),
+                                    window.size, n.vocab, dim.internal,
+                                    link_w_d = link_w_d, link_c_d = link_c_d, FALSE)
   
   if (plot) {
     plot(results.eigendocs$eigenvalues, log = "y", main = "Eigenvalues")
   }
   
-  return.list <- list()
-  return.list$svd <- results.redsvd
+  return.list <- results.eigendocs
   return.list$vocab.words <- c("<OOV>", vocab.words)
-  return.list$document_id <- seq(nrow(results.redsvd$document_vector))
+  return.list$document_id <- seq(nrow(results.eigendocs$document_vector))
 
   diff.time <- Sys.time() - time.start
   print(diff.time)
