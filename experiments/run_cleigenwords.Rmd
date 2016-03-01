@@ -23,7 +23,7 @@ r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(1000, 1000),
                   sizes.window = c(2, 2), aliases.languages=c("es", "en"),
                   plot = TRUE,
                   weighting_tf = FALSE,
-                  link_v_c = FALSE,
+                  link_v_c = TRUE,
                   weight.vsdoc = c(1.0, 1.0))
 
 save(r, file = "res_cleigenwords.Rdata")
