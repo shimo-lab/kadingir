@@ -12,7 +12,8 @@ source("./../src/cleigenwords.R", chdir = TRUE)
 ```
 
 ```{r}
-paths.corpus <- c("./../data/europarl/europarl-v7.de-en.en.tokenized.100000")
+paths.corpus <- list(en = list(parallel    = "./../data/europarl/europarl-v7.es-en.en.tokenized.10000.parallel",
+                               monolingual = "./../data/europarl/europarl-v7.es-en.en.tokenized.10000.monolingual"))
 
 res.cleigenwords <- CLEigenwords(paths.corpus, sizes.vocabulary=c(1000), dim.common=50,
                                  sizes.window = c(2), aliases.languages=c("en"), plot = TRUE,
