@@ -114,24 +114,23 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   }
 
   cat("Calculate CLEigenwords...\n\n")
-  results.redsvd <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
-                                    sizes.window, sizes.vocabulary, lengths.corpus,
-                                    dim.common,
-                                    link_w_d = link_w_d, link_c_d = link_c_d,
-                                    weighting_tf = weighting_tf,
-                                    weight_vsdoc = weight.vsdoc,
-                                    debug = FALSE)
+  results.cleigenwords <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
+                                          sizes.window, sizes.vocabulary, lengths.corpus,
+                                          dim.common,
+                                          link_w_d = link_w_d, link_c_d = link_c_d,
+                                          weighting_tf = weighting_tf,
+                                          weight_vsdoc = weight.vsdoc,
+                                          debug = FALSE)
 
   if (plot) {
     plot(results.cleigenwords$eigenvalues, log = "y", main = "Eigenvalues")
   }
 
-  return.list <- list()
-  return.list$svd <- results.redsvd
+  return.list <- results.cleigenwords
   return.list$id.wordtype.concated <- id.wordtype.concated
   return.list$id.document.concated <- id.document.concated
   return.list$vocab.words <- vocab.words.concated
-  return.list$document_id <- seq(nrow(results.redsvd$document_vector))
+  return.list$document_id <- seq(nrow(results.cleigenwords$document_vector))
   return.list$n.languages <- length(lengths.corpus)
   return.list$lengths.corpus <- lengths.corpus
   return.list$sizes.vocabulary <- sizes.vocabulary
