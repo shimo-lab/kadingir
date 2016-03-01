@@ -14,14 +14,13 @@ typedef Eigen::SparseMatrix<double, Eigen::RowMajor, std::ptrdiff_t> dSparseMatr
 typedef Eigen::Triplet<double> Triplet;
 
 
-class Eigenwords
+class EigenwordsOSCCA
 {
 private:
   std::vector<int> id_wordtype;
   int window_size;
   int vocab_size;
   int k;
-  bool mode_oscca;
   bool debug;
 
   unsigned long long c_col_size;
@@ -32,28 +31,63 @@ private:
   dSparseMatrix tWW_h_diag;
   dSparseMatrix tCC_h_diag;
   iSparseMatrix tWC;
-  iSparseMatrix tLL;
-  iSparseMatrix tLR;
-  iSparseMatrix tRR;
 
   MatrixXd word_vectors;
   MatrixXd context_vectors;
   VectorXd singular_values;
 
   void construct_matrices ();
-  void run_oscca();
-  void run_tscca();
 
 public:
-  Eigenwords(const std::vector<int>& _id_wordtype,
-             const int _window_size,
-             const int _vocab_size,
-             const int _k,
-             const bool _mode_oscca,
-             const bool debug);
+  EigenwordsOSCCA(const std::vector<int>& _id_wordtype,
+                  const int _window_size,
+                  const int _vocab_size,
+                  const int _k,
+                  const bool debug);
   void compute();
   VectorXi get_tww_diag() { return tWW_diag; }
   VectorXi get_tcc_diag() { return tCC_diag; }
+  dSparseMatrix get_twc() { return tWC.cast <double> (); }
+  MatrixXd get_word_vectors() { return word_vectors; }
+  MatrixXd get_context_vectors() { return context_vectors; }
+  VectorXd get_singular_values() { return singular_values; }
+};
+
+
+class EigenwordsTSCCA
+{
+private:
+  std::vector<int> id_wordtype;
+  int window_size;
+  int vocab_size;
+  int k;
+  bool debug;
+  
+  unsigned long long c_col_size;
+  unsigned long long lr_col_size;
+  
+  VectorXi tWW_diag;
+  dSparseMatrix tWW_h_diag;
+  iSparseMatrix tWC;
+  iSparseMatrix tLL;
+  iSparseMatrix tLR;
+  iSparseMatrix tRR;
+  
+  MatrixXd word_vectors;
+  MatrixXd context_vectors;
+  VectorXd singular_values;
+  
+  void construct_matrices ();
+  void run_tscca();
+  
+public:
+  EigenwordsTSCCA(const std::vector<int>& _id_wordtype,
+                  const int _window_size,
+                  const int _vocab_size,
+                  const int _k,
+                  const bool debug);
+  void compute();
+  VectorXi get_tww_diag() { return tWW_diag; }
   dSparseMatrix get_twc() { return tWC.cast <double> (); }
   MatrixXd get_word_vectors() { return word_vectors; }
   MatrixXd get_context_vectors() { return context_vectors; }

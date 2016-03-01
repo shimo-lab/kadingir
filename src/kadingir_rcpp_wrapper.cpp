@@ -15,18 +15,17 @@
 
 
 // [[Rcpp::export]]
-Rcpp::List EigenwordsCpp(
+Rcpp::List EigenwordsOSCCACpp(
     const Rcpp::IntegerVector& sentence,
     const int window_size,
     const int vocab_size,
     const int k,
-    const bool mode_oscca,
     const bool debug
   )
 {
   std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
-  
-  Eigenwords eigenwords = Eigenwords(sentence_stdvector, window_size, vocab_size, k, mode_oscca, debug);
+
+  EigenwordsOSCCA eigenwords = EigenwordsOSCCA(sentence_stdvector, window_size, vocab_size, k, debug);
   eigenwords.compute();
 
   return Rcpp::List::create(
@@ -37,6 +36,30 @@ Rcpp::List EigenwordsCpp(
     Rcpp::Named("context_vector") = Rcpp::wrap(eigenwords.get_context_vectors()),
     Rcpp::Named("D")              = Rcpp::wrap(eigenwords.get_singular_values())
     );
+}
+
+
+// [[Rcpp::export]]
+Rcpp::List EigenwordsTSCCACpp(
+    const Rcpp::IntegerVector& sentence,
+    const int window_size,
+    const int vocab_size,
+    const int k,
+    const bool debug
+)
+{
+  std::vector<int> sentence_stdvector = Rcpp::as<std::vector<int> >(sentence);
+  
+  EigenwordsTSCCA eigenwords = EigenwordsTSCCA(sentence_stdvector, window_size, vocab_size, k, debug);
+  eigenwords.compute();
+  
+  return Rcpp::List::create(
+    Rcpp::Named("tWW_diag")       = Rcpp::wrap(eigenwords.get_tww_diag()),
+    Rcpp::Named("tWC")            = Rcpp::wrap(eigenwords.get_twc()),
+    Rcpp::Named("word_vector")    = Rcpp::wrap(eigenwords.get_word_vectors()),
+    Rcpp::Named("context_vector") = Rcpp::wrap(eigenwords.get_context_vectors()),
+    Rcpp::Named("D")              = Rcpp::wrap(eigenwords.get_singular_values())
+  );
 }
 
 
