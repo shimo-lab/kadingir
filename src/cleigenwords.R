@@ -123,7 +123,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
                                     debug = FALSE)
 
   if (plot) {
-    plot(results.redsvd$singular_values, log = "y", main = "Singular Values")
+    plot(results.cleigenwords$eigenvalues, log = "y", main = "Eigenvalues")
   }
 
   return.list <- list()

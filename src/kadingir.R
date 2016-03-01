@@ -127,7 +127,7 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
                                  link_w_d = link_w_d, link_c_d = link_c_d, FALSE)
   
   if (plot) {
-    plot(results.redsvd$singular_values, log = "y", main = "Singular Values")
+    plot(results.eigendocs$eigenvalues, log = "y", main = "Eigenvalues")
   }
   
   return.list <- list()

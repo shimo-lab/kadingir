@@ -117,7 +117,7 @@ private:
   VectorXi G_diag;
 
   MatrixXd vector_representations;
-  VectorXd singular_values;
+  VectorXd eigenvalues;
 
   void construct_matrices ();
 
@@ -138,7 +138,7 @@ public:
   VectorXi get_g_diag() { return G_diag; }
   dSparseMatrix get_h() { return H.cast <double> (); }
   MatrixXd get_vector_representations() { return vector_representations; }
-  VectorXd get_singular_values() { return singular_values; }
+  VectorXd get_eigenvalues() { return eigenvalues; }
 };
 
 
@@ -172,7 +172,7 @@ private:
   dSparseMatrix H;
 
   MatrixXd vector_representations;
-  VectorXd singular_values;
+  VectorXd eigenvalues;
 
   void construct_inverse_word_count_table();
   void construct_matrices();
@@ -194,7 +194,7 @@ public:
   VectorXd get_g_diag() { return G_diag; }
   dSparseMatrix get_h() { return H; }
   MatrixXd get_vector_representations() { return vector_representations; }
-  VectorXd get_singular_values() { return singular_values; }
+  VectorXd get_eigenvalues() { return eigenvalues; }
   int get_n_domain() { return n_domain; }
   unsigned long long get_p() { return p; }
   unsigned long long get_p_head_domains(int index) { return p_head_domains[index]; }

@@ -92,7 +92,7 @@ Rcpp::List EigendocsCpp(
     Rcpp::Named("G_diag") = Rcpp::wrap(eigendocs.get_g_diag()),
     Rcpp::Named("H") = Rcpp::wrap(eigendocs.get_h()),
     Rcpp::Named("V") = Rcpp::wrap(eigendocs.get_vector_representations()),
-    Rcpp::Named("singular_values") = Rcpp::wrap(eigendocs.get_singular_values()),
+    Rcpp::Named("eigenvalues") = Rcpp::wrap(eigendocs.get_eigenvalues()),
     Rcpp::Named("p_head_domains") = p_head_domains_return,
     Rcpp::Named("p") = (double)eigendocs.p
     );
@@ -143,7 +143,7 @@ Rcpp::List CLEigenwordsCpp(
     Rcpp::Named("G_diag") = Rcpp::wrap(cleigenwords.get_g_diag()),
     Rcpp::Named("H") = Rcpp::wrap(cleigenwords.get_h()),
     Rcpp::Named("V") = Rcpp::wrap(cleigenwords.get_vector_representations()),
-    Rcpp::Named("singular_values") = Rcpp::wrap(cleigenwords.get_singular_values()),
+    Rcpp::Named("eigenvalues") = Rcpp::wrap(cleigenwords.get_eigenvalues()),
     Rcpp::Named("p_head_domains") = p_head_domains_return,
     Rcpp::Named("p") = (double)cleigenwords.get_p()
     );
