@@ -1,6 +1,5 @@
 ---
 title: "Experiment of CL-Eigenwords"
-author: "OSHIKIRI Takamasa"
 date: "`r Sys.time()`"
 output: html_document
 ---
@@ -14,13 +13,13 @@ source("./../src/cleigenwords.R", chdir = TRUE)
 
 # Execute CL-Eigenwords
 ```{r}
-paths.corpus <- list(es = list(parallel    = "./../data/europarl/europarl-v7.es-en.es.tokenized.parallel",
-                               monolingual = "./../data/europarl/europarl-v7.es-en.es.tokenized.monolingual"),
-                     en = list(parallel    = "./../data/europarl/europarl-v7.es-en.en.tokenized.parallel",
-                               monolingual = "./../data/europarl/europarl-v7.es-en.en.tokenized.monolingual"))
+paths.corpus <- list(es = list(parallel    = "./../data/europarl/europarl-v7.es-en.es.tokenized.10000.parallel",
+                               monolingual = "./../data/europarl/europarl-v7.es-en.es.tokenized.10000.monolingual"),
+                     en = list(parallel    = "./../data/europarl/europarl-v7.es-en.en.tokenized.10000.parallel",
+                               monolingual = "./../data/europarl/europarl-v7.es-en.en.tokenized.10000.monolingual"))
 
-r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(10000, 10000),
-                  dim.common = 400,
+r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(1000, 1000),
+                  dim.common = 40,
                   sizes.window = c(2, 2), aliases.languages=c("es", "en"),
                   plot = TRUE,
                   weighting_tf = FALSE,

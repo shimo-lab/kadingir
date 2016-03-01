@@ -1,8 +1,5 @@
 ### Implementation of Eigenwords and its extensions
 
-library(Matrix)
-require(RRedsvd)
-library(svd)
 library(Rcpp)
 library(RcppEigen)
 library(foreach)
@@ -11,127 +8,9 @@ library(doParallel)
 sourceCpp("kadingir_rcpp_wrapper.cpp", rebuild = TRUE)
 
 
-make.matrices <- function(sentence, document.id, window.size) {
-
-  sentence <- sentence + 1L  # To make min(sentence) == 1 for R indexing
-  document.id <- document.id + 1L  # To make min(document.id) == 1 for R indexing
-  
-  n.train.words <- length(sentence)
-  n.vocab <- max(sentence)
-  
-  ## Construction of W
-  indices <- cbind(seq(sentence), sentence, document.id)
-
-  W <- sparseMatrix(i = indices[ , 1], j = indices[ , 2],
-                    x = rep(1, times = nrow(indices)),
-                    dims = c(n.train.words, n.vocab))
-
-  D.triplet <- cbind(indices[ , 1], indices[ , 3], rep(1, times = nrow(indices)))
-  D.triplet <- D.triplet[D.triplet[ , 2] >= 1, ]
-  D <- sparseMatrix(i = D.triplet[ , 1], j = D.triplet[ , 2],
-                    x = D.triplet[ , 3],
-                    dims = c(n.train.words, max(document.id)))
-  
-  ## Construction of C
-  offsets <- c(-window.size:-1, 1:window.size)
-  C <- Matrix(F, nrow = n.train.words, ncol = 0)
-
-  for (i.offset in seq(offsets)) {
-    offset <- offsets[i.offset]
-    indices.temp <- cbind(seq(sentence) - offset, sentence)
-
-    # Ignore invalid indices and indices of null words
-    indices.temp <- indices.temp[(indices.temp[ , 1] > 0) & (indices.temp[ , 1] <= n.train.words), ]
-
-    C.temp <- sparseMatrix(i = indices.temp[, 1], j = indices.temp[, 2],
-                           x = rep(1, times = nrow(indices.temp)),
-                           dims = c(n.train.words, n.vocab))
-    C <- cbind2(C, C.temp)
-  }
-
-  return(list(W = W, C = C, D = D))
-}
-
-TruncatedSVD <- function(A, k, sparse) {
-  print("TruncatedSVD()...")
-  
-  if (sparse) {
-    results.svd <- redsvd(A, k)
-  } else {
-    results.propack.svd <- propack.svd(as.matrix(A), neig=k)
-    results.svd <- list()
-    results.svd$U <- results.propack.svd$u
-    results.svd$V <- results.propack.svd$v
-    results.svd$D <- results.propack.svd$d
-  }
-  print("End of TruncatedSVD()")
-
-  return(results.svd)
-}
-
-
-OSCCA <- function(X, Y, k) {
-  ## CCA using randomized SVD
-  ##  In the same way as [Dhillon+2015],
-  ##  ignore off-diagonal elements of Cxx & Cyy
-  ##
-  ##  Arguments :
-  ##    X : matrix or list of matrices
-  ##    Y : matrix or list of matrices
-  ##    k : number of desired singular values
-  
-  Cxx <- sqrt(crossprod(X))
-  Cxy <- sqrt(crossprod(X, Y))
-  Cyy <- sqrt(crossprod(Y))
-
-  Cxx.h <- Diagonal(nrow(Cxx), diag(Cxx)^(-1/2))
-  
-  A <- Cxx.h %*% Cxy %*% Diagonal(nrow(Cyy), diag(Cyy)^(-1/2))
-  
-  cat("Calculate redsvd...")
-  return.list <- TruncatedSVD(A, k, sparse = TRUE)
-  return.list$word_vector <- Cxx.h %*% return.list$U
-
-  return(return.list)
-}
-
-
-TSCCA <- function(W, C, k) {
-  L <- C[ , 1:(ncol(C)/2)]
-  R <- C[ , (ncol(C)/2 + 1):ncol(C)]
-
-  redsvd.LR <- OSCCA(L, R, k)
-  U <- redsvd.LR$U
-  V <- redsvd.LR$V
-  
-  Cww <- crossprod(W)
-  Css <- rbind2(
-    cbind2(
-      t(U) %*% crossprod(L) %*% U,
-      t(U) %*% crossprod(L, R) %*% V
-    ),
-    cbind2(
-      t(V) %*% crossprod(R, L) %*% U,
-      t(V) %*% crossprod(R) %*% V
-    )
-  )
-  Cws <- cbind2(
-    crossprod(W, L) %*% U,
-    crossprod(W, R) %*% V
-  )
-
-  Cxx.h <- diag(diag(Cww)^(-1/2))
-  A <- Cxx.h %*% Cws %*% diag(diag(Css)^(-1/2))
-
-  return.list <- TruncatedSVD(A, k, sparse = FALSE)
-  return.list$word_vector <- Cxx.h %*% return.list$U
-
-  return(return.list)
-}
-
 
 Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
-                       window.size = 2, mode = "oscca", use.eigen = TRUE, plot = FALSE) {
+                       window.size = 2, mode = "oscca", plot = FALSE) {
   
   time.start <- Sys.time()
   
@@ -168,30 +47,10 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   cat("window.size        :", window.size, "\n")
   cat("Size of vocab      :", n.vocab, "\n")
   cat("mode               :", mode, "\n\n")
+
   
-
-  if (use.eigen) {
-    sentence <- as.integer(sentence)
-    results.redsvd <- EigenwordsCpp(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"), FALSE)
-    
-  } else {
-    r <- make.matrices(sentence, document.id, window.size)
-
-    cat("Size of W :")
-    print(object.size(r$W), unit = "MB")
-    cat("Size of C :")
-    print(object.size(r$C), unit = "MB")
-    
-    ## Execute CCA
-    if (mode == "oscca") { # One-step CCA
-      cat("Calculate OSCCA...\n\n")
-      results.redsvd <- OSCCA(r$W, r$C, dim.internal)
-      
-    } else if (mode == "tscca") { # Two-Step CCA
-      cat("Calculate TSCCA...\n\n")
-      results.redsvd <- TSCCA(r$W, r$C, dim.internal)
-    }
-  }
+  sentence <- as.integer(sentence)
+  results.redsvd <- EigenwordsCpp(sentence, window.size, n.vocab, dim.internal, mode_oscca = (mode == "oscca"), FALSE)
   
   return.list <- list()
   return.list$svd <- results.redsvd
@@ -205,7 +64,7 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 
 
 Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
-                      window.size = 2, use.eigen = TRUE, plot = FALSE) {
+                      window.size = 2, plot = FALSE) {
 
   link_w_d <- TRUE
   link_c_d <- TRUE
@@ -254,44 +113,10 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   
   cat("Calculate Eigendocs...\n\n")
   
-  if (use.eigen) {
-    results.redsvd <- EigendocsCpp(as.integer(sentence), as.integer(document.id),
-                                   window.size, n.vocab, dim.internal,
-                                   gamma_G = 0, gamma_H = 0, link_w_d = link_w_d, link_c_d = link_c_d, FALSE)
 
-  } else {
-    r <- make.matrices(sentence, document.id, window.size)
-    
-    cat("Size of W :")
-    print(object.size(r$W), unit = "MB")
-    cat("Size of C :")
-    print(object.size(r$C), unit = "MB")
-    cat("Size of D :")
-    print(object.size(r$D), unit = "MB")
-    
-    tWC <- crossprod(r$W, r$C)
-    tWD <- crossprod(r$W, r$D)
-    tCD <- crossprod(r$C, r$D)
-    
-    p1 <- nrow(tWC)
-    p2 <- nrow(tCD)
-    p3 <- ncol(tWD)
-    p <- p1 + p2 + p3
-    
-    G.sqrt.inv <- 1/sqrt(2) * Diagonal(x = c(diag(crossprod(r$W))^(-1/2), diag(crossprod(r$C))^(-1/2), diag(crossprod(r$D))^(-1/2)))
-    H <- Matrix(0, p, p)
-    
-    H[1:p1, (p1+1):(p1+p2)] <- tWC
-    H[1:p1, (p1+p2+1):p] <- tWD
-    H[(p1+1):(p1+p2), (p1+p2+1):p] <- tCD
-    H <- H + t(H)
-    
-    S <- G.sqrt.inv %*% H %*% G.sqrt.inv
-    eigen.S <- eigen(S)
-
-    results.redsvd <- list(word_vector     = eigen.S$vectors[1:p1, 1:dim.internal],
-                           document_vector = eigen.S$vectors[(p1+p2+1):p, 1:dim.internal])
-  }
+  results.redsvd <- EigendocsCpp(as.integer(sentence), as.integer(document.id),
+                                 window.size, n.vocab, dim.internal,
+                                 gamma_G = 0, gamma_H = 0, link_w_d = link_w_d, link_c_d = link_c_d, FALSE)
   
   if (plot) {
     plot(results.redsvd$singular_values, log = "y", main = "Singular Values")
