@@ -19,7 +19,7 @@ source("./../src/cleigenwords.R", chdir=TRUE)
 ```
 
 ```{r}
-paths.corpus <- c("./../data/eigendocs_imdb/imdb_reviews.txt")
+paths.corpus <- list(en = list(parallel    = "./../data/eigendocs_imdb/imdb_reviews.txt"))
 res.eigendocs <- CLEigenwords(paths.corpus, sizes.vocabulary=c(10000), dim.common=50,
                               sizes.window = c(4), aliases.languages=c("en"), weight.vsdoc=c(0.01),
                               plot = TRUE, weighting_tf=FALSE)
