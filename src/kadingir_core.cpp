@@ -628,6 +628,7 @@ void CLEigenwords::construct_matrices()
 {
 
   unsigned long long sum_id_wordtype_lengths = 0;
+  const int weight_v_c = (int)link_v_c;
   
   // Calculate diagonal elements of M  
   std::vector<std::vector<double> > m_diag_languages(n_languages);
