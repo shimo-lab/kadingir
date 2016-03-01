@@ -26,11 +26,11 @@ save(res.eigendocs, file = "res_eigendocs.Rdata")
 document.id <- 999
 infos <- read.csv("./../data/reuters/reuters_rcv1_infos.100000.csv")
 
-pp <- res.eigendocs$svd$p_head_domains
-p <- res.eigendocs$svd$p
+pp <- res.eigendocs$p_head_domains
+p <- res.eigendocs$p
 
-word_vectors <- res.eigendocs$svd$V[(pp[1]+1):pp[2], ]
-document_vectors <- res.eigendocs$svd$V[(pp[3]+1):p, ]
+word_vectors <- res.eigendocs$V[(pp[1]+1):pp[2], ]
+document_vectors <- res.eigendocs$V[(pp[3]+1):p, ]
 
 MostSimilarDocs(document.id, document_vectors, titles = infos$title)
 ```
