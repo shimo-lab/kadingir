@@ -505,8 +505,6 @@ CLEigenwords::CLEigenwords(
   const std::vector<unsigned long long> _id_wordtype_lengths,
   const int _k,
   const bool _link_v_c,
-  const bool _link_v_d,
-  const bool _link_c_d,
   const bool _weighting_tf,
   const std::vector<double> _weight_vsdoc,
   const bool _debug
@@ -517,8 +515,6 @@ CLEigenwords::CLEigenwords(
       id_wordtype_lengths(_id_wordtype_lengths),
       k(_k),
       link_v_c(_link_v_c),
-      link_v_d(_link_v_d),
-      link_c_d(_link_c_d),
       weighting_tf(_weighting_tf),
       weight_vsdoc(_weight_vsdoc),
       debug(_debug)
