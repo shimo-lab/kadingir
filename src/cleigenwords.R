@@ -8,7 +8,7 @@ sourceCpp("kadingir_core.cpp", rebuild = TRUE)
 CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
                          sizes.window, aliases.languages, weight.vsdoc,
                          plot = FALSE,
-                         link_v_c = TRUE, link_w_d = TRUE, link_c_d = TRUE,
+                         link_v_c = TRUE, link_v_d = TRUE, link_c_d = TRUE,
                          weighting_tf = FALSE)
 {
   time.start <- Sys.time()
@@ -80,7 +80,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   cat("Dim of common space:", dim.common, "\n")
   cat("Weight by TF?      :", weighting_tf, "\n")
   cat("Link: V - C        :", link_v_c, "\n")
-  cat("Link: W - D        :", link_w_d, "\n")
+  cat("Link: V - D        :", link_v_d, "\n")
   cat("Link: C - D        :", link_c_d, "\n")
   cat("\n")
 
@@ -119,7 +119,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   results.cleigenwords <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
                                           sizes.window, sizes.vocabulary, lengths.corpus,
                                           dim.common,
-                                          link_v_c = link_v_c, link_w_d = link_w_d, link_c_d = link_c_d,
+                                          link_v_c = link_v_c, link_v_d = link_v_d, link_c_d = link_c_d,
                                           weighting_tf = weighting_tf,
                                           weight_vsdoc = weight.vsdoc,
                                           debug = FALSE)

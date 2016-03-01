@@ -152,7 +152,7 @@ private:
   std::vector<unsigned long long> id_wordtype_lengths;
   int k;
   bool link_v_c;
-  bool link_w_d;
+  bool link_v_d;
   bool link_c_d;
   bool weighting_tf;
   std::vector<double> weight_vsdoc;
@@ -186,7 +186,7 @@ public:
                const std::vector<unsigned long long> _id_wordtype_lengths,
                const int _k,
                const bool _link_v_c,
-               const bool _link_w_d,
+               const bool _link_v_d,
                const bool _link_c_d,
                const bool _weighting_tf,
                const std::vector<double> _weight_vsdoc,
