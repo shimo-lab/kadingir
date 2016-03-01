@@ -70,8 +70,6 @@ Rcpp::List EigendocsCpp(
     const int window_size,
     const int vocab_size,
     const int k,
-    const double gamma_G,
-    const double gamma_H,
     const bool link_w_d,
     const bool link_c_d,
     const bool debug
@@ -81,7 +79,7 @@ Rcpp::List EigendocsCpp(
   std::vector<int> document_id_stdvector = Rcpp::as<std::vector<int> >(document_id);
   
   Eigendocs eigendocs = Eigendocs(sentence_stdvector, document_id_stdvector, window_size, vocab_size, k,
-                                  link_w_d, link_c_d, gamma_G, gamma_H, debug);
+                                  link_w_d, link_c_d, debug);
   eigendocs.compute();
 
   Rcpp::NumericVector p_head_domains_return(3);
@@ -109,8 +107,6 @@ Rcpp::List CLEigenwordsCpp(
     const Rcpp::IntegerVector vocab_sizes,
     const Rcpp::IntegerVector sentence_lengths,
     const int k,
-    const double gamma_G,
-    const double gamma_H,
     const bool link_w_d,
     const bool link_c_d,
     const bool weighting_tf,
@@ -133,7 +129,7 @@ Rcpp::List CLEigenwordsCpp(
   CLEigenwords cleigenwords = CLEigenwords(sentence_concated_stdvector, document_id_concated_stdvector,
                                            window_sizes_stdvector, vocab_sizes_stdvector,
                                            sentence_lengths_stdvector, k,
-                                           link_w_d, link_c_d, gamma_G, gamma_H,
+                                           link_w_d, link_c_d,
                                            weighting_tf, weight_vsdoc_stdvector, debug);
   cleigenwords.compute();
 

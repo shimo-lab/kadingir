@@ -105,8 +105,6 @@ private:
   int k;
   bool link_w_d;
   bool link_c_d;
-  double gamma_G;
-  double gamma_H;
   bool debug;
 
   unsigned long long c_col_size;
@@ -135,8 +133,6 @@ public:
             const int _k,
             const bool _link_w_d,
             const bool _link_c_d,
-            const double _gamma_G,
-            const double _gamma_H,
             const bool debug);
   void compute();
   VectorXi get_g_diag() { return G_diag; }
@@ -155,8 +151,6 @@ private:
   std::vector<int> vocab_sizes;
   std::vector<unsigned long long> id_wordtype_lengths;
   int k;
-  double gamma_G;
-  double gamma_H;
   bool link_w_d;
   bool link_c_d;
   bool weighting_tf;
@@ -190,8 +184,6 @@ public:
                const std::vector<int> _vocab_sizes,
                const std::vector<unsigned long long> _id_wordtype_lengths,
                const int _k,
-               const double _gamma_G,
-               const double _gamma_H,
                const bool _link_w_d,
                const bool _link_c_d,
                const bool _weighting_tf,

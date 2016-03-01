@@ -116,7 +116,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   cat("Calculate CLEigenwords...\n\n")
   results.redsvd <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
                                     sizes.window, sizes.vocabulary, lengths.corpus,
-                                    dim.common, gamma_G = 0, gamma_H = 0,
+                                    dim.common,
                                     link_w_d = link_w_d, link_c_d = link_c_d,
                                     weighting_tf = weighting_tf,
                                     weight_vsdoc = weight.vsdoc,

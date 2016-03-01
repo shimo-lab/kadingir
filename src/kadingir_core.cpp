@@ -365,8 +365,6 @@ Eigendocs::Eigendocs(
     const int _k,
     const bool _link_w_d,
     const bool _link_c_d,
-    const double _gamma_G,
-    const double _gamma_H,
     const bool _debug
   ) : id_wordtype(_id_wordtype),
       id_document(_id_document),
@@ -375,8 +373,6 @@ Eigendocs::Eigendocs(
       k(_k),
       link_w_d(_link_w_d),
       link_c_d(_link_c_d),
-      gamma_G(_gamma_G),
-      gamma_H(_gamma_H),
       debug(_debug)
 {
   lr_col_size = (unsigned long long)window_size * vocab_size;
@@ -508,8 +504,6 @@ CLEigenwords::CLEigenwords(
   const std::vector<int> _vocab_sizes,
   const std::vector<unsigned long long> _id_wordtype_lengths,
   const int _k,
-  const double _gamma_G,
-  const double _gamma_H,
   const bool _link_w_d,
   const bool _link_c_d,
   const bool _weighting_tf,
@@ -521,8 +515,6 @@ CLEigenwords::CLEigenwords(
       vocab_sizes(_vocab_sizes),
       id_wordtype_lengths(_id_wordtype_lengths),
       k(_k),
-      gamma_G(_gamma_G),
-      gamma_H(_gamma_H),
       link_w_d(_link_w_d),
       link_c_d(_link_c_d),
       weighting_tf(_weighting_tf),
