@@ -52,13 +52,12 @@ Eigenwords <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
   sentence <- as.integer(sentence)
   
   if (mode == "oscca") {
-    results.redsvd <- EigenwordsOSCCACpp(sentence, window.size, n.vocab, dim.internal, FALSE)
+    results.eigenwords <- EigenwordsOSCCACpp(sentence, window.size, n.vocab, dim.internal, FALSE)
   } else {
-    results.redsvd <- EigenwordsTSCCACpp(sentence, window.size, n.vocab, dim.internal, FALSE)
+    results.eigenwords <- EigenwordsTSCCACpp(sentence, window.size, n.vocab, dim.internal, FALSE)
   }
   
-  return.list <- list()
-  return.list$svd <- results.redsvd
+  return.list <- results.eigenwords
   return.list$vocab.words <- c("<OOV>", vocab.words)
   
   diff.time <- Sys.time() - time.start
