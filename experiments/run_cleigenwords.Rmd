@@ -30,11 +30,11 @@ save(r, file = "res_cleigenwords.Rdata")
 
 
 ```{r}
-p <- r$svd$p_head_domains
+p <- r$p_head_domains
 print(p)
 
-V1 <- r$svd$V[p[1]:p[2], ]
-V2 <- r$svd$V[(p[3]+1):p[4], ]
+V1 <- r$V[p[1]:p[2], ]
+V2 <- r$V[(p[3]+1):p[4], ]
 vocab.words1 <- paste0("(es)", r$vocab.words[[1]])
 vocab.words2 <- paste0("(en)", r$vocab.words[[2]])
 
@@ -45,7 +45,7 @@ vocab.words <- c(vocab.words1, vocab.words2)
 ## Example of vector representation
 ```{r}
 row.sample <- c(p[1], p[2]+1, p[3]+1, p[4]+1, p[5]+1)
-r$svd$V[row.sample, 1:20]
+r$V[row.sample, 1:20]
 ```
 
 ## biplot
@@ -76,7 +76,7 @@ MostSimilar(V, vocab.words, positive=c("(en)him", "(es)yo"), negative=c("(en)he"
 
 # Execute some (monolingual) tasks for vector representation of english words
 ```{r}
-V.en <- r$svd$V[(p[3]+1):p[4], ]
+V.en <- r$V[(p[3]+1):p[4], ]
 vocab.en <- r$vocab.words[[2]]
 
 TestGoogleTasks(V.en, vocab.en, n.cores = 12)

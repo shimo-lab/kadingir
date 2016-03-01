@@ -23,8 +23,8 @@ save(res.cleigenwords, file = "res_cleigenwords_monolingual.Rdata")
 ```
 
 ```{r}
-pp <- res.cleigenwords$svd$p_head_domains
-V.en <- res.cleigenwords$svd$V[(pp[1]+1):pp[2], ]
+pp <- res.cleigenwords$p_head_domains
+V.en <- res.cleigenwords$V[(pp[1]+1):pp[2], ]
 vocab.sizes <- res.cleigenwords$vocab.sizes
 vocab.words.en <- res.cleigenwords$vocab.words[[1]]
 ```
