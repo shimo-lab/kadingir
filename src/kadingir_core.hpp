@@ -151,6 +151,7 @@ private:
   std::vector<int> vocab_sizes;
   std::vector<unsigned long long> id_wordtype_lengths;
   int k;
+  bool link_v_c;
   bool link_w_d;
   bool link_c_d;
   bool weighting_tf;
@@ -184,6 +185,7 @@ public:
                const std::vector<int> _vocab_sizes,
                const std::vector<unsigned long long> _id_wordtype_lengths,
                const int _k,
+               const bool _link_v_c,
                const bool _link_w_d,
                const bool _link_c_d,
                const bool _weighting_tf,

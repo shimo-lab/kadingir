@@ -8,7 +8,7 @@ sourceCpp("kadingir_core.cpp", rebuild = TRUE)
 CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
                          sizes.window, aliases.languages, weight.vsdoc,
                          plot = FALSE,
-                         link_w_d = TRUE, link_c_d = TRUE,
+                         link_v_c = TRUE, link_w_d = TRUE, link_c_d = TRUE,
                          weighting_tf = FALSE)
 {
   time.start <- Sys.time()
@@ -117,7 +117,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   results.cleigenwords <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
                                           sizes.window, sizes.vocabulary, lengths.corpus,
                                           dim.common,
-                                          link_w_d = link_w_d, link_c_d = link_c_d,
+                                          link_v_c = link_v_c, link_w_d = link_w_d, link_c_d = link_c_d,
                                           weighting_tf = weighting_tf,
                                           weight_vsdoc = weight.vsdoc,
                                           debug = FALSE)
