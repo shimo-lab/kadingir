@@ -18,22 +18,22 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   id.document <- list()
   vocab.words <- list()
   min.counts <- list()
-  
+
   n.languages <- length(aliases.languages)
-  
+
   for (i in seq(n.languages)) {
     language <- aliases.languages[i]
     path.corpus <- paths.corpus[[language]]
-    
-    # Preprocess parallel corpus
-    if (exists("parallel", where = path.corpus)) {
-      cat(path.corpus[["parallel"]], "\n")
-      f.parallel <- file(path.corpus[["parallel"]], "r")
-      lines.parallel <- readLines(con = f.parallel, -1)
-      close(f.parallel)
-    } else {
+
+    if (!exists("parallel", where = path.corpus)) {
       stop(paste0("Error: No parallel corpus of language ", language, "."))
     }
+
+    # Preprocess parallel corpus
+    cat(path.corpus[["parallel"]], "\n")
+    f.parallel <- file(path.corpus[["parallel"]], "r")
+    lines.parallel <- readLines(con = f.parallel, -1)
+    close(f.parallel)
 
     # Preprocess monolingual corpus
     if (exists("monolingual", where = path.corpus)) {
@@ -44,7 +44,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     } else {
       lines.monolingual <- ""
     }
-    
+
     lines.parallel.splited <- strsplit(lines.parallel, " ")
     lines.monolingual.splited <- strsplit(lines.monolingual, " ")
     str.wordtype <- unlist(c(lines.parallel.splited, lines.monolingual.splited))
@@ -80,7 +80,8 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   cat("Dim of common space:", dim.common, "\n")
   cat("Weight by TF?      :", weighting_tf, "\n")
   cat("Link: W - D        :", link_w_d, "\n")
-  cat("Link: C - D        :", link_c_d, "\n\n")
+  cat("Link: C - D        :", link_c_d, "\n")
+  cat("\n")
 
   # Print informations of each languages
   for (i in seq(n.languages)) {
