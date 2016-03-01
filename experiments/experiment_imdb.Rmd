@@ -28,9 +28,9 @@ save(res.eigendocs, file = "res_eigendocs_imdb.Rdata")
 
 ## Check vector representations of words
 ```{r}
-pp <- res.eigendocs$svd$p_head_domains
-p <- res.eigendocs$svd$p
-word_vector <- res.eigendocs$svd$V[(pp[1]+1):pp[2], ]
+pp <- res.eigendocs$p_head_domains
+p <- res.eigendocs$p
+word_vector <- res.eigendocs$V[(pp[1]+1):pp[2], ]
 vocab_words <- unlist(res.eigendocs$vocab.words)
 
 MostSimilar(word_vector, vocab_words, positive=c("man"), distance = "cosine")
@@ -54,7 +54,7 @@ TestWordsim353(word_vector, vocab_words)
 
 ## Sentiment analysis using IMDb dataset 1 : unregularized
 ```{r}
-vectors <- res.eigendocs$svd$V[(pp[3]+1):p, ]
+vectors <- res.eigendocs$V[(pp[3]+1):p, ]
 csv <- read.csv("./../data/eigendocs_imdb/imdb_id_rate.csv")
 
 df <- data.frame(cbind(csv, vectors))

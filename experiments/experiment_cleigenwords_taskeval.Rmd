@@ -46,9 +46,9 @@ kable(head(translate.table[ , c("es","en")]))
 ```{r, message=FALSE}
 load("res_cleigenwords.Rdata")
 
-p <- r$svd$p_head_domains
-V.es <- r$svd$V[p[1]:p[2], ]
-V.en <- r$svd$V[(p[3]+1):p[4], ]
+p <- r$p_head_domains
+V.es <- r$V[p[1]:p[2], ]
+V.en <- r$V[(p[3]+1):p[4], ]
 vocab.words.es <- paste0("(es)", r$vocab.words[[1]])
 vocab.words.en <- paste0("(en)", r$vocab.words[[2]])
 
