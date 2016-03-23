@@ -13,18 +13,20 @@ source("./../src/cleigenwords.R", chdir = TRUE)
 
 # Execute CL-Eigenwords
 ```{r}
-paths.corpus <- list(es = list(parallel    = "./../data/europarl/europarl-v7.es-en.es.tokenized.10000.parallel",
-                               monolingual = "./../data/europarl/europarl-v7.es-en.es.tokenized.10000.monolingual"),
-                     en = list(parallel    = "./../data/europarl/europarl-v7.es-en.en.tokenized.10000.parallel",
-                               monolingual = "./../data/europarl/europarl-v7.es-en.en.tokenized.10000.monolingual"))
+paths.corpus <- list(es = list(parallel    = "./../data/europarl/europarl-v7.merged.es.tokenized.10000"),
+                     de = list(parallel    = "./../data/europarl/europarl-v7.merged.de.tokenized.10000"),
+                     fr = list(parallel    = "./../data/europarl/europarl-v7.merged.fr.tokenized.10000"),
+                     en = list(parallel    = "./../data/europarl/europarl-v7.merged.en.tokenized.10000"))
 
-r <- CLEigenwords(paths.corpus, sizes.vocabulary = c(1000, 1000),
+r <- CLEigenwords(paths.corpus,
+                  sizes.vocabulary = c(1000, 1000, 1000, 1000),
                   dim.common = 40,
-                  sizes.window = c(2, 2), aliases.languages=c("es", "en"),
+                  sizes.window = c(2, 2, 2, 2),
+                  aliases.languages=c("es", "de", "fr", "en"),
                   plot = TRUE,
                   weighting_tf = FALSE,
                   link_v_c = TRUE,
-                  weight.vsdoc = c(1.0, 1.0))
+                  weight.vsdoc = c(1.0, 1.0, 1.0, 1.0))
 
 save(r, file = "res_cleigenwords.Rdata")
 ```
@@ -36,26 +38,43 @@ print(p)
 
 V1 <- r$V[p[1]:p[2], ]
 V2 <- r$V[(p[3]+1):p[4], ]
+V3 <- r$V[(p[5]+1):p[6], ]
+V4 <- r$V[(p[7]+1):p[8], ]
 vocab.words1 <- paste0("(es)", r$vocab.words[[1]])
-vocab.words2 <- paste0("(en)", r$vocab.words[[2]])
+vocab.words2 <- paste0("(de)", r$vocab.words[[2]])
+vocab.words3 <- paste0("(fr)", r$vocab.words[[3]])
+vocab.words4 <- paste0("(en)", r$vocab.words[[4]])
 
-V <- rbind(V1, V2)
-vocab.words <- c(vocab.words1, vocab.words2)
+V <- rbind(V1, V2, V3, V4)
+vocab.words <- c(vocab.words1, vocab.words2, vocab.words3, vocab.words4)
 ```
 
 ## Example of vector representation
 ```{r}
-row.sample <- c(p[1], p[2]+1, p[3]+1, p[4]+1, p[5]+1)
+row.sample <- c(p[1], p[2:9]+1)
 r$V[row.sample, 1:20]
 ```
 
 ## biplot
 ```{r}
 queries <- c(paste0("(en)", c("i", "you", "he", "she", "my", "your", "her", "we")),
-             paste0("(es)", c("yo", "tu", "él", "ella", "mi", "su", "nosotros")))
+             paste0("(es)", c("yo", "tu", "él", "ella", "mi", "su", "nosotros")),
+             paste0("(de)", c("ich", "du", "er", "sie", "mein", "ihr", "sie", "wir")),
+             paste0("(fr)", c("je", "tu", "il", "elle", "mon", "votre", "son", "nous")))
 n.queries <- length(queries)
 
 print(queries[queries %in% vocab.words])
+
+VV <- V
+row.names(VV) <- vocab.words
+pr.v2 <- prcomp(VV[queries[queries %in% vocab.words],])
+plot(pr.v2$x[ , 1:2], pch = 1, col = "grey")
+text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x))
+```
+
+
+```{r}
+queries <- c(vocab.words1[1:20], vocab.words2[1:20], vocab.words3[1:20], vocab.words4[1:20])
 
 VV <- V
 row.names(VV) <- vocab.words
@@ -68,17 +87,16 @@ text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x))
 (en)I = (es)yo
 
 ```{r}
-MostSimilar(V, vocab.words, positive=c("(en)we"), distance = "cosine", language.search = "en")
-MostSimilar(V, vocab.words, positive=c("(en)we"), distance = "cosine", language.search = "es")
-MostSimilar(V, vocab.words, positive=c("(es)yo"), distance = "cosine", language.search = "en")
-MostSimilar(V, vocab.words, positive=c("(es)yo"), distance = "cosine", language.search = "es")
+MostSimilar(V, vocab.words, positive=c("(en)we"), distance = "cosine")
+MostSimilar(V, vocab.words, positive=c("(es)yo"), distance = "cosine")
+MostSimilar(V, vocab.words, positive=c("(en)france"), distance = "cosine")
 MostSimilar(V, vocab.words, positive=c("(en)him", "(es)yo"), negative=c("(en)he"), distance = "cosine")
 ```
 
 # Execute some (monolingual) tasks for vector representation of english words
 ```{r}
-V.en <- r$V[(p[3]+1):p[4], ]
-vocab.en <- r$vocab.words[[2]]
+V.en <- r$V[(p[7]+1):p[8], ]
+vocab.en <- r$vocab.words[[4]]
 
 TestGoogleTasks(V.en, vocab.en, n.cores = 12)
 TestWordsim353(V.en, vocab.en)
