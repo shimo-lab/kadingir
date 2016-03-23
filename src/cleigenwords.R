@@ -63,7 +63,13 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
     
     table.wordtype <- table(str.wordtype)
     table.wordtype.sorted <- sort(table.wordtype, decreasing = TRUE)
-    vocab.words[[i]] <- names(table.wordtype.sorted[seq(sizes.vocabulary[i] - 1)])  # For out-of-vocabulary word, -1
+    vocab.words.temp <- names(table.wordtype.sorted[seq(sizes.vocabulary[i] - 1)])  # For out-of-vocabulary word, -1
+    
+    if (length(vocab.words.temp) <= 0) {
+      stop("Invalid vocab.words: length(vocab.words.temp) <= 0")
+    }
+    
+    vocab.words[[i]] <- vocab.words.temp
     id.wordtype[[i]] <- match(str.wordtype, vocab.words[[i]], nomatch = 0)  # Fill zero for out-of-vocabulary words
     min.counts[[i]] <- table.wordtype.sorted[[sizes.vocabulary[i] - 1]]
 
