@@ -63,7 +63,6 @@ int main(int argc, char* argv[])
         word_temp.erase();
       }
       
-      
     } else {
       // If `ch` is a character of a word
       word_temp += ch;
@@ -75,19 +74,17 @@ int main(int argc, char* argv[])
   std::vector<PairCounter> count_vector(count_table.begin(), count_table.end());  
   std::sort(count_vector.begin(), count_vector.end(), sort_greater);
   
-  // Construct table (word -> wordtype id)
+  // Construct table (std::string)word -> (int)wordtype id)
   unsigned long long i_vocab = 1;
   MapCounter table_wordtype_id;
   for (PairIterator iter = count_vector.begin(); iter != count_vector.end(); iter++) {
     std::string iter_str = iter->first;
     int iter_int = iter->second;
-    
     table_wordtype_id.insert(PairCounter(iter_str, i_vocab));
-
     i_vocab++;
 
     if (i_vocab >= n_vocab) {
-      std::cout << iter_int << " " << iter_str << std::endl;
+      std::cout << "min count:  " << iter_int << ", " << iter_str << std::endl;
       break;
     }
   }
@@ -125,6 +122,7 @@ int main(int argc, char* argv[])
 
   // Display some informations
   std::cout << "Corpus      : " << path_corpus << std::endl;
+  std::cout << "Output      : " << path_output << std::endl;
   std::cout << "# of tokens : " << n_tokens << std::endl;
   std::cout << "# of OOV    : " << n_oov << std::endl;
   std::cout << "# of vocab  : " << n_vocab << std::endl;
