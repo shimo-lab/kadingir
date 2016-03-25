@@ -40,9 +40,9 @@ int main(int argc, char* argv[])
     if (ch == '\n' || ch == ' ') {
       // If `ch` is a separation of documents or words
       
-      if (ch == ' ') {
-        n_tokens += 1;
-      } else if (ch == '\n') {
+      n_tokens += 1;
+
+      if (ch == '\n') {
         n_documents += 1;
       }
       
