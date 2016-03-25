@@ -8,6 +8,8 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include "../src/kadingir_core.hpp"
+
 
 typedef std::map<std::string, int> MapCounter;
 typedef std::pair<std::string, int> PairCounter;
@@ -120,6 +122,11 @@ int main(int argc, char* argv[])
   std::cout << "# of OOV    : " << n_oov << std::endl;
   std::cout << "# of vocab  : " << n_vocab << std::endl;
   std::cout << "Coverage(%) : " << 100 * (n_tokens - n_oov) / (double)n_tokens << std::endl;
+
+  // Execute EigenwordsOSCCA
+  EigenwordsOSCCA eigenwords(tokens, window, n_vocab, dim, debug);
+  eigenwords.compute();
+  MatrixXd vectors = eigenwords.get_word_vectors();
 
   return 0;
 }
