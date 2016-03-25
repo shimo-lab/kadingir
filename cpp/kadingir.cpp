@@ -1,13 +1,11 @@
-/* kadingir.cpp
- *
- * Example: make && ./kadingir ../data/text8 output.txt
- */
+/* kadingir.cpp */
 
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <vector>
 #include <algorithm>
+#include "docopt.cpp/docopt.h"
 #include "../src/kadingir_core.hpp"
 
 
@@ -15,21 +13,42 @@ typedef std::map<std::string, int> MapCounter;
 typedef std::pair<std::string, int> PairCounter;
 typedef std::vector<PairCounter>::const_iterator PairIterator;
 
+
+static const char USAGE[] =
+R"(Kadingir: Eigenwords (OSCCA)
+
+    Usage:
+      kadingir --corpus <corpus> --output <output> --vocab <vocab> --dim <dim> --window <window> [--debug]
+
+    Options:
+      -h --help          Show this screen.
+      --version          Show version.
+      --corpus=<corpus>  File path of corpus
+      --output=<output>  File path of output
+      --vocab=<vocab>    Size of vocabulary
+      --dim=<dim>        Dimension of representation
+      --window=<window>  Window size
+      --debug            Debug option [default: false]
+)";
+
 bool sort_greater(const PairCounter& left, const PairCounter& right)
 {
   return left.second > right.second;
 }
 
 
-int main(int argc, char* argv[])
+int main(int argc, const char** argv)
 {
-  /* TODO: コマンドライン引数でいい感じに書きたい */
-  const char *path_corpus = argv[1];
-  const char *path_output = argv[2];
-  const int n_vocab = 10000;
-  const int dim = 50;
-  const int window = 2;
-  const bool debug = false;
+
+  std::map<std::string, docopt::value> args
+    = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, "Kadingir 1.0");
+
+  const char *path_corpus = args["--corpus"].asString().c_str();
+  const char *path_output = args["--output"].asString().c_str();
+  const int n_vocab = args["--vocab"].asLong();
+  const int dim =args["--dim"].asLong();
+  const int window = args["--window"].asLong();
+  const bool debug = args["--debug"].asBool();
   MapCounter count_table;
   
   char ch;
