@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
   char ch;
   std::string word_temp;
   /* TODO: コマンドライン引数でいい感じに書きたい */
-  const char *file_path = argv[1];
+  const char *path_corpus = argv[1];
   const char *path_output = argv[2];
   const int n_vocab = 10000;
   const int dim = 50;
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
   
   std::ifstream fin;
   fin.unsetf(std::ios::skipws);
-  fin.open(file_path);
+  fin.open(path_corpus);
   
   while (!fin.eof()) {
     fin >> ch;
@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
   unsigned long long i_tokens = 0, n_oov = 0;
   std::vector<int> tokens(n_tokens);
 
-  fin.open(file_path);
+  fin.open(path_corpus);
 
   while (!fin.eof()) {
     fin >> ch;
@@ -122,7 +122,7 @@ int main(int argc, char* argv[])
   }
 
   // Display some informations
-  std::cout << "Path        : " << file_path << std::endl;
+  std::cout << "Corpus      : " << path_corpus << std::endl;
   std::cout << "# of tokens : " << n_tokens << std::endl;
   std::cout << "# of OOV    : " << n_oov << std::endl;
   std::cout << "# of vocab  : " << n_vocab << std::endl;
