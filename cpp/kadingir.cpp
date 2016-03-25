@@ -1,6 +1,6 @@
 /* kadingir.cpp
  *
- * Example: make && ./kadingir ../data/text8
+ * Example: make && ./kadingir ../data/text8 output.txt
  */
 
 #include <iostream>
@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
   std::string word_temp;
   /* TODO: コマンドライン引数でいい感じに書きたい */
   const char *file_path = argv[1];
+  const char *path_output = argv[2];
   const int n_vocab = 10000;
   const int dim = 50;
   const int window = 2;
@@ -131,6 +132,23 @@ int main(int argc, char* argv[])
   EigenwordsOSCCA eigenwords(tokens, window, n_vocab, dim, debug);
   eigenwords.compute();
   MatrixXd vectors = eigenwords.get_word_vectors();
+
+  // Output vector representations as a txt file
+  std::ofstream file_output;
+  file_output.open(path_output, std::ios::out);
+
+  for (int i = 0; i < vectors.rows(); i++) {
+    if (i == 0) {
+      file_output << "<OOV> ";
+    } else {
+      file_output << count_vector[i - 1].first << " ";
+    }
+
+    for (int j = 0; j < vectors.cols(); j++) {
+      file_output << vectors(i, j) << " ";
+    }
+    file_output << std::endl;
+  }
 
   return 0;
 }
