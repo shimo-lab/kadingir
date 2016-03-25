@@ -23,10 +23,6 @@ bool sort_greater(const PairCounter& left, const PairCounter& right)
 
 int main(int argc, char* argv[])
 {
-  unsigned long long n_tokens = 0;
-  unsigned long long n_documents = 0;
-  char ch;
-  std::string word_temp;
   /* TODO: コマンドライン引数でいい感じに書きたい */
   const char *path_corpus = argv[1];
   const char *path_output = argv[2];
@@ -34,8 +30,13 @@ int main(int argc, char* argv[])
   const int dim = 50;
   const int window = 2;
   const bool debug = false;
-  MapCounter count_table, table_wordtype_id;
+  MapCounter count_table;
   
+  char ch;
+  std::string word_temp;
+  unsigned long long n_tokens = 0;
+  unsigned long long n_documents = 0;
+
   std::ifstream fin;
   fin.unsetf(std::ios::skipws);
   fin.open(path_corpus);
@@ -76,6 +77,7 @@ int main(int argc, char* argv[])
   
   // Construct table (word -> wordtype id)
   unsigned long long i_vocab = 1;
+  MapCounter table_wordtype_id;
   for (PairIterator iter = count_vector.begin(); iter != count_vector.end(); iter++) {
     std::string iter_str = iter->first;
     int iter_int = iter->second;
