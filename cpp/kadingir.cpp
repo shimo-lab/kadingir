@@ -116,8 +116,10 @@ int main(int argc, char* argv[])
 
   // Display some informations
   std::cout << "Path        : " << file_path << std::endl;
-  std::cout << "# of tokens : " << i_tokens << std::endl;
+  std::cout << "# of tokens : " << n_tokens << std::endl;
   std::cout << "# of OOV    : " << n_oov << std::endl;
+  std::cout << "# of vocab  : " << n_vocab << std::endl;
+  std::cout << "Coverage(%) : " << 100 * (n_tokens - n_oov) / (double)n_tokens << std::endl;
 
   return 0;
 }
