@@ -140,12 +140,16 @@ int main(int argc, const char** argv)
   }
 
   // Display some informations
+  std::cout << std::endl;
   std::cout << "Corpus      : " << path_corpus << std::endl;
   std::cout << "Output      : " << path_output << std::endl;
   std::cout << "# of tokens : " << n_tokens << std::endl;
   std::cout << "# of OOV    : " << n_oov << std::endl;
   std::cout << "# of vocab  : " << n_vocab << std::endl;
   std::cout << "Coverage(%) : " << 100 * (n_tokens - n_oov) / (double)n_tokens << std::endl;
+  std::cout << "dim         : " << dim << std::endl;
+  std::cout << "Window size : " << window << std::endl;
+  std::cout << std::endl;
 
   // Execute EigenwordsOSCCA
   EigenwordsOSCCA eigenwords(tokens, window, n_vocab, dim, debug);
