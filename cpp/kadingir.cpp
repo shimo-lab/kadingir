@@ -158,6 +158,7 @@ int main(int argc, const char** argv)
   // Output vector representations as a txt file
   std::ofstream file_output;
   file_output.open(path_output, std::ios::out);
+  file_output << n_vocab << " " << dim << std::endl;
 
   for (int i = 0; i < vectors.rows(); i++) {
     if (i == 0) {
