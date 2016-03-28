@@ -1,19 +1,34 @@
-/* kadingir.cpp
- *
- * Example: make && ./kadingir ../data/text8 output.txt
- */
+/* kadingir.cpp */
 
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <vector>
 #include <algorithm>
+#include "docopt.cpp/docopt.h"
 #include "../src/kadingir_core.hpp"
 
 
 typedef std::map<std::string, int> MapCounter;
 typedef std::pair<std::string, int> PairCounter;
-typedef std::vector<PairCounter>::const_iterator PairIterator;
+
+
+static const char USAGE[] =
+R"(Kadingir: Eigenwords (OSCCA)
+
+    Usage:
+      kadingir --corpus <corpus> --output <output> --vocab <vocab> --dim <dim> --window <window> [--debug]
+
+    Options:
+      -h --help          Show this screen.
+      --version          Show version.
+      --corpus=<corpus>  File path of corpus
+      --output=<output>  File path of output
+      --vocab=<vocab>    Size of vocabulary
+      --dim=<dim>        Dimension of representation
+      --window=<window>  Window size
+      --debug            Debug option [default: false]
+)";
 
 bool sort_greater(const PairCounter& left, const PairCounter& right)
 {
@@ -21,24 +36,28 @@ bool sort_greater(const PairCounter& left, const PairCounter& right)
 }
 
 
-int main(int argc, char* argv[])
+int main(int argc, const char** argv)
 {
-  unsigned long long n_tokens = 0;
-  unsigned long long n_documents = 0;
+
+  std::map<std::string, docopt::value> args
+    = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, "Kadingir 1.0");
+
+  const char *path_corpus = args["--corpus"].asString().c_str();
+  const char *path_output = args["--output"].asString().c_str();
+  const int n_vocab = args["--vocab"].asLong();
+  const int dim =args["--dim"].asLong();
+  const int window = args["--window"].asLong();
+  const bool debug = args["--debug"].asBool();
+  MapCounter count_table;
+  
   char ch;
   std::string word_temp;
-  /* TODO: コマンドライン引数でいい感じに書きたい */
-  const char *file_path = argv[1];
-  const char *path_output = argv[2];
-  const int n_vocab = 10000;
-  const int dim = 50;
-  const int window = 2;
-  const bool debug = false;
-  MapCounter count_table, table_wordtype_id;
-  
+  unsigned long long n_tokens = 0;
+  unsigned long long n_documents = 0;
+
   std::ifstream fin;
   fin.unsetf(std::ios::skipws);
-  fin.open(file_path);
+  fin.open(path_corpus);
   
   while (!fin.eof()) {
     fin >> ch;
@@ -62,7 +81,6 @@ int main(int argc, char* argv[])
         word_temp.erase();
       }
       
-      
     } else {
       // If `ch` is a character of a word
       word_temp += ch;
@@ -74,18 +92,17 @@ int main(int argc, char* argv[])
   std::vector<PairCounter> count_vector(count_table.begin(), count_table.end());  
   std::sort(count_vector.begin(), count_vector.end(), sort_greater);
   
-  // Construct table (word -> wordtype id)
+  // Construct table (std::string)word -> (int)wordtype id)
   unsigned long long i_vocab = 1;
-  for (PairIterator iter = count_vector.begin(); iter != count_vector.end(); iter++) {
+  MapCounter table_wordtype_id;
+  for (auto iter = count_vector.begin(); iter != count_vector.end(); iter++) {
     std::string iter_str = iter->first;
     int iter_int = iter->second;
-    
     table_wordtype_id.insert(PairCounter(iter_str, i_vocab));
-
     i_vocab++;
 
     if (i_vocab >= n_vocab) {
-      std::cout << iter_int << " " << iter_str << std::endl;
+      std::cout << "min count:  " << iter_int << ", " << iter_str << std::endl;
       break;
     }
   }
@@ -94,7 +111,7 @@ int main(int argc, char* argv[])
   unsigned long long i_tokens = 0, n_oov = 0;
   std::vector<int> tokens(n_tokens);
 
-  fin.open(file_path);
+  fin.open(path_corpus);
 
   while (!fin.eof()) {
     fin >> ch;
@@ -122,11 +139,16 @@ int main(int argc, char* argv[])
   }
 
   // Display some informations
-  std::cout << "Path        : " << file_path << std::endl;
+  std::cout << std::endl;
+  std::cout << "Corpus      : " << path_corpus << std::endl;
+  std::cout << "Output      : " << path_output << std::endl;
   std::cout << "# of tokens : " << n_tokens << std::endl;
   std::cout << "# of OOV    : " << n_oov << std::endl;
   std::cout << "# of vocab  : " << n_vocab << std::endl;
   std::cout << "Coverage(%) : " << 100 * (n_tokens - n_oov) / (double)n_tokens << std::endl;
+  std::cout << "dim         : " << dim << std::endl;
+  std::cout << "Window size : " << window << std::endl;
+  std::cout << std::endl;
 
   // Execute EigenwordsOSCCA
   EigenwordsOSCCA eigenwords(tokens, window, n_vocab, dim, debug);
@@ -136,6 +158,7 @@ int main(int argc, char* argv[])
   // Output vector representations as a txt file
   std::ofstream file_output;
   file_output.open(path_output, std::ios::out);
+  file_output << n_vocab << " " << dim << std::endl;
 
   for (int i = 0; i < vectors.rows(); i++) {
     if (i == 0) {
