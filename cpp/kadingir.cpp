@@ -11,7 +11,6 @@
 
 typedef std::map<std::string, int> MapCounter;
 typedef std::pair<std::string, int> PairCounter;
-typedef std::vector<PairCounter>::const_iterator PairIterator;
 
 
 static const char USAGE[] =
@@ -96,7 +95,7 @@ int main(int argc, const char** argv)
   // Construct table (std::string)word -> (int)wordtype id)
   unsigned long long i_vocab = 1;
   MapCounter table_wordtype_id;
-  for (PairIterator iter = count_vector.begin(); iter != count_vector.end(); iter++) {
+  for (auto iter = count_vector.begin(); iter != count_vector.end(); iter++) {
     std::string iter_str = iter->first;
     int iter_int = iter->second;
     table_wordtype_id.insert(PairCounter(iter_str, i_vocab));
