@@ -1,19 +1,34 @@
-/* kadingir.cpp
- *
- * Example: make && ./kadingir ../data/text8 output.txt
- */
+/* kadingir.cpp */
 
 #include <iostream>
 #include <fstream>
 #include <map>
 #include <vector>
 #include <algorithm>
+#include "docopt.cpp/docopt.h"
 #include "../src/kadingir_core.hpp"
 
 
 typedef std::map<std::string, int> MapCounter;
 typedef std::pair<std::string, int> PairCounter;
-typedef std::vector<PairCounter>::const_iterator PairIterator;
+
+
+static const char USAGE[] =
+R"(Kadingir: Eigenwords (OSCCA)
+
+    Usage:
+      kadingir --corpus <corpus> --output <output> --vocab <vocab> --dim <dim> --window <window> [--debug]
+
+    Options:
+      -h --help          Show this screen.
+      --version          Show version.
+      --corpus=<corpus>  File path of corpus
+      --output=<output>  File path of output
+      --vocab=<vocab>    Size of vocabulary
+      --dim=<dim>        Dimension of representation
+      --window=<window>  Window size
+      --debug            Debug option [default: false]
+)";
 
 bool sort_greater(const PairCounter& left, const PairCounter& right)
 {
@@ -21,15 +36,18 @@ bool sort_greater(const PairCounter& left, const PairCounter& right)
 }
 
 
-int main(int argc, char* argv[])
+int main(int argc, const char** argv)
 {
-  /* TODO: コマンドライン引数でいい感じに書きたい */
-  const char *path_corpus = argv[1];
-  const char *path_output = argv[2];
-  const int n_vocab = 10000;
-  const int dim = 50;
-  const int window = 2;
-  const bool debug = false;
+
+  std::map<std::string, docopt::value> args
+    = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, "Kadingir 1.0");
+
+  const char *path_corpus = args["--corpus"].asString().c_str();
+  const char *path_output = args["--output"].asString().c_str();
+  const int n_vocab = args["--vocab"].asLong();
+  const int dim =args["--dim"].asLong();
+  const int window = args["--window"].asLong();
+  const bool debug = args["--debug"].asBool();
   MapCounter count_table;
   
   char ch;
@@ -77,7 +95,7 @@ int main(int argc, char* argv[])
   // Construct table (std::string)word -> (int)wordtype id)
   unsigned long long i_vocab = 1;
   MapCounter table_wordtype_id;
-  for (PairIterator iter = count_vector.begin(); iter != count_vector.end(); iter++) {
+  for (auto iter = count_vector.begin(); iter != count_vector.end(); iter++) {
     std::string iter_str = iter->first;
     int iter_int = iter->second;
     table_wordtype_id.insert(PairCounter(iter_str, i_vocab));
@@ -121,12 +139,16 @@ int main(int argc, char* argv[])
   }
 
   // Display some informations
+  std::cout << std::endl;
   std::cout << "Corpus      : " << path_corpus << std::endl;
   std::cout << "Output      : " << path_output << std::endl;
   std::cout << "# of tokens : " << n_tokens << std::endl;
   std::cout << "# of OOV    : " << n_oov << std::endl;
   std::cout << "# of vocab  : " << n_vocab << std::endl;
   std::cout << "Coverage(%) : " << 100 * (n_tokens - n_oov) / (double)n_tokens << std::endl;
+  std::cout << "dim         : " << dim << std::endl;
+  std::cout << "Window size : " << window << std::endl;
+  std::cout << std::endl;
 
   // Execute EigenwordsOSCCA
   EigenwordsOSCCA eigenwords(tokens, window, n_vocab, dim, debug);
