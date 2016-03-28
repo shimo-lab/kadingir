@@ -32,3 +32,4 @@ kadingir: Implementation of Eigenwords and its extensions
     
 ## Submodules
 * [ntessore/redsvd-h - GitHub](https://github.com/ntessore/redsvd-h)
+* [docopt/docopt.cpp - GitHub](https://github.com/docopt/docopt.cpp/)
