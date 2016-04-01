@@ -1,4 +1,4 @@
-/* kadingir.cpp */
+/* kadingir_oscca.cpp */
 
 #include <iostream>
 #include <fstream>
