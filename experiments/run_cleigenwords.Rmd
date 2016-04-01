@@ -13,14 +13,14 @@ source("./../src/cleigenwords.R", chdir = TRUE)
 
 # Execute CL-Eigenwords
 ```{r}
-paths.corpus <- list(es = list(parallel    = "./../data/europarl/europarl-v7.merged.es.tokenized.100000"),
-                     de = list(parallel    = "./../data/europarl/europarl-v7.merged.de.tokenized.100000"),
-                     fr = list(parallel    = "./../data/europarl/europarl-v7.merged.fr.tokenized.100000"),
-                     en = list(parallel    = "./../data/europarl/europarl-v7.merged.en.tokenized.100000"))
+paths.corpus <- list(es = list(parallel    = "./../data/europarl/europarl-v7.merged.es.tokenized"),
+                     de = list(parallel    = "./../data/europarl/europarl-v7.merged.de.tokenized"),
+                     fr = list(parallel    = "./../data/europarl/europarl-v7.merged.fr.tokenized"),
+                     en = list(parallel    = "./../data/europarl/europarl-v7.merged.en.tokenized"))
 
 r <- CLEigenwords(paths.corpus,
-                  sizes.vocabulary = c(10000, 10000, 10000, 10000),
-                  dim.common = 40,
+                  sizes.vocabulary = c(50000, 50000, 50000, 50000),
+                  dim.common = 200,
                   sizes.window = c(2, 2, 2, 2),
                   aliases.languages=c("es", "de", "fr", "en"),
                   plot = TRUE,
