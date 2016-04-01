@@ -138,10 +138,10 @@ int main(int argc, const char** argv)
 
   const char* path_corpus = args["--corpus"].asString().c_str();
   const char* path_output = args["--output"].asString().c_str();
-  const int n_vocab = args["--vocab"].asLong();
-  const int dim =args["--dim"].asLong();
-  const int window = args["--window"].asLong();
-  const bool debug = args["--debug"].asBool();
+  const int   n_vocab     = args["--vocab"].asLong();
+  const int   dim         = args["--dim"].asLong();
+  const int   window      = args["--window"].asLong();
+  const bool  debug       = args["--debug"].asBool();
 
   // Build word count table
   MapCounter count_table;
