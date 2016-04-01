@@ -1,4 +1,4 @@
-/* kadingir.cpp */
+/* kadingir_oscca.cpp */
 
 #include <iostream>
 #include <fstream>
@@ -35,29 +35,15 @@ bool sort_greater(const PairCounter& left, const PairCounter& right)
   return left.second > right.second;
 }
 
-
-int main(int argc, const char** argv)
+void build_count_table(const char* path_corpus, MapCounter &count_table,
+                       unsigned long long &n_documents, unsigned long long &n_tokens)
 {
-
-  std::map<std::string, docopt::value> args
-    = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, "Kadingir 1.0");
-
-  const char *path_corpus = args["--corpus"].asString().c_str();
-  const char *path_output = args["--output"].asString().c_str();
-  const int n_vocab = args["--vocab"].asLong();
-  const int dim =args["--dim"].asLong();
-  const int window = args["--window"].asLong();
-  const bool debug = args["--debug"].asBool();
-  MapCounter count_table;
-  
-  char ch;
-  std::string word_temp;
-  unsigned long long n_tokens = 0;
-  unsigned long long n_documents = 0;
-
   std::ifstream fin;
   fin.unsetf(std::ios::skipws);
   fin.open(path_corpus);
+
+  char ch;
+  std::string word_temp;
   
   while (!fin.eof()) {
     fin >> ch;
@@ -84,34 +70,21 @@ int main(int argc, const char** argv)
     } else {
       // If `ch` is a character of a word
       word_temp += ch;
-    }      
-  }
-  fin.close();
-  
-  // Sort `count_table`.
-  std::vector<PairCounter> count_vector(count_table.begin(), count_table.end());  
-  std::sort(count_vector.begin(), count_vector.end(), sort_greater);
-  
-  // Construct table (std::string)word -> (int)wordtype id)
-  unsigned long long i_vocab = 1;
-  MapCounter table_wordtype_id;
-  for (auto iter = count_vector.begin(); iter != count_vector.end(); iter++) {
-    std::string iter_str = iter->first;
-    int iter_int = iter->second;
-    table_wordtype_id.insert(PairCounter(iter_str, i_vocab));
-    i_vocab++;
-
-    if (i_vocab >= n_vocab) {
-      std::cout << "min count:  " << iter_int << ", " << iter_str << std::endl;
-      break;
     }
   }
+  fin.close();
+}
 
-  // Convert words to wordtype id
-  unsigned long long i_tokens = 0, n_oov = 0;
-  std::vector<int> tokens(n_tokens);
-
+void convert_corpus_to_wordtype(const char* path_corpus, MapCounter &table_wordtype_id,
+                                std::vector<int> &tokens, unsigned long long &n_oov)
+{
+  std::ifstream fin;
+  fin.unsetf(std::ios::skipws);
   fin.open(path_corpus);
+
+  char ch;
+  std::string word_temp;
+  unsigned long long i_tokens = 0;
 
   while (!fin.eof()) {
     fin >> ch;
@@ -137,6 +110,70 @@ int main(int argc, const char** argv)
       word_temp += ch;
     }  
   }
+  fin.close();
+}
+
+void write_txt(const char* path_output, const std::vector<std::string> &wordtypes,
+               MatrixXd &vectors,
+               const unsigned long long n_vocab, const int dim)
+{
+  std::ofstream file_output;
+  file_output.open(path_output, std::ios::out);
+  file_output << n_vocab << " " << dim << std::endl;
+
+  for (int i = 0; i < vectors.rows(); i++) {
+    file_output << wordtypes[i] << " ";
+    for (int j = 0; j < vectors.cols(); j++) {
+      file_output << vectors(i, j) << " ";
+    }
+    file_output << std::endl;
+  }
+}
+
+int main(int argc, const char** argv)
+{
+  // Parse command line arguments
+  std::map<std::string, docopt::value> args
+    = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, "Kadingir 1.0");
+
+  const char* path_corpus = args["--corpus"].asString().c_str();
+  const char* path_output = args["--output"].asString().c_str();
+  const int   n_vocab     = args["--vocab"].asLong();
+  const int   dim         = args["--dim"].asLong();
+  const int   window      = args["--window"].asLong();
+  const bool  debug       = args["--debug"].asBool();
+
+  // Build word count table
+  MapCounter count_table;
+  unsigned long long n_tokens = 0;
+  unsigned long long n_documents = 0;
+
+  build_count_table(path_corpus, count_table, n_documents, n_tokens);
+  
+  // Sort `count_table`.
+  std::vector<PairCounter> count_vector(count_table.begin(), count_table.end());
+  std::sort(count_vector.begin(), count_vector.end(), sort_greater);
+  
+  // Construct table (std::string)word -> (int)wordtype id
+  unsigned long long i_vocab = 1;
+  MapCounter table_wordtype_id;
+  for (auto iter = count_vector.begin(); iter != count_vector.end(); iter++) {
+    std::string iter_str = iter->first;
+    int iter_int = iter->second;
+    table_wordtype_id.insert(PairCounter(iter_str, i_vocab));
+    i_vocab++;
+
+    if (i_vocab >= n_vocab) {
+      std::cout << "min count:  " << iter_int << ", " << iter_str << std::endl;
+      break;
+    }
+  }
+
+  // Convert words to wordtype id
+  unsigned long long n_oov = 0;
+  std::vector<int> tokens(n_tokens);
+
+  convert_corpus_to_wordtype(path_corpus, table_wordtype_id, tokens, n_oov);
 
   // Display some informations
   std::cout << std::endl;
@@ -156,22 +193,18 @@ int main(int argc, const char** argv)
   MatrixXd vectors = eigenwords.get_word_vectors();
 
   // Output vector representations as a txt file
-  std::ofstream file_output;
-  file_output.open(path_output, std::ios::out);
-  file_output << n_vocab << " " << dim << std::endl;
+  std::vector<std::string> wordtypes(n_vocab);
 
   for (int i = 0; i < vectors.rows(); i++) {
     if (i == 0) {
-      file_output << "<OOV> ";
+      wordtypes[i] = "<OOV>";
     } else {
-      file_output << count_vector[i - 1].first << " ";
+      wordtypes[i] = count_vector[i - 1].first;
     }
-
-    for (int j = 0; j < vectors.cols(); j++) {
-      file_output << vectors(i, j) << " ";
-    }
-    file_output << std::endl;
   }
+
+  write_txt(path_output, wordtypes, vectors, n_vocab, dim);
+
 
   return 0;
 }
