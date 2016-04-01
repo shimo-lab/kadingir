@@ -70,7 +70,7 @@ void build_count_table(const char* path_corpus, MapCounter &count_table,
     } else {
       // If `ch` is a character of a word
       word_temp += ch;
-    }      
+    }
   }
   fin.close();
 }
@@ -113,6 +113,22 @@ void convert_corpus_to_wordtype(const char* path_corpus, MapCounter &table_wordt
   fin.close();
 }
 
+void write_txt(const char* path_output, const std::vector<std::string> &wordtypes,
+               MatrixXd &vectors,
+               const unsigned long long n_vocab, const int dim)
+{
+  std::ofstream file_output;
+  file_output.open(path_output, std::ios::out);
+  file_output << n_vocab << " " << dim << std::endl;
+
+  for (int i = 0; i < vectors.rows(); i++) {
+    file_output << wordtypes[i] << " ";
+    for (int j = 0; j < vectors.cols(); j++) {
+      file_output << vectors(i, j) << " ";
+    }
+    file_output << std::endl;
+  }
+}
 
 int main(int argc, const char** argv)
 {
@@ -177,22 +193,18 @@ int main(int argc, const char** argv)
   MatrixXd vectors = eigenwords.get_word_vectors();
 
   // Output vector representations as a txt file
-  std::ofstream file_output;
-  file_output.open(path_output, std::ios::out);
-  file_output << n_vocab << " " << dim << std::endl;
+  std::vector<std::string> wordtypes(n_vocab);
 
   for (int i = 0; i < vectors.rows(); i++) {
     if (i == 0) {
-      file_output << "<OOV> ";
+      wordtypes[i] = "<OOV>";
     } else {
-      file_output << count_vector[i - 1].first << " ";
+      wordtypes[i] = count_vector[i - 1].first;
     }
-
-    for (int j = 0; j < vectors.cols(); j++) {
-      file_output << vectors(i, j) << " ";
-    }
-    file_output << std::endl;
   }
+
+  write_txt(path_output, wordtypes, vectors, n_vocab, dim);
+
 
   return 0;
 }
