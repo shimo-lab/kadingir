@@ -3,6 +3,7 @@
 .Rproj.user
 *.Rdata
 data
+corpora
 *.out
 output_*.csv
 *.pdf
