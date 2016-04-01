@@ -8,4 +8,5 @@ cd ./../corpora
 mkdir europarl
 cd europarl
 wget -i ./../../tools/europarl-v7_list_corpus.txt
+ls *.tgz | xargs -n1 tar xzvf
 cd -
