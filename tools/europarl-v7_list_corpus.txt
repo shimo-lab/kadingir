@@ -18,3 +18,4 @@ http://www.statmt.org/europarl/v7/ro-en.tgz
 http://www.statmt.org/europarl/v7/sk-en.tgz
 http://www.statmt.org/europarl/v7/sl-en.tgz
 http://www.statmt.org/europarl/v7/sv-en.tgz
+http://www.statmt.org/europarl/v7/tools.tgz
