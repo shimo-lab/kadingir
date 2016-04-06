@@ -74,15 +74,10 @@ void EigenwordsOSCCA::compute()
 {  
   // Construct the matrices for CCA and execute CCA
   construct_matrices();
-  tWW_h_diag.resize(vocab_size, vocab_size);
-  construct_h_diag_matrix(tWW_diag, tWW_h_diag);
-  
+  dSparseMatrix tWW_h_diag = asDiagonalDSparseMatrix(tWW_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  dSparseMatrix tCC_h_diag = asDiagonalDSparseMatrix(tCC_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
 
   std::cout << "Calculate OSCCA..." << std::endl;
-  
-  tCC_h_diag.resize(c_col_size, c_col_size);
-  construct_h_diag_matrix(tCC_diag, tCC_h_diag);
-  
   dSparseMatrix a = tWW_h_diag * (tWC.cast <double> ().eval().cwiseSqrt()) * tCC_h_diag;
   
   std::cout << "Calculate Randomized SVD..." << std::endl;
@@ -173,11 +168,6 @@ void EigenwordsTSCCA::compute()
   tRR.resize(lr_col_size, lr_col_size);
 
   construct_matrices();
-
-
-  // Construct the matrices for CCA and execute CCA
-  tWW_h_diag.resize(vocab_size, vocab_size);
-  construct_h_diag_matrix(tWW_diag, tWW_h_diag);
 
   run_tscca();
 }
@@ -277,11 +267,8 @@ void EigenwordsTSCCA::run_tscca()
   // Two Step CCA : Step 1
   VectorXi tLL_diag = tLL.diagonal();
   VectorXi tRR_diag = tRR.diagonal();
-  dSparseMatrix tLL_h_diag(lr_col_size, lr_col_size);
-  dSparseMatrix tRR_h_diag(lr_col_size, lr_col_size);
-  
-  construct_h_diag_matrix(tLL_diag, tLL_h_diag);
-  construct_h_diag_matrix(tRR_diag, tRR_h_diag);
+  dSparseMatrix tLL_h_diag = asDiagonalDSparseMatrix(tLL_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
+  dSparseMatrix tRR_h_diag = asDiagonalDSparseMatrix(tRR_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   dSparseMatrix b = tLL_h_diag * (tLR.cast <double> ().eval().cwiseSqrt()) * tRR_h_diag;
   
   std::cout << "# of nonzero,  # of rows,  # of cols = " << b.nonZeros() << ",  " << b.rows() << ",  " << b.cols() << std::endl;
@@ -303,14 +290,10 @@ void EigenwordsTSCCA::run_tscca()
   
   VectorXd tSS_h(2*k);
   tSS_h << tSS_h1, tSS_h2;
-  dSparseMatrix tSS_h_diag(tSS_h.size(), tSS_h.size());
-  for (int i = 0; i < tSS_h.size(); i++) {
-    tSS_h_diag.insert(i, i) = tSS_h(i);
-  }
-  
+  dSparseMatrix tSS_h_diag = asDiagonalDSparseMatrix(tSS_h);
   MatrixXd tWS(vocab_size, 2*k);
   tWS << tWC.topLeftCorner(vocab_size, lr_col_size).cast <double> ().cwiseSqrt() * phi_l, tWC.topRightCorner(vocab_size, lr_col_size).cast <double> ().cwiseSqrt() * phi_r;
-  
+  tWW_h_diag = asDiagonalDSparseMatrix(tWW_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   MatrixXd a = tWW_h_diag * tWS * tSS_h_diag;
   
   std::cout << "Calculate Randomized SVD (2/2)..." << std::endl;
@@ -380,8 +363,7 @@ void Eigendocs::compute()
     G_diag << 2*tWW_diag,   tCC_diag,   tDD_diag;
   }
 
-  dSparseMatrix G_inv_sqrt(p, p);
-  construct_h_diag_matrix(G_diag, G_inv_sqrt);
+  dSparseMatrix G_inv_sqrt = asDiagonalDSparseMatrix(G_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   G_inv_sqrt /= sqrt(2);
 
   dSparseMatrix A = (G_inv_sqrt * ((H.cast <double> ().cwiseSqrt()).selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
@@ -540,9 +522,7 @@ void CLEigenwords::compute()
   // Construct the matrices for CCA
   std::cout << "Calculate CDMCA..." << std::endl;
   
-  dSparseMatrix G_inv_sqrt(p, p);
-  construct_h_diag_matrix(G_diag, G_inv_sqrt);
-  
+  dSparseMatrix G_inv_sqrt = asDiagonalDSparseMatrix(G_diag.cwiseInverse().cwiseSqrt().cwiseSqrt());
   dSparseMatrix A = (G_inv_sqrt * (H.cast <double> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
 
   if (!debug) {
