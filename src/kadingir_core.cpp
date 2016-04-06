@@ -74,8 +74,7 @@ EigenwordsOSCCA::EigenwordsOSCCA(
 }
 
 void EigenwordsOSCCA::compute()
-{  
-  // Construct the matrices for CCA and execute CCA
+{
   construct_matrices();
   dSparseMatrix tWW_h_diag = asDiagonalDSparseMatrix(tWW_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
   dSparseMatrix tCC_h_diag = asDiagonalDSparseMatrix(tCC_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
@@ -101,14 +100,13 @@ void EigenwordsOSCCA::construct_matrices()
 {
   const unsigned long long id_wordtype_size = id_wordtype.size();
   unsigned long long n_pushed_triplets = 0;
+  std::vector<int> offsets = generate_offset_table(window_size);
   
   std::vector<Triplet> tWC_tripletList(TRIPLET_VECTOR_SIZE);
   iSparseMatrix tWC_temp(vocab_size, c_col_size);
 
   tWW_diag.setZero();
-  tCC_diag.setZero();
-  
-  std::vector<int> offsets = generate_offset_table(window_size);
+  tCC_diag.setZero();  
   
   for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
     const unsigned long long word0 = id_wordtype[i_id_wordtype];
@@ -169,7 +167,6 @@ void EigenwordsTSCCA::compute()
   tRR.resize(lr_col_size, lr_col_size);
 
   construct_matrices();
-
   run_tscca();
 }
 
@@ -177,18 +174,18 @@ void EigenwordsTSCCA::construct_matrices()
 {
   const unsigned long long id_wordtype_size = id_wordtype.size();
   unsigned long long n_pushed_triplets = 0;
+  std::vector<int> offsets = generate_offset_table(window_size);
 
-  std::vector<Triplet> tWC_tripletList(TRIPLET_VECTOR_SIZE), tLL_tripletList(TRIPLET_VECTOR_SIZE);
-  std::vector<Triplet> tLR_tripletList(TRIPLET_VECTOR_SIZE), tRR_tripletList(TRIPLET_VECTOR_SIZE);
+  std::vector<Triplet> tWC_tripletList(TRIPLET_VECTOR_SIZE);
+  std::vector<Triplet> tLL_tripletList(TRIPLET_VECTOR_SIZE);
+  std::vector<Triplet> tLR_tripletList(TRIPLET_VECTOR_SIZE);
+  std::vector<Triplet> tRR_tripletList(TRIPLET_VECTOR_SIZE);
   iSparseMatrix tWC_temp(vocab_size, c_col_size);
   iSparseMatrix tLL_temp(lr_col_size, lr_col_size);
   iSparseMatrix tLR_temp(lr_col_size, lr_col_size);
   iSparseMatrix tRR_temp(lr_col_size, lr_col_size);
-
   tWW_diag.setZero();
 
-  std::vector<int> offsets = generate_offset_table(window_size);
-  
   for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
     const unsigned long long word0 = id_wordtype[i_id_wordtype];
     tWW_diag(word0) += 1;
@@ -209,8 +206,7 @@ void EigenwordsTSCCA::construct_matrices()
         if ((i_word2 < 0) || (i_word2 >= id_wordtype_size)) continue;
         
         const unsigned long long word2 = id_wordtype[i_word2] + vocab_size * i_offset2;
-        
-        const bool word1_in_left_context = word1 < lr_col_size;
+	const bool word1_in_left_context = word1 < lr_col_size;
         const bool word2_in_left_context = word2 < lr_col_size;
         const bool is_upper_triangular = word1 <= word2;
         
@@ -226,7 +222,6 @@ void EigenwordsTSCCA::construct_matrices()
         }
       }
       
-      
       tWC_tripletList.push_back(Triplet(word0, word1, 1));
     }
     
@@ -235,7 +230,6 @@ void EigenwordsTSCCA::construct_matrices()
     // Commit temporary matrices
     if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_id_wordtype == id_wordtype_size - 1)) {
       update_crossprod_matrix(tWC_tripletList, tWC_temp, tWC);
-      
       update_crossprod_matrix(tLL_tripletList, tLL_temp, tLL);
       update_crossprod_matrix(tLR_tripletList, tLR_temp, tLR);
       update_crossprod_matrix(tRR_tripletList, tRR_temp, tRR);
@@ -303,8 +297,6 @@ void EigenwordsTSCCA::run_tscca()
 }
 
 
-
-
 Eigendocs::Eigendocs(
     const std::vector<int>& _id_wordtype,
     const std::vector<int>& _id_document,
@@ -340,15 +332,12 @@ void Eigendocs::compute()
   p_indices[2] = n_documents;
   p = vocab_size + c_col_size + n_documents;
 
-
   // Construct crossprod matrices
   tWW_diag.resize(vocab_size);
   tCC_diag.resize(c_col_size);
   tDD_diag.resize(n_documents);
   H.resize(p, p);
-
   construct_matrices();
-
 
   // Construct the matrices for CCA and execute CCA  
   G_diag.resize(p);
@@ -382,18 +371,15 @@ void Eigendocs::construct_matrices()
 {
   const unsigned long long id_wordtype_size = id_wordtype.size();
   const unsigned long long n_documents = *std::max_element(id_document.begin(), id_document.end()) + 1;
-
   unsigned long long n_pushed_triplets = 0;
+  std::vector<int> offsets = generate_offset_table(window_size);
 
   std::vector<Triplet> H_tripletList(TRIPLET_VECTOR_SIZE);
-
   iSparseMatrix H_temp(p, p);
 
   tWW_diag.setZero();
   tCC_diag.setZero();
   tDD_diag.setZero();
-
-  std::vector<int> offsets = generate_offset_table(window_size);
     
   for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
     const unsigned long long word0 = id_wordtype[i_id_wordtype];
@@ -427,7 +413,6 @@ void Eigendocs::construct_matrices()
     // Commit temporary matrices
     if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_id_wordtype == id_wordtype_size - 1)) {
       update_crossprod_matrix(H_tripletList, H_temp, H);
-
       n_pushed_triplets = 0;
     }
   }
@@ -501,7 +486,6 @@ CLEigenwords::CLEigenwords(
 
 void CLEigenwords::compute()
 {
-
   if (weighting_tf) {
     // Reweight matching weights using Term-Frequency
     construct_inverse_word_count_table();
@@ -511,10 +495,8 @@ void CLEigenwords::compute()
   G_diag.resize(p);
   G_diag.setZero();
   H.resize(p, p);
-
   construct_matrices();
 
-  // Construct the matrices for CCA
   std::cout << "Calculate CDMCA..." << std::endl;
   
   dSparseMatrix G_inv_sqrt = asDiagonalDSparseMatrix(G_diag.cwiseInverse().cwiseSqrt().cwiseSqrt());
@@ -537,7 +519,6 @@ void CLEigenwords::compute()
 void CLEigenwords::construct_inverse_word_count_table()
 {
   // Construct count table of words of each documents
-  
   VectorXi word_count_table(n_documents);
   inverse_word_count_table.resize(n_languages);
   unsigned long long sum_id_wordtype_lengths = 0;
@@ -564,7 +545,6 @@ void CLEigenwords::construct_inverse_word_count_table()
 
 void CLEigenwords::construct_matrices()
 {
-
   unsigned long long sum_id_wordtype_lengths = 0;
   const int weight_v_c = (int)link_v_c;
   
@@ -595,7 +575,6 @@ void CLEigenwords::construct_matrices()
   }
 
   std::vector<Triplet> H_tripletList(TRIPLET_VECTOR_SIZE);
-
   dSparseMatrix H_temp(p, p);
 
   unsigned long long i_id_wordtype_concated = 0;
@@ -603,7 +582,6 @@ void CLEigenwords::construct_matrices()
   
   // For each languages
   for (int i_languages = 0; i_languages < n_languages; i_languages++) {
-      
     const unsigned long long p_v = p_head_domains[2 * i_languages];     // Head of Vi
     const unsigned long long p_c = p_head_domains[2 * i_languages + 1]; // Head of Ci
     const unsigned long long p_d = p_head_domains[n_domain - 1];        // Head of D
@@ -656,14 +634,12 @@ void CLEigenwords::construct_matrices()
       // Commit temporary matrices
       if ((n_pushed_triplets >= TRIPLET_VECTOR_SIZE - 3*window_size) || (i_id_wordtype == id_wordtype_size - 1)) {
         update_crossprod_matrix(H_tripletList, H_temp, H);
-        
-        n_pushed_triplets = 0;
+	n_pushed_triplets = 0;
       }
 
       i_id_wordtype_concated++;
     }
   }
-
 
   H.makeCompressed();
 
