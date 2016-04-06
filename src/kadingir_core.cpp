@@ -85,23 +85,20 @@ EigenwordsOSCCA::EigenwordsOSCCA(
     debug(_debug)
 {
   c_col_size = 2 * (unsigned long long)window_size * vocab_size;
-}
 
-void EigenwordsOSCCA::compute()
-{
-  // Construct crossprod matrices
   tWW_diag.resize(vocab_size);
   tCC_diag.resize(c_col_size);
   tWC.resize(vocab_size, c_col_size);
+}
 
-  construct_matrices();
-  
-  
+void EigenwordsOSCCA::compute()
+{  
   // Construct the matrices for CCA and execute CCA
+  construct_matrices();
   tWW_h_diag.resize(vocab_size, vocab_size);
   construct_h_diag_matrix(tWW_diag, tWW_h_diag);
   
-  
+
   std::cout << "Calculate OSCCA..." << std::endl;
   
   tCC_h_diag.resize(c_col_size, c_col_size);
@@ -116,7 +113,6 @@ void EigenwordsOSCCA::compute()
   context_vectors = tCC_h_diag * svdA.matrixV();
   singular_values = svdA.singularValues();
   
-  
   if (!debug) {
     tWW_diag.resize(0);
     tCC_diag.resize(0);
@@ -129,7 +125,6 @@ void EigenwordsOSCCA::construct_matrices()
   const unsigned long long id_wordtype_size = id_wordtype.size();
   unsigned long long n_pushed_triplets = 0;
   
-
   std::vector<Triplet> tWC_tripletList(TRIPLET_VECTOR_SIZE);
   iSparseMatrix tWC_temp(vocab_size, c_col_size);
 
@@ -139,7 +134,6 @@ void EigenwordsOSCCA::construct_matrices()
   // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
   int offsets[2*window_size];
   fill_offset_table(offsets, window_size);
-  
   
   for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
     const unsigned long long word0 = id_wordtype[i_id_wordtype];
@@ -152,7 +146,7 @@ void EigenwordsOSCCA::construct_matrices()
       if ((i_word1 < 0) || (i_word1 >= id_wordtype_size)) continue;
       
       const unsigned long long word1 = id_wordtype[i_word1] + vocab_size * i_offset1;
-      
+
       tCC_diag(word1) += 1;
       tWC_tripletList.push_back(Triplet(word0, word1, 1));
     }
@@ -213,7 +207,6 @@ void EigenwordsTSCCA::construct_matrices()
 {
   const unsigned long long id_wordtype_size = id_wordtype.size();
   unsigned long long n_pushed_triplets = 0;
-
 
   std::vector<Triplet> tWC_tripletList(TRIPLET_VECTOR_SIZE), tLL_tripletList(TRIPLET_VECTOR_SIZE);
   std::vector<Triplet> tLR_tripletList(TRIPLET_VECTOR_SIZE), tRR_tripletList(TRIPLET_VECTOR_SIZE);
