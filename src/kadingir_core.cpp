@@ -214,12 +214,9 @@ void EigenwordsTSCCA::construct_matrices()
   const unsigned long long id_wordtype_size = id_wordtype.size();
   unsigned long long n_pushed_triplets = 0;
 
-  std::vector<Triplet> tWC_tripletList, tLL_tripletList, tLR_tripletList, tRR_tripletList;
-  tWC_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tLL_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tLR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
-  tRR_tripletList.reserve(TRIPLET_VECTOR_SIZE);
 
+  std::vector<Triplet> tWC_tripletList(TRIPLET_VECTOR_SIZE), tLL_tripletList(TRIPLET_VECTOR_SIZE);
+  std::vector<Triplet> tLR_tripletList(TRIPLET_VECTOR_SIZE), tRR_tripletList(TRIPLET_VECTOR_SIZE);
   iSparseMatrix tWC_temp(vocab_size, c_col_size);
   iSparseMatrix tLL_temp(lr_col_size, lr_col_size);
   iSparseMatrix tLR_temp(lr_col_size, lr_col_size);
