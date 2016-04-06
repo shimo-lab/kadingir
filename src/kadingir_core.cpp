@@ -49,17 +49,6 @@ void construct_h_diag_matrix(VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag)
   }
 }
 
-void construct_h_diag_matrix_double(VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
-{
-  VectorXd tXX_h(tXX_diag.cwiseInverse().cwiseSqrt().cwiseSqrt());
-  tXX_h_diag.reserve(tXX_diag.size());
-  
-  for (int i = 0; i < tXX_h.size(); i++) {
-    tXX_h_diag.insert(i, i) = tXX_h(i);
-  }
-}
-
-
 // TODO : template で書けないか？
 void construct_h_diag_matrix(VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
 {
@@ -562,7 +551,7 @@ void CLEigenwords::compute()
   std::cout << "Calculate CDMCA..." << std::endl;
   
   dSparseMatrix G_inv_sqrt(p, p);
-  construct_h_diag_matrix_double(G_diag, G_inv_sqrt);
+  construct_h_diag_matrix(G_diag, G_inv_sqrt);
   
   dSparseMatrix A = (G_inv_sqrt * (H.cast <double> ().cwiseSqrt().selfadjointView<Eigen::Upper>()) * G_inv_sqrt).eval();
 
