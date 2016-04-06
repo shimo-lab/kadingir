@@ -25,9 +25,11 @@ template <class MatrixX> void update_crossprod_matrix(
   tXX_temp.setZero();
 }
 
-
-void fill_offset_table(int offsets[], int window_size)
+// If window_size=2, it returns [-2, -1, 1, 2].
+std::vector<int> generate_offset_table(int window_size)
 {
+  std::vector<int> offsets(2 * window_size);
+
   int i_offset1 = 0;
   for (int offset = -window_size; offset <= window_size; offset++){
     if (offset != 0) {
@@ -35,6 +37,8 @@ void fill_offset_table(int offsets[], int window_size)
       i_offset1++;
     }
   }
+
+  return offsets;
 }
 
 dSparseMatrix asDiagonalDSparseMatrix(const VectorXd &x)
@@ -104,9 +108,7 @@ void EigenwordsOSCCA::construct_matrices()
   tWW_diag.setZero();
   tCC_diag.setZero();
   
-  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
-  int offsets[2*window_size];
-  fill_offset_table(offsets, window_size);
+  std::vector<int> offsets = generate_offset_table(window_size);
   
   for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
     const unsigned long long word0 = id_wordtype[i_id_wordtype];
@@ -185,10 +187,7 @@ void EigenwordsTSCCA::construct_matrices()
 
   tWW_diag.setZero();
 
-  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
-  int offsets[2*window_size];
-  fill_offset_table(offsets, window_size);
-  
+  std::vector<int> offsets = generate_offset_table(window_size);
   
   for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
     const unsigned long long word0 = id_wordtype[i_id_wordtype];
@@ -395,9 +394,7 @@ void Eigendocs::construct_matrices()
   tCC_diag.setZero();
   tDD_diag.setZero();
 
-  // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
-  int offsets[2*window_size];
-  fill_offset_table(offsets, window_size);
+  std::vector<int> offsets = generate_offset_table(window_size);
     
   for (unsigned long long i_id_wordtype = 0; i_id_wordtype < id_wordtype_size; i_id_wordtype++) {
     const unsigned long long word0 = id_wordtype[i_id_wordtype];
@@ -615,11 +612,7 @@ void CLEigenwords::construct_matrices()
     const unsigned long long window_size = window_sizes[i_languages];
     const unsigned long long vocab_size = vocab_sizes[i_languages];
     const unsigned long long id_wordtype_size = id_wordtype_lengths[i_languages];
-
-
-    // Construct offset table (If window_size=2, offsets = [-2, -1, 1, 2])
-    int offsets[2 * window_size];
-    fill_offset_table(offsets, window_size);
+    std::vector<int> offsets = generate_offset_table(window_size);
 
     // For all tokens of a certain language
     // In following comments, `l` indicates index of languages (i.e. `i_languages`).
