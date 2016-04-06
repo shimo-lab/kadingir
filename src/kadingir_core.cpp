@@ -385,8 +385,7 @@ void Eigendocs::construct_matrices()
 
   unsigned long long n_pushed_triplets = 0;
 
-  std::vector<Triplet> H_tripletList;
-  H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  std::vector<Triplet> H_tripletList(TRIPLET_VECTOR_SIZE);
 
   iSparseMatrix H_temp(p, p);
 
@@ -595,8 +594,7 @@ void CLEigenwords::construct_matrices()
     sum_id_wordtype_lengths += id_wordtype_length;
   }
 
-  std::vector<Triplet> H_tripletList;
-  H_tripletList.reserve(TRIPLET_VECTOR_SIZE);
+  std::vector<Triplet> H_tripletList(TRIPLET_VECTOR_SIZE);
 
   dSparseMatrix H_temp(p, p);
 
