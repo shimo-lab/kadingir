@@ -3,7 +3,6 @@
  *
  * memo :
  *  - `0` in id_wordtype indicates `<OOV>` (Out of Vocabulary, tokens that are not included in vocabulary).
- *  - v.asDiagonal() は疎行列ではなく密行列を返すため，仕方なく同様の処理をベタ書きしている箇所がある．
  *  - tWC indicates matrix multiplication (crossprod) of W and C (In R, tWC = t(W) %*% C).
  *  - `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
  */
