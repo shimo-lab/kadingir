@@ -14,15 +14,13 @@ const int TRIPLET_VECTOR_SIZE = 10000000;
 
 
 // Update crossprod matrix using triplets
-template <class MatrixX> void update_crossprod_matrix(
-    std::vector<Triplet> &tXX_tripletList,
-    MatrixX &tXX_temp,
-    MatrixX &tXX)
+template <class MatrixX>
+void update_crossprod_matrix(std::vector<Triplet> &X_tripletList, MatrixX &X_temp, MatrixX &X)
 {
-  tXX_temp.setFromTriplets(tXX_tripletList.begin(), tXX_tripletList.end());
-  tXX_tripletList.clear();
-  tXX += tXX_temp;
-  tXX_temp.setZero();
+  X_temp.setFromTriplets(X_tripletList.begin(), X_tripletList.end());
+  X_tripletList.clear();
+  X += X_temp;
+  X_temp.setZero();
 }
 
 // If window_size=2, it returns [-2, -1, 1, 2].
