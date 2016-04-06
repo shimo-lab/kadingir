@@ -129,9 +129,8 @@ void EigenwordsOSCCA::construct_matrices()
   const unsigned long long id_wordtype_size = id_wordtype.size();
   unsigned long long n_pushed_triplets = 0;
   
-  std::vector<Triplet> tWC_tripletList;
-  tWC_tripletList.reserve(TRIPLET_VECTOR_SIZE);
 
+  std::vector<Triplet> tWC_tripletList(TRIPLET_VECTOR_SIZE);
   iSparseMatrix tWC_temp(vocab_size, c_col_size);
 
   tWW_diag.setZero();
