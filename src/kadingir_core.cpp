@@ -38,26 +38,16 @@ void fill_offset_table(int offsets[], int window_size)
   }
 }
 
-
-void construct_h_diag_matrix(VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag)
+dSparseMatrix asDiagonalDSparseMatrix(const VectorXd &x)
 {
-  VectorXd tXX_h(tXX_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-  tXX_h_diag.reserve(tXX_diag.size());
-  
-  for (int i = 0; i < tXX_h.size(); i++) {
-    tXX_h_diag.insert(i, i) = tXX_h(i);
-  }
-}
+  int n = x.size();
+  dSparseMatrix x_diag(n, n);
 
-// TODO : template で書けないか？
-void construct_h_diag_matrix(VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag)
-{
-  VectorXd tXX_h(tXX_diag.cast <double> ().cwiseInverse().cwiseSqrt().cwiseSqrt());
-  tXX_h_diag.reserve(tXX_diag.size());
-  
-  for (int i = 0; i < tXX_h.size(); i++) {
-    tXX_h_diag.insert(i, i) = tXX_h(i);
+  for (int i = 0; i < n; i++) {
+    x_diag.insert(i, i) = x(i);
   }
+
+  return x_diag;
 }
 
 
