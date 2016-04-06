@@ -84,8 +84,7 @@ EigenwordsOSCCA::EigenwordsOSCCA(
     k(_k),
     debug(_debug)
 {
-  lr_col_size = (unsigned long long)window_size * vocab_size;
-  c_col_size = 2 * lr_col_size;
+  c_col_size = 2 * (unsigned long long)window_size * vocab_size;
 }
 
 void EigenwordsOSCCA::compute()

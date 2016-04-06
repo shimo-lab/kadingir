@@ -24,7 +24,6 @@ private:
   bool debug;
 
   unsigned long long c_col_size;
-  unsigned long long lr_col_size;
 
   VectorXi tWW_diag;
   VectorXi tCC_diag;
