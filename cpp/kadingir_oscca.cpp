@@ -1,5 +1,3 @@
-/* kadingir_oscca.cpp */
-
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -14,10 +12,10 @@ typedef std::pair<std::string, int> PairCounter;
 
 
 static const char USAGE[] =
-R"(Kadingir: Eigenwords (OSCCA)
+R"(Kadingir: Eigenwords - OSCCA
 
     Usage:
-      kadingir --corpus <corpus> --output <output> --vocab <vocab> --dim <dim> --window <window> [--debug]
+      kadingir_oscca --corpus <corpus> --output <output> --vocab <vocab> --dim <dim> --window <window> [--debug]
 
     Options:
       -h --help          Show this screen.
