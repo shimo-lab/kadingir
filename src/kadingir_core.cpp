@@ -368,7 +368,6 @@ void Eigendocs::compute()
 void Eigendocs::construct_matrices()
 {
   const unsigned long long id_wordtype_size = id_wordtype.size();
-  const unsigned long long n_documents = *std::max_element(id_document.begin(), id_document.end()) + 1;
   unsigned long long n_pushed_triplets = 0;
   std::vector<int> offsets = generate_offset_table(window_size);
 
