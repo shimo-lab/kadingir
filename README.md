@@ -20,6 +20,7 @@ kadingir: Implementation of some methods of word embedding
     * From <https://code.google.com/archive/p/word2vec/>
 * The WordSimilarity-353 Test Collection
     * <http://www.cs.technion.ac.il/~gabr/resources/data/wordsim353/>
+* text8 corpus <http://mattmahoney.net/dc/text8.zip>
 
 
 ## References
