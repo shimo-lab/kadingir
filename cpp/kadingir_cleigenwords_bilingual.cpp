@@ -28,31 +28,21 @@ R"(Kadingir: Cross-Lingual Eigenwords (bilingual)
 )";
 
 
-int main(int argc, const char** argv)
+void set_tokens (std::string path_corpus,
+                 const int n_vocab,
+                 const int window,
+                 std::vector<int> &tokens,
+                 std::vector<PairCounter> &count_vector)
 {
-  // Parse command line arguments
-  std::map<std::string, docopt::value> args
-    = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, "Kadingir 1.0");
-
-  const std::string path_corpus1 = args["--corpus1"].asString();
-  const std::string path_corpus2 = args["--corpus2"].asString();
-  const std::string path_output  = args["--output" ].asString();
-  const int         n_vocab1     = args["--vocab1" ].asLong();
-  const int         n_vocab2     = args["--vocab2" ].asLong();
-  const int         window1      = args["--window1"].asLong();
-  const int         window2      = args["--window2"].asLong();
-  const int         dim          = args["--dim"    ].asLong();
-  const bool        debug        = args["--debug"  ].asBool();
-
   // Build word count table
   MapCounter count_table;
   unsigned long long n_tokens = 0;
   unsigned long long n_documents = 0;
 
-  build_count_table(path_corpus1, count_table, n_documents, n_tokens);
+  build_count_table(path_corpus, count_table, n_documents, n_tokens);
   
   // Sort `count_table`.
-  std::vector<PairCounter> count_vector(count_table.begin(), count_table.end());
+  count_vector = std::vector<PairCounter>(count_table.begin(), count_table.end());
   std::sort(count_vector.begin(), count_vector.end(), sort_greater);
   
   // Construct table (std::string)word -> (int)wordtype id
@@ -64,7 +54,7 @@ int main(int argc, const char** argv)
     table_wordtype_id.insert(PairCounter(iter_str, i_vocab));
     i_vocab++;
 
-    if (i_vocab >= n_vocab1) {
+    if (i_vocab >= n_vocab) {
       std::cout << "min count:  " << iter_int << ", " << iter_str << std::endl;
       break;
     }
@@ -72,25 +62,49 @@ int main(int argc, const char** argv)
 
   // Convert words to wordtype id
   unsigned long long n_oov = 0;
-  std::vector<int> tokens(n_tokens);
+  tokens.reserve(n_tokens);
 
-  convert_corpus_to_wordtype(path_corpus1, table_wordtype_id, tokens, n_oov);
+  convert_corpus_to_wordtype(path_corpus, table_wordtype_id, tokens, n_oov);
 
   // Display some informations
   std::cout << std::endl;
-  std::cout << "Corpus 1    : " << path_corpus1 << std::endl;
+  std::cout << "Corpus      : " << path_corpus << std::endl;
   std::cout << "# of tokens : " << n_tokens << std::endl;
   std::cout << "# of OOV    : " << n_oov << std::endl;
-  std::cout << "# of vocab  : " << n_vocab1 << std::endl;
-  std::cout << "Window size : " << window1 << std::endl;
+  std::cout << "# of vocab  : " << n_vocab << std::endl;
+  std::cout << "Window size : " << window << std::endl;
   std::cout << "Coverage(%) : " << 100 * (n_tokens - n_oov) / (double)n_tokens << std::endl;
+  std::cout << std::endl;
+}
 
+int main(int argc, const char** argv)
+{
+  // Parse command line arguments
+  std::map<std::string, docopt::value> args
+    = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, "Kadingir (CL-Eigenwords) 1.0");
+
+  const std::string path_corpus1 = args["--corpus1"].asString();
+  const std::string path_corpus2 = args["--corpus2"].asString();
+  const std::string path_output  = args["--output" ].asString();
+  const int         n_vocab1     = args["--vocab1" ].asLong();
+  const int         n_vocab2     = args["--vocab2" ].asLong();
+  const int         window1      = args["--window1"].asLong();
+  const int         window2      = args["--window2"].asLong();
+  const int         dim          = args["--dim"    ].asLong();
+  const bool        debug        = args["--debug"  ].asBool();
+
+  std::vector<int> tokens1, tokens2;
+  std::vector<PairCounter> count_vector1, count_vector2;
+  set_tokens(path_corpus1, n_vocab1, window1, tokens1, count_vector1);
+  set_tokens(path_corpus2, n_vocab2, window2, tokens2, count_vector2);
+
+  std::cout << std::endl;
   std::cout << "Output      : " << path_output << std::endl;
   std::cout << "dim         : " << dim << std::endl;
   std::cout << std::endl;
 
   // Execute EigenwordsOSCCA
-  EigenwordsOSCCA eigenwords(tokens, window1, n_vocab1, dim, debug);
+  EigenwordsOSCCA eigenwords(tokens1, window1, n_vocab1, dim, debug);
   eigenwords.compute();
   MatrixXd vectors = eigenwords.get_word_vectors();
 
@@ -101,7 +115,7 @@ int main(int argc, const char** argv)
     if (i == 0) {
       wordtypes[i] = "<OOV>";
     } else {
-      wordtypes[i] = count_vector[i - 1].first;
+      wordtypes[i] = count_vector1[i - 1].first;
     }
   }
 
