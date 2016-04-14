@@ -34,15 +34,15 @@ int main(int argc, const char** argv)
   std::map<std::string, docopt::value> args
     = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, "Kadingir 1.0");
 
-  const char* path_corpus1 = args["--corpus1"].asString().c_str();
-  const char* path_corpus2 = args["--corpus2"].asString().c_str();
-  const char* path_output  = args["--output"].asString().c_str();
-  const int   n_vocab1     = args["--vocab1"].asLong();
-  const int   n_vocab2     = args["--vocab2"].asLong();
-  const int   window1      = args["--window1"].asLong();
-  const int   window2      = args["--window2"].asLong();
-  const int   dim          = args["--dim"].asLong();
-  const bool  debug        = args["--debug"].asBool();
+  const std::string path_corpus1 = args["--corpus1"].asString();
+  const std::string path_corpus2 = args["--corpus2"].asString();
+  const std::string path_output  = args["--output" ].asString();
+  const int         n_vocab1     = args["--vocab1" ].asLong();
+  const int         n_vocab2     = args["--vocab2" ].asLong();
+  const int         window1      = args["--window1"].asLong();
+  const int         window2      = args["--window2"].asLong();
+  const int         dim          = args["--dim"    ].asLong();
+  const bool        debug        = args["--debug"  ].asBool();
 
   // Build word count table
   MapCounter count_table;

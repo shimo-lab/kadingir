@@ -7,12 +7,12 @@ bool sort_greater(const PairCounter& left, const PairCounter& right)
   return left.second > right.second;
 }
 
-void build_count_table(const char* path_corpus, MapCounter &count_table,
+void build_count_table(const std::string &path_corpus, MapCounter &count_table,
                        unsigned long long &n_documents, unsigned long long &n_tokens)
 {
   std::ifstream fin;
   fin.unsetf(std::ios::skipws);
-  fin.open(path_corpus);
+  fin.open(path_corpus.c_str());
 
   char ch;
   std::string word_temp;
@@ -47,12 +47,12 @@ void build_count_table(const char* path_corpus, MapCounter &count_table,
   fin.close();
 }
 
-void convert_corpus_to_wordtype(const char* path_corpus, MapCounter &table_wordtype_id,
+void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &table_wordtype_id,
                                 std::vector<int> &tokens, unsigned long long &n_oov)
 {
   std::ifstream fin;
   fin.unsetf(std::ios::skipws);
-  fin.open(path_corpus);
+  fin.open(path_corpus.c_str());
 
   char ch;
   std::string word_temp;
@@ -85,12 +85,12 @@ void convert_corpus_to_wordtype(const char* path_corpus, MapCounter &table_wordt
   fin.close();
 }
 
-void write_txt(const char* path_output, const std::vector<std::string> &wordtypes,
+void write_txt(const std::string &path_output, const std::vector<std::string> &wordtypes,
                Eigen::MatrixXd &vectors,
                const unsigned long long n_vocab, const int dim)
 {
   std::ofstream file_output;
-  file_output.open(path_output, std::ios::out);
+  file_output.open(path_output.c_str(), std::ios::out);
   file_output << n_vocab << " " << dim << std::endl;
 
   for (int i = 0; i < vectors.rows(); i++) {

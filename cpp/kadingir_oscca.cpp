@@ -27,12 +27,12 @@ int main(int argc, const char** argv)
   std::map<std::string, docopt::value> args
     = docopt::docopt(USAGE, { argv + 1, argv + argc }, true, "Kadingir 1.0");
 
-  const char* path_corpus = args["--corpus"].asString().c_str();
-  const char* path_output = args["--output"].asString().c_str();
-  const int   n_vocab     = args["--vocab"].asLong();
-  const int   dim         = args["--dim"].asLong();
-  const int   window      = args["--window"].asLong();
-  const bool  debug       = args["--debug"].asBool();
+  const std::string path_corpus = args["--corpus"].asString();
+  const std::string path_output = args["--output"].asString();
+  const int         n_vocab     = args["--vocab" ].asLong();
+  const int         dim         = args["--dim"   ].asLong();
+  const int         window      = args["--window"].asLong();
+  const bool        debug       = args["--debug" ].asBool();
 
   // Build word count table
   MapCounter count_table;
