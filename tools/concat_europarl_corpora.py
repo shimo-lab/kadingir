@@ -23,8 +23,8 @@ if __name__ == '__main__':
 
         lang1, lang2 = lang_pair.split('-')
 
-        path_corpus_lang1 = './europarl/europarl-v7.{lang_pair}.{lang_corpus}'.format(lang_pair=lang_pair, lang_corpus=lang1)
-        path_corpus_lang2 = './europarl/europarl-v7.{lang_pair}.{lang_corpus}'.format(lang_pair=lang_pair, lang_corpus=lang2)
+        path_corpus_lang1 = './../corpora/europarl/europarl-v7.{lang_pair}.{lang_corpus}'.format(lang_pair=lang_pair, lang_corpus=lang1)
+        path_corpus_lang2 = './../corpora/europarl/europarl-v7.{lang_pair}.{lang_corpus}'.format(lang_pair=lang_pair, lang_corpus=lang2)
 
         df_lang1 = pd.read_csv(path_corpus_lang1, sep='<<<', engine='python', skip_blank_lines=False)
         df_lang2 = pd.read_csv(path_corpus_lang2, sep='<<<', engine='python', skip_blank_lines=False)
@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     # Output as text files
     for lang in lang_list:
-        path_output = './europarl/europarl-v7.merged.{lang}'.format(lang=lang)
+        path_output = './../corpora/europarl/europarl-v7.merged.{lang}'.format(lang=lang)
         print(path_output)
 
         with open(path_output, 'w') as f:
