@@ -118,6 +118,12 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   for (i in seq(n.languages)) {
     vocab.words.concated <- c(vocab.words.concated, list(c("<OOV>", vocab.words[[i]])))
   }
+  
+  cat("preprocessing time: ")
+  diff.time <- Sys.time() - time.start
+  print(diff.time)
+  cat("\n")
+  time.start <- Sys.time()
 
   cat("Calculate CLEigenwords...\n\n")
   results.cleigenwords <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
