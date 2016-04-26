@@ -5,7 +5,7 @@ library(RcppEigen)
 library(foreach)
 library(doParallel)
 
-sourceCpp("kadingir_rcpp_wrapper.cpp", rebuild = TRUE)
+sourceCpp("kadingir_rcpp_wrapper.cpp", rebuild = TRUE, verbose = TRUE)
 
 
 
