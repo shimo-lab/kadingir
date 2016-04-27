@@ -22,7 +22,7 @@ path.corpus <- "./../corpora/text8/text8"
 
 
 ```{r}
-res.eigenwords <- Eigenwords(path.corpus, n.vocabulary, dim.internal, window.size, mode = "tscca", plot = TRUE)
+#res.eigenwords <- Eigenwords(path.corpus, n.vocabulary, dim.internal, window.size, mode = "tscca", plot = TRUE)
 res.eigenwords <- Eigenwords(path.corpus, n.vocabulary, dim.internal, window.size, mode = "oscca", plot = TRUE)
 save(res.eigenwords, file = "res_eigenwords.Rdata")
 ```
