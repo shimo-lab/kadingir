@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <time.h> 
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
 #include "redsvd.hpp"
