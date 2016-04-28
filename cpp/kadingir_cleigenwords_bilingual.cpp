@@ -63,8 +63,8 @@ void set_tokens (std::string path_corpus,
 
   // Convert words to wordtype id
   unsigned long long n_oov = 0;
-  tokens.reserve(n_tokens);
-  document_id.reserve(n_tokens);
+  tokens.resize(n_tokens);
+  document_id.resize(n_tokens);
 
   convert_corpus_to_wordtype(path_corpus, table_wordtype_id, tokens, document_id, n_oov);
 
