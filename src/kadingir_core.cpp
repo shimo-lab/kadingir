@@ -483,6 +483,8 @@ CLEigenwords::CLEigenwords(
 
 void CLEigenwords::compute()
 {
+  clock_t clock_start = clock();
+
   if (weighting_tf) {
     // Reweight matching weights using Term-Frequency
     construct_inverse_word_count_table();
@@ -493,6 +495,10 @@ void CLEigenwords::compute()
   G_diag.setZero();
   H.resize(p, p);
   construct_matrices();
+  
+  clock_t clock_end = clock();
+  std::cout << "* duration(construct_matrices()) = " << (double)(clock_end - clock_start) / CLOCKS_PER_SEC << "sec.\n";
+  clock_start = clock();
 
   std::cout << "Calculate CDMCA..." << std::endl;
   
@@ -503,10 +509,18 @@ void CLEigenwords::compute()
     G_diag.resize(0);
     H.resize(0, 0);
   }
+  
+  clock_end = clock();
+  std::cout << "* duration(construct A) = " << (double)(clock_end - clock_start) / CLOCKS_PER_SEC << "sec.\n";
+  clock_start = clock();
 
   // Execute CDMCA
   std::cout << "Calculate Randomized SVD..." << std::endl;
   RedSVD::RedSVD<dSparseMatrix> svdA(A, k, 20);
+  
+  clock_end = clock();
+  std::cout << "* duration(RedSVD) = " << (double)(clock_end - clock_start) / CLOCKS_PER_SEC << "sec.\n";
+  
   MatrixXd principal_components = svdA.matrixV();
   vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
   eigenvalues = svdA.singularValues();  // singular values of symmetric matrix A is the same as its eigenvalues.

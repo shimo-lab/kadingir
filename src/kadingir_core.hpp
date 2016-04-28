@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <time.h> 
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
 #include "redsvd.hpp"
@@ -9,8 +10,8 @@ typedef Eigen::VectorXi VectorXi;
 typedef Eigen::VectorXd VectorXd;
 typedef Eigen::MatrixXd MatrixXd;
 typedef Eigen::Map<Eigen::VectorXi> MapVectorXi;
-typedef Eigen::SparseMatrix<int, Eigen::RowMajor, std::ptrdiff_t> iSparseMatrix;
-typedef Eigen::SparseMatrix<double, Eigen::RowMajor, std::ptrdiff_t> dSparseMatrix;
+typedef Eigen::SparseMatrix<int, Eigen::ColMajor, std::ptrdiff_t> iSparseMatrix;
+typedef Eigen::SparseMatrix<double, Eigen::ColMajor, std::ptrdiff_t> dSparseMatrix;
 typedef Eigen::Triplet<double> Triplet;
 
 

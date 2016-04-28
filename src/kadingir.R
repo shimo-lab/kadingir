@@ -5,7 +5,7 @@ library(RcppEigen)
 library(foreach)
 library(doParallel)
 
-sourceCpp("kadingir_rcpp_wrapper.cpp", rebuild = TRUE)
+sourceCpp("kadingir_rcpp_wrapper.cpp", rebuild = TRUE, verbose = TRUE)
 
 
 
@@ -223,7 +223,7 @@ MostSimilarDocs <- function (document.id, document_vector, titles, topn = 10) {
 }
 
 
-TestGoogleTasks <- function (U, vocab, path = "./../data/word2vec/questions-words.txt", n.cores = 1) {
+TestGoogleTasks <- function (U, vocab, path = "./../corpora/word2vec/questions-words.txt", n.cores = 1) {
   
   time.start <- Sys.time()
   
@@ -260,7 +260,7 @@ TestGoogleTasks <- function (U, vocab, path = "./../data/word2vec/questions-word
 }
 
 
-TestWordsim353 <- function (vectors, vocab, path = "./../data/wordsim353/combined.csv") {
+TestWordsim353 <- function (vectors, vocab, path = "./../corpora/wordsim353/combined.csv") {
   
   cosine.similarity <- function (w1, w2) {
     v1 <- vectors[w1, ]
