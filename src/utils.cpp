@@ -48,7 +48,8 @@ void build_count_table(const std::string &path_corpus, MapCounter &count_table,
 }
 
 void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &table_wordtype_id,
-                                std::vector<int> &tokens, unsigned long long &n_oov)
+                                std::vector<int> &tokens, std::vector<int> &document_id,
+				unsigned long long &n_oov)
 {
   std::ifstream fin;
   fin.unsetf(std::ios::skipws);
@@ -56,7 +57,7 @@ void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &tabl
 
   char ch;
   std::string word_temp;
-  unsigned long long i_tokens = 0;
+  unsigned long long i_tokens = 0, i_documents = 0;
 
   while (!fin.eof()) {
     fin >> ch;
@@ -73,9 +74,14 @@ void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &tabl
           // Otherwise
           tokens[i_tokens] = table_wordtype_id[word_temp];
         }
+	document_id[i_tokens] = i_documents;
 
         i_tokens += 1;
         word_temp.erase();
+      } else {
+	if (ch == '\n') {
+	  i_documents += 1;
+	}
       }
     } else {
       // If `ch` is a character of a word
