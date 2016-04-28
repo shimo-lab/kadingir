@@ -1,7 +1,3 @@
-/*
-  Work in Progress
-*/
-
 #include "docopt.cpp/docopt.h"
 #include "../src/kadingir_core.hpp"
 #include "../src/utils.hpp"
