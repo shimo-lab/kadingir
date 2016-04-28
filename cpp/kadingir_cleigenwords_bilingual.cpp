@@ -102,23 +102,55 @@ int main(int argc, const char** argv)
   std::cout << "dim         : " << dim << std::endl;
   std::cout << std::endl;
 
-  // Execute EigenwordsOSCCA
-  EigenwordsOSCCA eigenwords(tokens1, window1, n_vocab1, dim, debug);
-  eigenwords.compute();
-  MatrixXd vectors = eigenwords.get_word_vectors();
+  // Execute CL-Eigenwords
+  std::vector<int> window_sizes = { window1, window2 };
+  std::vector<int> vocab_sizes = { n_vocab1, n_vocab2 };
+  const unsigned long long n_tokens1 = tokens1.size();
+  const unsigned long long n_tokens2 = tokens2.size();
+  std::vector<unsigned long long> sentence_lengths = { n_tokens1, n_tokens2 };
+  std::vector<double> weight_vsdoc = { 1.0, 1.0 };
+  tokens1.insert(tokens1.end(), tokens2.begin(), tokens2.end());
+  document_id1.insert(document_id1.end(), document_id2.begin(), document_id2.end());
+
+  CLEigenwords cleigenwords(tokens1, document_id1,
+			    window_sizes, vocab_sizes,
+			    sentence_lengths, dim,
+			    true,
+			    false, weight_vsdoc,
+			    debug);
+  cleigenwords.compute();
+  MatrixXd vectors = cleigenwords.get_vector_representations();
 
   // Output vector representations as a txt file
-  std::vector<std::string> wordtypes(n_vocab1);
+  const int n_rep_lang1 = (2*window1 + 1) * n_vocab1;
+  const int n_rep_lang2 = (2*window2 + 1) * n_vocab2;
+  const int n_documents = *std::max_element(document_id1.begin(), document_id1.end()) + 1;
+  std::vector<std::string> wordtypes(n_rep_lang1 + n_rep_lang2 + n_documents);
 
   for (int i = 0; i < vectors.rows(); i++) {
-    if (i == 0) {
-      wordtypes[i] = "<OOV>";
+    if (i < n_rep_lang1) {
+      const int i_word = i % n_vocab1;
+
+      if (i_word == 0) {
+	wordtypes[i] = "<OOV>";
+      } else {
+	wordtypes[i] = count_vector1[i_word - 1].first;
+      }
+    } else if (i < n_rep_lang1 + n_rep_lang2) {
+      const int i_word = (i - n_rep_lang1) % n_vocab2;
+
+      if (i_word == 0) {
+	wordtypes[i] = "<OOV>";
+      } else {
+	wordtypes[i] = count_vector2[i_word - 1].first;
+      }
     } else {
-      wordtypes[i] = count_vector1[i - 1].first;
+      const int i_doc = i - n_rep_lang1 - n_rep_lang2;
+      wordtypes[i] = std::to_string(i_doc);
     }
   }
 
-  write_txt(path_output, wordtypes, vectors, n_vocab1, dim);
+  write_txt(path_output, wordtypes, vectors, n_vocab1 + n_vocab2, dim);
 
 
   return 0;
