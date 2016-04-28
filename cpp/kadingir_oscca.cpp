@@ -62,9 +62,9 @@ int main(int argc, const char** argv)
 
   // Convert words to wordtype id
   unsigned long long n_oov = 0;
-  std::vector<int> tokens(n_tokens);
+  std::vector<int> tokens(n_tokens), document_id(n_tokens);
 
-  convert_corpus_to_wordtype(path_corpus, table_wordtype_id, tokens, n_oov);
+  convert_corpus_to_wordtype(path_corpus, table_wordtype_id, tokens, document_id, n_oov);
 
   // Display some informations
   std::cout << std::endl;

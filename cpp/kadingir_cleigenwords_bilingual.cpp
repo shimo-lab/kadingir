@@ -32,6 +32,7 @@ void set_tokens (std::string path_corpus,
                  const int n_vocab,
                  const int window,
                  std::vector<int> &tokens,
+                 std::vector<int> &document_id,
                  std::vector<PairCounter> &count_vector)
 {
   // Build word count table
@@ -63,13 +64,15 @@ void set_tokens (std::string path_corpus,
   // Convert words to wordtype id
   unsigned long long n_oov = 0;
   tokens.reserve(n_tokens);
+  document_id.reserve(n_tokens);
 
-  convert_corpus_to_wordtype(path_corpus, table_wordtype_id, tokens, n_oov);
+  convert_corpus_to_wordtype(path_corpus, table_wordtype_id, tokens, document_id, n_oov);
 
   // Display some informations
   std::cout << std::endl;
   std::cout << "Corpus      : " << path_corpus << std::endl;
   std::cout << "# of tokens : " << n_tokens << std::endl;
+  std::cout << "# of doc.   : " << *std::max_element(document_id.begin(), document_id.end()) + 1 << std::endl;
   std::cout << "# of OOV    : " << n_oov << std::endl;
   std::cout << "# of vocab  : " << n_vocab << std::endl;
   std::cout << "Window size : " << window << std::endl;
@@ -93,10 +96,10 @@ int main(int argc, const char** argv)
   const int         dim          = args["--dim"    ].asLong();
   const bool        debug        = args["--debug"  ].asBool();
 
-  std::vector<int> tokens1, tokens2;
+  std::vector<int> tokens1, tokens2, document_id1, document_id2;
   std::vector<PairCounter> count_vector1, count_vector2;
-  set_tokens(path_corpus1, n_vocab1, window1, tokens1, count_vector1);
-  set_tokens(path_corpus2, n_vocab2, window2, tokens2, count_vector2);
+  set_tokens(path_corpus1, n_vocab1, window1, tokens1, document_id1, count_vector1);
+  set_tokens(path_corpus2, n_vocab2, window2, tokens2, document_id2, count_vector2);
 
   std::cout << std::endl;
   std::cout << "Output      : " << path_output << std::endl;
