@@ -78,11 +78,12 @@ void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &tabl
 
         i_tokens += 1;
         word_temp.erase();
-      } else {
-	if (ch == '\n') {
-	  i_documents += 1;
-	}
       }
+ 
+      if (ch == '\n') {
+	i_documents += 1;
+      }
+
     } else {
       // If `ch` is a character of a word
       word_temp += ch;
