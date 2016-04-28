@@ -3,7 +3,6 @@ CXXFLAGS = --std=c++11 -Wall -Wno-sign-compare -Wno-unknown-pragmas
 INCLUDES = -I/usr/include/eigen3/
 
 all: kadingir_oscca kadingir_cleigenwords_bilingual
-	
 kadingir_oscca: kadingir_oscca.cpp kadingir_core.o docopt.o utils.o
 	$(CXX) $(CXXFLAGS) $(INCLUDES) utils.o docopt.o kadingir_oscca.cpp -o kadingir_oscca kadingir_core.o
 kadingir_cleigenwords_bilingual: kadingir_cleigenwords_bilingual.cpp kadingir_core.o docopt.o utils.o
