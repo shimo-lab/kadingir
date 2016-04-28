@@ -1,4 +1,4 @@
-CXX = g++-4.9
+CXX = g++
 CXXFLAGS = --std=c++11 -Wall -Wno-sign-compare -Wno-unknown-pragmas
 INCLUDES = -I/usr/include/eigen3/
 
