@@ -81,7 +81,7 @@ int main(int argc, const char** argv)
   // Execute EigenwordsOSCCA
   EigenwordsOSCCA eigenwords(tokens, window, n_vocab, dim, debug);
   eigenwords.compute();
-  MatrixXd vectors = eigenwords.get_word_vectors();
+  const MatrixXd vectors = eigenwords.get_word_vectors();
 
   // Output vector representations as a txt file
   std::vector<std::string> wordtypes(n_vocab);

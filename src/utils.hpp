@@ -17,5 +17,5 @@ void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &tabl
 				unsigned long long &n_oov);
 void write_txt(const std::string &path_output,
                const std::vector<std::string> &wordtypes,
-               Eigen::MatrixXd &vectors,
+               const Eigen::MatrixXd &vectors,
                const unsigned long long n_vocab, const int dim);
