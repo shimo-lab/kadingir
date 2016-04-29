@@ -103,12 +103,12 @@ int main(int argc, const char** argv)
   std::cout << std::endl;
 
   // Execute CL-Eigenwords
-  std::vector<int> window_sizes = { window1, window2 };
-  std::vector<int> vocab_sizes = { n_vocab1, n_vocab2 };
+  const std::vector<int> window_sizes = { window1, window2 };
+  const std::vector<int> vocab_sizes = { n_vocab1, n_vocab2 };
   const unsigned long long n_tokens1 = tokens1.size();
   const unsigned long long n_tokens2 = tokens2.size();
-  std::vector<unsigned long long> sentence_lengths = { n_tokens1, n_tokens2 };
-  std::vector<double> weight_vsdoc = { 1.0, 1.0 };
+  const std::vector<unsigned long long> sentence_lengths = { n_tokens1, n_tokens2 };
+  const std::vector<double> weight_vsdoc = { 1.0, 1.0 };
   tokens1.insert(tokens1.end(), tokens2.begin(), tokens2.end());
   document_id1.insert(document_id1.end(), document_id2.begin(), document_id2.end());
 
@@ -119,7 +119,7 @@ int main(int argc, const char** argv)
 			    false, weight_vsdoc,
 			    debug);
   cleigenwords.compute();
-  MatrixXd vectors = cleigenwords.get_vector_representations();
+  const MatrixXd vectors = cleigenwords.get_vector_representations();
 
   // Output vector representations as a txt file
   const int n_rep_lang1 = (2*window1 + 1) * n_vocab1;
