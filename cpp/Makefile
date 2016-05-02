@@ -1,6 +1,6 @@
 CXX = g++
-INCLUDES = -I/usr/include/eigen3/
 CXXFLAGS = --std=c++11 -Wall -Wno-sign-compare -Wno-unknown-pragmas -fPIC -fopenmp -O3
+INCLUDES = -I"/usr/include/"
 
 all: kadingir_oscca kadingir_cleigenwords_bilingual
 kadingir_oscca: kadingir_oscca.cpp kadingir_core.o docopt.o utils.o
