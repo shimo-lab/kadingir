@@ -516,14 +516,14 @@ void CLEigenwords::compute()
 
   // Execute CDMCA
   std::cout << "Calculate Randomized SVD..." << std::endl;
-  RedSVD::RedSVD<dSparseMatrix> svdA(A, k, 20);
+  RedSVD::RedSymEigen<dSparseMatrix> svdA(A, k);
   
   clock_end = clock();
   std::cout << "* duration(RedSVD) = " << (double)(clock_end - clock_start) / CLOCKS_PER_SEC << "sec.\n";
   
-  MatrixXd principal_components = svdA.matrixV();
+  MatrixXd principal_components = svdA.eigenvectors();
   vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
-  eigenvalues = svdA.singularValues();  // singular values of symmetric matrix A is the same as its eigenvalues.
+  eigenvalues = svdA.eigenvalues();
 }
 
 
