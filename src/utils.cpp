@@ -92,6 +92,16 @@ void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &tabl
   fin.close();
 }
 
+std::string replace_char(std::string str, const char ch1, const char ch2)
+{
+  for (int i = 0; i < str.length(); ++i) {
+    if (str[i] == ch1)
+      str[i] = ch2;
+  }
+
+  return str;
+}
+
 void write_txt(const std::string &path_output, const std::vector<std::string> &wordtypes,
                const Eigen::MatrixXd &vectors,
                const unsigned long long n_vocab, const int dim)
@@ -101,7 +111,8 @@ void write_txt(const std::string &path_output, const std::vector<std::string> &w
   file_output << n_vocab << " " << dim << std::endl;
 
   for (int i = 0; i < vectors.rows(); i++) {
-    file_output << wordtypes[i] << " ";
+    const std::string wordtype = replace_char(wordtypes[i], '\"', '`');
+    file_output << "\"" << wordtype << "\" ";
     for (int j = 0; j < vectors.cols(); j++) {
       file_output << vectors(i, j) << " ";
     }
