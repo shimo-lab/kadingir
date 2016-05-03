@@ -14,4 +14,4 @@ kadingir_core.o: ../src/kadingir_core.cpp
 docopt.o: docopt.cpp/docopt.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c docopt.cpp/docopt.cpp -o docopt.o
 clean:
-	rm -f *.o kadingir_oscca
+	rm -f *.o kadingir_oscca kadingir_cleigenwords_bilingual
