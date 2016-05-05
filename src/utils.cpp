@@ -48,7 +48,8 @@ void build_count_table(const std::string &path_corpus, MapCounter &count_table,
 }
 
 void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &table_wordtype_id,
-                                std::vector<int> &tokens, unsigned long long &n_oov)
+                                std::vector<int> &tokens, std::vector<int> &document_id,
+				unsigned long long &n_oov)
 {
   std::ifstream fin;
   fin.unsetf(std::ios::skipws);
@@ -56,7 +57,7 @@ void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &tabl
 
   char ch;
   std::string word_temp;
-  unsigned long long i_tokens = 0;
+  unsigned long long i_tokens = 0, i_documents = 0;
 
   while (!fin.eof()) {
     fin >> ch;
@@ -73,10 +74,16 @@ void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &tabl
           // Otherwise
           tokens[i_tokens] = table_wordtype_id[word_temp];
         }
+	document_id[i_tokens] = i_documents;
 
         i_tokens += 1;
         word_temp.erase();
       }
+ 
+      if (ch == '\n') {
+	i_documents += 1;
+      }
+
     } else {
       // If `ch` is a character of a word
       word_temp += ch;
@@ -85,8 +92,18 @@ void convert_corpus_to_wordtype(const std::string &path_corpus, MapCounter &tabl
   fin.close();
 }
 
+std::string replace_char(std::string str, const char ch1, const char ch2)
+{
+  for (int i = 0; i < str.length(); ++i) {
+    if (str[i] == ch1)
+      str[i] = ch2;
+  }
+
+  return str;
+}
+
 void write_txt(const std::string &path_output, const std::vector<std::string> &wordtypes,
-               Eigen::MatrixXd &vectors,
+               const Eigen::MatrixXd &vectors,
                const unsigned long long n_vocab, const int dim)
 {
   std::ofstream file_output;
@@ -94,7 +111,8 @@ void write_txt(const std::string &path_output, const std::vector<std::string> &w
   file_output << n_vocab << " " << dim << std::endl;
 
   for (int i = 0; i < vectors.rows(); i++) {
-    file_output << wordtypes[i] << " ";
+    const std::string wordtype = replace_char(wordtypes[i], '\"', '`');
+    file_output << "\"" << wordtype << "\" ";
     for (int j = 0; j < vectors.cols(); j++) {
       file_output << vectors(i, j) << " ";
     }

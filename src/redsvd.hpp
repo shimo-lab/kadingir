@@ -236,12 +236,12 @@ namespace RedSVD
     RedSymEigen(const MatrixType& A)
     {
       int r = (A.rows() < A.cols()) ? A.rows() : A.cols();
-      compute(A, r);
+      compute_tropp(A, r);
     }
 		
     RedSymEigen(const MatrixType& A, const Index rank)
     {
-      compute(A, rank);
+      compute_tropp(A, rank);
     }  
 		
     void compute(const MatrixType& A, const Index rank)
@@ -270,6 +270,36 @@ namespace RedSVD
       m_eigenvectors = Y * eigenOfB.eigenvectors();
     }
 
+    void compute_tropp(const MatrixType& A, const Index rank)
+    {
+      if(A.cols() == 0 || A.rows() == 0)
+        return;
+      
+      Index r = (rank < A.cols()) ? rank : A.cols();
+      
+      r = (r < A.rows()) ? r : A.rows();
+      
+      // Gaussian Random Matrix
+      DenseMatrix O(A.rows(), r);
+      sample_gaussian(O);
+
+      DenseMatrix M(A.rows(), r);
+      DenseMatrix B(r, A.cols());
+      
+      // Power iteration
+      for (int pow_iter=0; pow_iter<3; pow_iter++) {
+        M = A * O;
+        gram_schmidt(M);
+        B = M.transpose() * A;
+        O = B.transpose();
+      }
+      
+      Eigen::SelfAdjointEigenSolver<DenseMatrix> eigenOfB(B * M);
+      
+      m_eigenvalues = eigenOfB.eigenvalues();
+      m_eigenvectors = M * eigenOfB.eigenvectors();
+    }
+    
     ScalarVector eigenvalues() const
     {
       return m_eigenvalues;

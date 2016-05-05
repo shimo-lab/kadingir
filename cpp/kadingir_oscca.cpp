@@ -62,9 +62,9 @@ int main(int argc, const char** argv)
 
   // Convert words to wordtype id
   unsigned long long n_oov = 0;
-  std::vector<int> tokens(n_tokens);
+  std::vector<int> tokens(n_tokens), document_id(n_tokens);
 
-  convert_corpus_to_wordtype(path_corpus, table_wordtype_id, tokens, n_oov);
+  convert_corpus_to_wordtype(path_corpus, table_wordtype_id, tokens, document_id, n_oov);
 
   // Display some informations
   std::cout << std::endl;
@@ -81,7 +81,7 @@ int main(int argc, const char** argv)
   // Execute EigenwordsOSCCA
   EigenwordsOSCCA eigenwords(tokens, window, n_vocab, dim, debug);
   eigenwords.compute();
-  MatrixXd vectors = eigenwords.get_word_vectors();
+  const MatrixXd vectors = eigenwords.get_word_vectors();
 
   // Output vector representations as a txt file
   std::vector<std::string> wordtypes(n_vocab);
