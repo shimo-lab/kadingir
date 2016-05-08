@@ -125,7 +125,6 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   cat("\n")
   time.start <- Sys.time()
 
-  cat("Calculate CLEigenwords...\n\n")
   results.cleigenwords <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
                                           sizes.window, sizes.vocabulary, lengths.corpus,
                                           dim.common,
@@ -133,7 +132,10 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
                                           weighting_tf = weighting_tf,
                                           weight_vsdoc = weight.vsdoc,
                                           debug = FALSE)
-
+  diff.time <- Sys.time() - time.start
+  cat("CLEigenwords:")
+  print(diff.time)
+  
   if (plot) {
     plot(abs(results.cleigenwords$eigenvalues), log = "y", main = "abs(Eigenvalues)")
   }
@@ -146,9 +148,6 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   return.list$n.languages <- length(lengths.corpus)
   return.list$lengths.corpus <- lengths.corpus
   return.list$sizes.vocabulary <- sizes.vocabulary
-
-  diff.time <- Sys.time() - time.start
-  print(diff.time)
 
   return(return.list)
 }
