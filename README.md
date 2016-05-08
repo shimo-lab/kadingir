@@ -1,4 +1,4 @@
-kadingir: Implementation of some methods of word embedding
+kadingir: Some methods of spectral word embedding
 =====================================================
 
 ## Implemented methods
@@ -18,15 +18,15 @@ kadingir: Implementation of some methods of word embedding
 * text8 corpus <http://mattmahoney.net/dc/text8.zip>
 
 
+## Submodules
+* [ntessore/redsvd-h - GitHub](https://github.com/ntessore/redsvd-h)
+* [docopt/docopt.cpp - GitHub](https://github.com/docopt/docopt.cpp/)
+
+
 ## References
-### Papers
 * Oshikiri, T., Fukui, F., Shimodaira, H. (2016). Cross-Lingual Word Representations via Spectral Graph Embeddings. Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics. Association for Computational Linguistics. (To appear)
 * Dhillon, P., Rodu, J., Foster, D., and Ungar, L. (2012). Two step cca: A new spectral method for estimating vector models of words. In Langford, J. and Pineau, J., editors, Proceedings of the 29th International Conference on Machine Learning (ICML-12), ICML ’12, pages 1551–1558, New York, NY, USA. Omnipress.
 * Dhillon, P. S., Foster, D. P., and Ungar, L. H. (2015). Eigenwords: Spectral word embeddings. Journal of Machine Learning Research, 16:3035–3078.
     * Source code : [paramveerdhillon/swell - GitHub](https://github.com/paramveerdhillon/swell/)
     * Output : [Codes | Paramveer Dhillon](http://www.pdhillon.com/code.html)
 * Littman, M. L., Dumais, S. T., & Landauer, T. K. (1998). Automatic cross-language information retrieval using latent semantic indexing. Cross-Language Information Retrieval, 51–62. 
-    
-### Submodules
-* [ntessore/redsvd-h - GitHub](https://github.com/ntessore/redsvd-h)
-* [docopt/docopt.cpp - GitHub](https://github.com/docopt/docopt.cpp/)
