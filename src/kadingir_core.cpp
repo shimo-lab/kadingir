@@ -524,6 +524,7 @@ void CLEigenwords::compute(int dimension_evd)
   MatrixXd principal_components = svdA.eigenvectors();
   vector_representations = G_inv_sqrt * principal_components.rightCols(k);
   eigenvalues = svdA.eigenvalues().tail(k);  // top-k largest eigenvalues
+  eigenvalues_all = svdA.eigenvalues();
 }
 
 

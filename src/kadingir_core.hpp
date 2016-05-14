@@ -172,6 +172,7 @@ private:
 
   MatrixXd vector_representations;
   VectorXd eigenvalues;
+  VectorXd eigenvalues_all;
 
   void construct_inverse_word_count_table();
   void construct_matrices();
@@ -193,6 +194,7 @@ public:
   dSparseMatrix get_h() { return H; }
   MatrixXd get_vector_representations() { return vector_representations; }
   VectorXd get_eigenvalues() { return eigenvalues; }
+  VectorXd get_eigenvalues_all() { return eigenvalues_all; }
   int get_n_domain() { return n_domain; }
   unsigned long long get_p() { return p; }
   unsigned long long get_p_head_domains(int index) { return p_head_domains[index]; }
