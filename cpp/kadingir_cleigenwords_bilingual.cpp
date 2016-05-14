@@ -118,7 +118,7 @@ int main(int argc, const char** argv)
 			    true,
 			    false, weight_vsdoc,
 			    debug);
-  cleigenwords.compute();
+  cleigenwords.compute(2*dim);
   const MatrixXd vectors = cleigenwords.get_vector_representations();
 
   // Output vector representations as a txt file
