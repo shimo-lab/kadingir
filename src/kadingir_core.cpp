@@ -522,8 +522,8 @@ void CLEigenwords::compute(int dimension_evd)
   std::cout << "* duration(RedSVD) = " << (double)(clock_end - clock_start) / CLOCKS_PER_SEC << "sec.\n";
   
   MatrixXd principal_components = svdA.eigenvectors();
-  vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
-  eigenvalues = svdA.eigenvalues().head(k);
+  vector_representations = G_inv_sqrt * principal_components.rightCols(k);
+  eigenvalues = svdA.eigenvalues().tail(k);  // top-k largest eigenvalues
 }
 
 
