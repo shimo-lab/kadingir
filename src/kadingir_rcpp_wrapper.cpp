@@ -107,6 +107,7 @@ Rcpp::List CLEigenwordsCpp(
     const Rcpp::IntegerVector vocab_sizes,
     const Rcpp::IntegerVector sentence_lengths,
     const int k,
+    const int dimension_evd,
     const bool link_v_c,
     const bool weighting_tf,
     const Rcpp::NumericVector weight_vsdoc,
@@ -130,7 +131,7 @@ Rcpp::List CLEigenwordsCpp(
                                            sentence_lengths_stdvector, k,
                                            link_v_c,
                                            weighting_tf, weight_vsdoc_stdvector, debug);
-  cleigenwords.compute();
+  cleigenwords.compute(dimension_evd);
 
   int n_domain = cleigenwords.get_n_domain();
   Rcpp::NumericVector p_head_domains_return(n_domain);
