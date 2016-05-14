@@ -5,7 +5,7 @@ library(RcppEigen)
 sourceCpp("kadingir_core.cpp", rebuild = TRUE)
 
 
-CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
+CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common, dim.evd,
                          sizes.window, aliases.languages, weight.vsdoc,
                          plot = FALSE,
                          link_v_c = TRUE,
@@ -84,6 +84,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   cat("\n\n")
   
   cat("Dim of common space:", dim.common, "\n")
+  cat("Dim of EVD         :", dim.evd, "\n")
   cat("Weight by TF?      :", weighting_tf, "\n")
   cat("Link: V - C        :", link_v_c, "\n")
   cat("\n")
@@ -128,6 +129,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common,
   results.cleigenwords <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
                                           sizes.window, sizes.vocabulary, lengths.corpus,
                                           dim.common,
+                                          dim.evd,
                                           link_v_c = link_v_c,
                                           weighting_tf = weighting_tf,
                                           weight_vsdoc = weight.vsdoc,
