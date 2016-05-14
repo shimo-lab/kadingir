@@ -144,6 +144,7 @@ Rcpp::List CLEigenwordsCpp(
     Rcpp::Named("H") = Rcpp::wrap(cleigenwords.get_h()),
     Rcpp::Named("V") = Rcpp::wrap(cleigenwords.get_vector_representations()),
     Rcpp::Named("eigenvalues") = Rcpp::wrap(cleigenwords.get_eigenvalues()),
+    Rcpp::Named("eigenvalues_all") = Rcpp::wrap(cleigenwords.get_eigenvalues_all()),
     Rcpp::Named("p_head_domains") = p_head_domains_return,
     Rcpp::Named("p") = (double)cleigenwords.get_p()
     );
