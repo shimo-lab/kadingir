@@ -139,7 +139,7 @@ CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common, dim.evd,
   print(diff.time)
   
   if (plot) {
-    plot(abs(results.cleigenwords$eigenvalues), log = "y", main = "abs(Eigenvalues)")
+    plot(results.cleigenwords$eigenvalues, log = "y", main = "Eigenvalues")
   }
 
   return.list <- results.cleigenwords
