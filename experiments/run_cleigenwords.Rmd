@@ -25,7 +25,7 @@ r <- CLEigenwords(paths.corpus,
                   aliases.languages=c("es", "de", "fr", "en"),
                   plot = TRUE,
                   weighting_tf = FALSE,
-                  link_v_c = TRUE,
+                  link_v_c = FALSE,
                   weight.vsdoc = c(1.0, 1.0, 1.0, 1.0))
 
 save(r, file = "res_cleigenwords.Rdata")
@@ -74,13 +74,17 @@ text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x))
 
 
 ```{r}
-queries <- c(vocab.words1[1:20], vocab.words2[1:20], vocab.words3[1:20], vocab.words4[1:20])
+n.queries.eachlang <- 20
+queries <- c(vocab.words1[seq(n.queries.eachlang)],
+             vocab.words2[seq(n.queries.eachlang)],
+             vocab.words3[seq(n.queries.eachlang)],
+             vocab.words4[seq(n.queries.eachlang)])
 
 VV <- V
 row.names(VV) <- vocab.words
 pr.v2 <- prcomp(VV[queries[queries %in% vocab.words],])
 plot(pr.v2$x[ , 1:2], pch = 1, col = "grey")
-text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x))
+text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x), cex = 0.7)
 ```
 
 # Example of lexical translation task
