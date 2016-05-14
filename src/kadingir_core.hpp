@@ -188,7 +188,7 @@ public:
                const std::vector<double> _weight_vsdoc,
                const bool debug
   );
-  void compute();
+  void compute(int dimension_evd);
   VectorXd get_g_diag() { return G_diag; }
   dSparseMatrix get_h() { return H; }
   MatrixXd get_vector_representations() { return vector_representations; }

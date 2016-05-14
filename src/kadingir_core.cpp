@@ -481,7 +481,7 @@ CLEigenwords::CLEigenwords(
   p = p_head_domains[n_domain - 1] + n_documents;  // dimension of concated vectors
 }
 
-void CLEigenwords::compute()
+void CLEigenwords::compute(int dimension_evd)
 {
   clock_t clock_start = clock();
 
@@ -516,14 +516,14 @@ void CLEigenwords::compute()
 
   // Execute CDMCA
   std::cout << "Calculate Randomized SVD..." << std::endl;
-  RedSVD::RedSymEigen<dSparseMatrix> svdA(A, k);
+  RedSVD::RedSymEigen<dSparseMatrix> svdA(A, dimension_evd);
   
   clock_end = clock();
   std::cout << "* duration(RedSVD) = " << (double)(clock_end - clock_start) / CLOCKS_PER_SEC << "sec.\n";
   
   MatrixXd principal_components = svdA.eigenvectors();
   vector_representations = G_inv_sqrt * principal_components.block(0, 0, p, k);
-  eigenvalues = svdA.eigenvalues();
+  eigenvalues = svdA.eigenvalues().head(k);
 }
 
 
