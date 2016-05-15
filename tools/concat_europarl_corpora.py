@@ -11,7 +11,11 @@ import subprocess
 
 if __name__ == '__main__':
 
-    lang_pairs = ['de-en', 'es-en', 'fr-en']
+#    lang_pairs = ['de-en', 'es-en', 'fr-en']
+    lang_pairs = ['bg-en', 'cs-en', 'da-en', 'de-en', 'el-en',
+                  'es-en', 'et-en', 'fi-en', 'fr-en', 'hu-en',
+                  'it-en', 'lt-en', 'lv-en', 'nl-en', 'pl-en',
+                  'pt-en', 'ro-en', 'sk-en', 'sl-en', 'sv-en']
 
 
     # Load & preprocess CSV files of parallel corpora
