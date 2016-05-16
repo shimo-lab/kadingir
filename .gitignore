@@ -1,6 +1,7 @@
 *~
 .Rhistory
 .Rproj.user
+*.Rproj
 *.Rdata
 data
 corpora
