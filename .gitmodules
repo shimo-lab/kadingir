@@ -1,0 +1,6 @@
+[submodule "cpp/docopt.cpp"]
+	path = cpp/docopt.cpp
+	url = https://github.com/docopt/docopt.cpp.git
+[submodule "tools/word2vec"]
+	path = tools/word2vec
+	url = https://github.com/oshikiri/word2vec.git

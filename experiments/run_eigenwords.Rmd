@@ -1,0 +1,59 @@
+---
+title: "Experiment of Eigenwords"
+date: "`r Sys.time()`"
+output: html_document
+---
+
+```{r, include=FALSE}
+time.begin <- Sys.time()
+
+set.seed(0)
+
+source("./../src/kadingir.R", chdir=TRUE)
+```
+
+# Tuning parameters
+```{r}
+n.vocabulary <- 10000 # Number of vocaburaly
+dim.internal <- 100   # Dimension of common space
+window.size  <- 2     # Size of context window
+path.corpus <- "./../corpora/text8/text8"
+```
+
+
+```{r}
+#res.eigenwords <- Eigenwords(path.corpus, n.vocabulary, dim.internal, window.size, mode = "tscca", plot = TRUE)
+res.eigenwords <- Eigenwords(path.corpus, n.vocabulary, dim.internal, window.size, mode = "oscca", plot = TRUE)
+save(res.eigenwords, file = "res_eigenwords.Rdata")
+```
+
+# Check vector representation by some queries
+```{r}
+MostSimilar(res.eigenwords$word_vector, res.eigenwords$vocab.words,
+            positive=c("man"), distance = "cosine")
+```
+
+```{r}
+MostSimilar(res.eigenwords$word_vector, res.eigenwords$vocab.words,
+            positive=c("work"), distance = "cosine")
+```
+
+```{r}
+MostSimilar(res.eigenwords$word_vector, res.eigenwords$vocab.words,
+            positive=c("king", "woman"), negative=c("man"), distance = "cosine")
+```
+
+
+# Test some tasks for check
+```{r}
+TestGoogleTasks(res.eigenwords$word_vector, res.eigenwords$vocab.words, n.cores = 12)
+```
+
+```{r}
+TestWordsim353(res.eigenwords$word_vector, res.eigenwords$vocab.words)
+```
+
+```{r}
+Sys.time() - time.begin
+Sys.time()
+```

@@ -4,7 +4,9 @@
 *.Rproj
 *.Rdata
 data
+corpora
 *.out
 output_*.csv
 *.pdf
 *.html
+*.o

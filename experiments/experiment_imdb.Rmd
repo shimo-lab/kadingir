@@ -1,0 +1,127 @@
+---
+title: "Experiment of Eigendocs with IMDb dataset"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+---
+
+```{r}
+time.begin <- Sys.time()
+```
+
+# Execute Eigendocs
+```{r, include = FALSE}
+set.seed(0)
+
+source("./../src/kadingir.R", chdir=TRUE)
+source("./../src/cleigenwords.R", chdir=TRUE)
+```
+
+```{r}
+paths.corpus <- list(en = list(parallel    = "./../data/eigendocs_imdb/imdb_reviews.txt"))
+res.eigendocs <- CLEigenwords(paths.corpus, sizes.vocabulary=c(10000), dim.common=50,
+                              sizes.window = c(4), aliases.languages=c("en"), weight.vsdoc=c(0.01),
+                              plot = TRUE, weighting_tf=FALSE)
+save(res.eigendocs, file = "res_eigendocs_imdb.Rdata")
+```
+
+## Check vector representations of words
+```{r}
+pp <- res.eigendocs$p_head_domains
+p <- res.eigendocs$p
+word_vector <- res.eigendocs$V[(pp[1]+1):pp[2], ]
+vocab_words <- unlist(res.eigendocs$vocab.words)
+
+MostSimilar(word_vector, vocab_words, positive=c("man"), distance = "cosine")
+MostSimilar(word_vector, vocab_words, positive=c("American"), distance = "cosine")
+```
+
+# Task
+## Test Google analogy tasks
+
+一応，単語ベクトルの評価を行う．
+
+```{r}
+TestGoogleTasks(word_vector, vocab_words, n.cores = 10)
+```
+
+## wordsim353
+```{r}
+TestWordsim353(word_vector, vocab_words)
+```
+
+
+## Sentiment analysis using IMDb dataset 1 : unregularized
+```{r}
+vectors <- res.eigendocs$V[(pp[3]+1):p, ]
+csv <- read.csv("./../data/eigendocs_imdb/imdb_id_rate.csv")
+
+df <- data.frame(cbind(csv, vectors))
+df <- df[df[ , "rate"] != 0, ]  # Remove unsup
+df[ , "positive"] <- as.integer(df[ , "rate"] > 5)
+df.train <- df[df[ , "type"] == "train", c(-1, -2, -3)]  # Training set
+df.test  <- df[df[ , "type"] == "test" , c(-1, -2, -3)]  # Test set
+
+
+glm.df.train <- glm(positive ~ ., data=df.train, family=binomial(link="logit"))
+glm.df.train$coefficients
+```
+
+明らかに過学習してるっぽいのに，予測誤差が悪くならない
+-> 文書ベクトルがだいたい似たようなベクトルになる(?)から，training set と test set が大差ない？
+
+### Training error
+```{r}
+predict.train <- predict(object = glm.df.train, newdata = df.train, type = "response")
+plot(predict.train, df.train[ , "positive"] + rnorm(nrow(df.train), sd=0.1), col=rgb(0, 0, 0, 0.1))
+```
+
+```{r}
+1 - mean((predict.train > 0.5) == df.train[ , "positive"])
+```
+
+### Training error
+```{r}
+predict.test <- predict(object = glm.df.train, newdata = df.test, type = "response")
+plot(predict.test, df.test[ , "positive"] + rnorm(nrow(df.test), sd=0.1), col=rgb(0, 0, 0, 0.1))
+```
+
+```{r}
+1 - mean((predict.test > 0.5) == df.test[ , "positive"])
+```
+
+
+## Sentiment analysis using IMDb dataset 2 : regularized
+
+過学習してるっぽいので，正則化項を付けてみる．
+
+```{r}
+library(glmnet)
+
+ncol.df <- ncol(df.train)
+
+glmnet.train <- glmnet(x = as.matrix(df.train[ , -ncol.df]), y = as.factor(df.train[ , ncol.df]), family = "binomial", alpha = 0.5)
+plot(glmnet.train, xvar = "lambda")
+```
+
+IMDb dataset については，training set と test set が最初から分割してあるので，以下のようなクロスバリデーション (?) を行う．
+
+```{r}
+predict.df.test <- predict(glmnet.train, newx = as.matrix(df.test[ , -ncol(df.test)]), type="class")
+
+n.lambda <- length(glmnet.train$lambda)
+cv1 <- matrix(0, n.lambda, 1)
+for (j in seq(n.lambda)) {
+  predict.test.positive <- as.numeric(predict.df.test[ , j])
+  table(predict.test.positive, df.test[ , "positive"])
+  cv1[j] <- 1 - mean(predict.test.positive == df.test[ , "positive"])
+}
+
+plot(glmnet.train$lambda, cv1, log="x")
+```
+
+```{r}
+Sys.time() - time.begin
+Sys.time()
+```
