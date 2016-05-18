@@ -1,5 +1,15 @@
-kadingir: Some methods of spectral word embedding
+kadingir : Spectral word embedding methods
 =====================================================
+
+>Oshikiri, T., Fukui, F., Shimodaira, H. (2016). Cross-Lingual Word Representations via Spectral Graph Embeddings. Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics. Association for Computational Linguistics. (To appear)
+
+
+## Contents
+* `src/` : C++ & Rcpp version
+* `cpp/` : C++ only version
+* `experiments/` : Code for experiments
+* `tools/`
+
 
 ## Implemented methods
 * CL-LSI [Littman+ 1998]
@@ -21,6 +31,7 @@ kadingir: Some methods of spectral word embedding
 ## Submodules
 * [ntessore/redsvd-h - GitHub](https://github.com/ntessore/redsvd-h)
 * [docopt/docopt.cpp - GitHub](https://github.com/docopt/docopt.cpp/)
+* [word2vec - Google Codes](https://code.google.com/archive/p/word2vec/)
 
 
 ## References
