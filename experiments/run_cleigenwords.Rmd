@@ -82,8 +82,9 @@ queries <- vocab.words[index.queries]
 
 VV <- V
 row.names(VV) <- vocab.words
-pr.v2 <- prcomp(VV[queries[queries %in% vocab.words],])
-plot(pr.v2$x[ , 1:2], pch = 1, col = "grey", xlim=c(-0.004, 0.004))
+vectors <- VV[queries[queries %in% vocab.words], ]
+pr.v2 <- prcomp(vectors)
+plot(pr.v2$x[ , 1:2], pch = 1, col = "grey", xlim=c(-0.001, 0.000), ylim=c(-0.001, 0.001))
 text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x), cex = 0.7)
 ```
 
