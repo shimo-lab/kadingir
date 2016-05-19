@@ -1,0 +1,190 @@
+---
+title: "Task evaluation"
+date: "`r Sys.time()`"
+output: html_document
+params:
+  source: "es"
+  target: "en"
+---
+ 
+# Required libraries
+ 
+```{r, include=FALSE}
+library(knitr)
+source("./../src/kadingir.R", chdir = TRUE)
+```
+ 
+```{r}
+language.source <- params$source
+language.target <- params$target
+ 
+print(language.source)
+print(language.target)
+```
+ 
+# Load translation pairs
+ 
+```{r, results = "asis"}
+translate.table <- read.csv(paste0("./../../experiments201602/google_translate_es-en_", language.source, "_preprocessed.csv"), sep = ",", as.is = TRUE)
+translate.table <- translate.table[-1, ]  # ignore `<OOV>`
+ 
+print(dim(translate.table))
+kable(head(translate.table[ , c(language.source, language.target)]))
+```
+ 
+# Load results of cleigenwords
+ 
+```{r, message=FALSE}
+path.results <- "./../cpp/output.txt"
+window <- 2
+dim <- 40
+n.vocabulary <- 10000
+ 
+csv <- read.table(path.results, sep = " ", skip = 1)
+vocab <- as.vector(csv[ , 1])
+vectors <- as.matrix(csv[ , 2:(dim+1)])
+ 
+p <- cumsum(c(0, n.vocabulary, 2*window*n.vocabulary, n.vocabulary, 2*window*n.vocabulary))
+index.es.words <- 1:p[2]
+index.en.words <- (p[3]+1):p[4]
+V.es <- vectors[index.es.words, ]
+V.en <- vectors[index.en.words, ]
+vocab.words.es.raw <- vocab[index.es.words]
+vocab.words.es <- paste0("(es)", vocab[index.es.words])
+vocab.words.en.raw <- vocab[index.en.words]
+vocab.words.en <- paste0("(en)", vocab[index.en.words])
+ 
+V.cleigenwords <- rbind(V.es, V.en)
+vocab.words <- c(vocab.words.es, vocab.words.en)
+```
+
+```{r, eval=FALSE}
+load("./../../experiments201602/res_cleigenwords_40_80.Rdata")
+ 
+p <- r$p_head_domains
+V.es <- r$V[p[1]:p[2], ]
+V.en <- r$V[(p[3]+1):p[4], ]
+vocab.words.es <- paste0("(es)", r$vocab.words[[1]])
+vocab.words.en <- paste0("(en)", r$vocab.words[[2]])
+ 
+V.cleigenwords <- rbind(V.es, V.en)
+vocab.words <- c(vocab.words.es, vocab.words.en)
+```
+ 
+## PCA plot for paper
+```{r, eval=(language.source == "es")}
+my.queries.es <- c("italia", "roma",
+                   "suecia", "estocolmo",
+                   "grecia", "atenas",
+                   "austria", "viena",
+                   "francia", "parís",
+                   "finlandia", "helsinki")
+ 
+translate.table.selected <- data.frame()
+for (q.es in my.queries.es) {
+  q.en <- tolower(translate.table[translate.table[,"es"]==q.es, "en"])
+  translate.table.selected <- rbind(translate.table.selected, data.frame(q.es, q.en))
+}
+colnames(translate.table.selected) <- c("es", "en")
+kable(translate.table.selected)
+ 
+print(my.queries.es[!my.queries.es %in% translate.table[,"es"]])
+ 
+queries.en <- paste0("(en)", tolower(translate.table.selected[, "en"]))
+queries.es <- paste0("(es)", tolower(translate.table.selected[, "es"]))
+queries.plot <- cbind(queries.en, queries.es)
+ 
+queries.plot.df <- queries.plot[((queries.es %in% vocab.words) * (queries.en %in% vocab.words)) == 1, ]
+colnames(queries.plot.df) <- c("es", "en")
+queries.plot <- as.vector(queries.plot.df)
+queries.es.plot <- queries.plot.df[,"es"]
+queries.en.plot <- queries.plot.df[,"en"]
+queries <- queries.plot
+ 
+index.v <- 1:40
+V.pca <- V.cleigenwords[, index.v]
+row.names(V.pca) <- vocab.words
+word.vector <- V.pca[queries, ]
+pr <- prcomp(word.vector, scale. = TRUE)
+i.pc <- c(1, 2)
+ 
+is.es.word <- grepl("(es)", row.names(pr$x[queries.plot, ]))
+x <- pr$x
+
+plot(x[queries.plot, i.pc], pch = "+", col = ifelse(is.es.word, "red", "blue"))
+ 
+# English-Spanish (countries)
+segments(x[queries.es.plot, i.pc[1]], x[queries.es.plot, i.pc[2]],
+         x[queries.en.plot, i.pc[1]], x[queries.en.plot, i.pc[2]])
+ 
+# Countries-capitals (es)
+countries.es <- queries.es[seq(from = 1, to = length(queries.es), by = 2)]
+capitals.es <-  queries.es[seq(from = 2, to = length(queries.es), by = 2)]
+segments(x[capitals.es,  i.pc[1]], x[capitals.es,  i.pc[2]],
+         x[countries.es, i.pc[1]], x[countries.es, i.pc[2]],
+         lty = 2, lwd = 1.5, col = "red")
+ 
+# Countries-capitals (en)
+countries.en <- queries.en[seq(from = 1, to = length(queries.en), by = 2)]
+capitals.en  <- queries.en[seq(from = 2, to = length(queries.en), by = 2)]
+segments(x[capitals.en,  i.pc[1]], x[capitals.en,  i.pc[2]],
+         x[countries.en, i.pc[1]], x[countries.en, i.pc[2]],
+         lty = 2, lwd = 1.5, col = "blue")
+ 
+countries <- c(countries.es, countries.en)
+is.es.word.countries <- grepl("(es)", countries)
+text(x[countries, i.pc[1]],
+     x[countries, i.pc[2]] + (as.numeric(is.es.word.countries) - 0.5) * 1.2,
+     substr(row.names(x[countries, ]), 5, 100),
+     col = ifelse(is.es.word.countries, "red", "blue"),
+     family = "sans", font = 2)
+ 
+capitals <- c(capitals.es, capitals.en)
+is.es.word.capital <- grepl("(es)", capitals)
+text(x[capitals, i.pc[1]],
+     x[capitals, i.pc[2]] + (as.numeric(is.es.word.capital) - 0.5) * 1.2,
+     substr(row.names(x[capitals, ]), 5, 100),
+     col = ifelse(is.es.word.capital, "red", "blue"),
+     family = "serif", font = 3)
+```
+
+# Evaluation
+```{r}
+get.index.vocab.answer <- function(x, vocab=vocab){
+  if(x %in% vocab){
+    return(which(vocab == x))
+  }else{
+    return(NA)
+  }
+}
+
+vocab.source <- vocab.words.es.raw
+vocab.target <- vocab.words.en.raw
+
+index.translatetable.testset <- 1:1000
+index.vocab.target <- 10001:20000
+topn <- 5
+weights <- rep(1, 40)
+
+index.vocab.source <- sapply(translate.table[index.translatetable.testset, 1], get.index.vocab.answer, vocab=vocab.source)
+index.vocab.target.answers <- sapply(translate.table[index.translatetable.testset, 2], get.index.vocab.answer, simplify = TRUE, vocab = vocab.target)
+index.correct.answers.matrix <- matrix(index.vocab.target.answers, nrow = length(index.vocab.target.answers), ncol = topn)
+
+V.cleigenwords <- V.cleigenwords/sqrt(rowSums(V.cleigenwords**2))
+similarities <- V.cleigenwords[index.vocab.source, ] %*% diag(weights) %*% t(V.cleigenwords[index.vocab.target, ])
+orders.topn <- t(apply(similarities, 1, order, decreasing=TRUE))[ , seq(topn)]
+
+is.correct.answer.matrix <- orders.topn == index.correct.answers.matrix
+```
+
+P\@1
+```{r}
+mean(is.correct.answer.matrix[ , 1], na.rm=TRUE)
+```
+
+
+P\@n
+```{r}
+mean(rowSums(is.correct.answer.matrix), na.rm=TRUE)
+```
+
