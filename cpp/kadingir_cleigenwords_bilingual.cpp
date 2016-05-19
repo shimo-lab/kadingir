@@ -108,7 +108,7 @@ int main(int argc, const char** argv)
   const unsigned long long n_tokens1 = tokens1.size();
   const unsigned long long n_tokens2 = tokens2.size();
   const std::vector<unsigned long long> sentence_lengths = { n_tokens1, n_tokens2 };
-  const std::vector<double> weight_vsdoc = { 1.0, 1.0 };
+  const std::vector<double> weight_vsdoc = { 1000.0, 1000.0 };
   tokens1.insert(tokens1.end(), tokens2.begin(), tokens2.end());
   document_id1.insert(document_id1.end(), document_id2.begin(), document_id2.end());
 
