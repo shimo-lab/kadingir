@@ -88,6 +88,17 @@ plot(pr.v2$x[ , 1:2], pch = 1, col = "grey", xlim=c(-0.001, 0.000), ylim=c(-0.00
 text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x), cex = 0.7)
 ```
 
+```{r, eval=FALSE}
+library(tsne)
+
+vectors.tsne <- tsne(vectors, max_iter=200)
+vectors.tsne2 <- vectors.tsne + matrix(rnorm(2*nrow(vectors)), ncol=2)
+cairo_pdf(file = "tsne_words.pdf", width = 60, height = 40, family = "Sans")
+plot(vectors.tsne, t='n', main="tsne")
+text(vectors.tsne2, labels=queries)
+dev.off()
+```
+
 # Example of lexical translation task
 (en)I = (es)yo
 
