@@ -3,8 +3,8 @@ title: "Task evaluation"
 date: "`r Sys.time()`"
 output: html_document
 params:
-  source: "es"
-  target: "en"
+  path.results: ""
+  path.translatetable: ""
 ---
  
 # Required libraries
@@ -16,8 +16,10 @@ source("./../src/kadingir.R", chdir = TRUE)
 ```
  
 ```{r}
-language.source <- params$source
-language.target <- params$target
+language.source <- "es"
+language.target <- "en"
+path.results <- params$path.results
+path.translatetable <- params$path.translatetable
  
 print(language.source)
 print(language.target)
