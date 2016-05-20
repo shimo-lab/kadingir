@@ -132,17 +132,17 @@ int main(int argc, const char** argv)
       const int i_word = i % n_vocab1;
 
       if (i_word == 0) {
-	wordtypes[i] = "<OOV>";
+        wordtypes[i] = "<OOV>";
       } else {
-	wordtypes[i] = count_vector1[i_word - 1].first;
+        wordtypes[i] = count_vector1[i_word - 1].first;
       }
     } else if (i < n_rep_lang1 + n_rep_lang2) {
       const int i_word = (i - n_rep_lang1) % n_vocab2;
 
       if (i_word == 0) {
-	wordtypes[i] = "<OOV>";
+        wordtypes[i] = "<OOV>";
       } else {
-	wordtypes[i] = count_vector2[i_word - 1].first;
+        wordtypes[i] = count_vector2[i_word - 1].first;
       }
     } else {
       const int i_doc = i - n_rep_lang1 - n_rep_lang2;
