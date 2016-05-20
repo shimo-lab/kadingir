@@ -11,6 +11,7 @@ params:
  
 ```{r, include=FALSE}
 library(knitr)
+library(data.table)
 source("./../src/kadingir.R", chdir = TRUE)
 ```
  
@@ -40,9 +41,9 @@ window <- 2
 dim <- 40
 n.vocabulary <- 10000
  
-csv <- read.table(path.results, sep = " ", skip = 1)
 vocab <- as.vector(csv[ , 1])
 vectors <- as.matrix(csv[ , 2:(dim+1)])
+csv <- fread(path.results, sep = " ", skip = 1)
  
 p <- cumsum(c(0, n.vocabulary, 2*window*n.vocabulary, n.vocabulary, 2*window*n.vocabulary))
 index.es.words <- 1:p[2]
