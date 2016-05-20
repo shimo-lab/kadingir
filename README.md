@@ -1,13 +1,15 @@
-kadingir : Spectral word embedding methods
+kadingir
 =====================================================
+
+This is an open source implementation of
 
 >Oshikiri, T., Fukui, F., Shimodaira, H. (2016). Cross-Lingual Word Representations via Spectral Graph Embeddings. Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics. Association for Computational Linguistics. (To appear)
 
 
 ## Contents
-* `src/` : C++ & Rcpp version
-* `cpp/` : C++ only version
-* `experiments/` : Code for experiments
+* `src/` : Source codes (C++ & Rcpp version)
+* `cpp/` : Source codes (C++ only version)
+* `experiments/` : Code used in the experiments
 * `tools/`
 
 
