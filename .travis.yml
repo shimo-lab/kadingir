@@ -4,9 +4,8 @@ compiler:
 os:
     - osx
     - linux
-before_install:
+install:
     - export CXX=g++-5
-before_script:
     - cd cpp/
     - make CXX="${CXX}"
 addons:
