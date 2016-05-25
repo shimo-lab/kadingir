@@ -1,14 +1,23 @@
 language: cpp
 compiler:
-    - gcc-4.9
-script:
+    - g++
+os:
+    - osx
+    - linux
+before_install:
+    - if [ "$CXX" == "g++" ]; then export CXX=g++-5; fi
+before_script:
     - cd cpp/
     - make
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.7
+      - llvm-toolchain-precise
+    packages:
+      - g++-5
+      - gcc-5
+script:
     - cd ./../tools/
     - bash download_text8.sh
-before_install:
-    - if [ "$CXX" == "g++" ]; then export CXX=g++-4.9; fi
-install:
-    - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
-    - sudo apt-get -qq update
-    - sudo apt-get -qq install g++-4.9
