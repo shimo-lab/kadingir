@@ -5,7 +5,7 @@ os:
     - osx
     - linux
 before_install:
-    - if [ "$CXX" == "g++" ]; then export CXX=g++-5; fi
+    - export CXX=g++-5
 before_script:
     - cd cpp/
     - make
