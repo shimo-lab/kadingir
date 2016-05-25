@@ -4,6 +4,8 @@ compiler:
 script:
     - cd cpp/
     - make
+    - cd ./../tools/
+    - bash download_text8.sh
 install:
     - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
     - sudo apt-get -qq update
