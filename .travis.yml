@@ -6,6 +6,8 @@ script:
     - make
     - cd ./../tools/
     - bash download_text8.sh
+before_install:
+    - if [ "$CXX" == "g++" ]; then export CXX=g++-4.9; fi
 install:
     - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
     - sudo apt-get -qq update
