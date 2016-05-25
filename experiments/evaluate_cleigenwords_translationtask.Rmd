@@ -20,32 +20,37 @@ language.source <- "es"
 language.target <- "en"
 path.results <- params$path.results
 path.translatetable <- params$path.translatetable
+window <- 2
  
 print(language.source)
 print(language.target)
+print(path.results)
 ```
  
 # Load translation pairs
  
 ```{r, results = "asis"}
-translate.table <- read.csv(paste0("./../../experiments201602/google_translate_es-en_", language.source, "_preprocessed.csv"), sep = ",", as.is = TRUE)
-translate.table <- translate.table[-1, ]  # ignore `<OOV>`
- 
+translate.table <- read.csv(path.translatetable, sep = ",", as.is = TRUE)
+
+translate.table <- translate.table[-1, ]  # Ignore `<OOV>`
+translate.table[ , 1] <- tolower(translate.table[ , 1])
+translate.table[ , 2] <- tolower(translate.table[ , 2])
+
 print(dim(translate.table))
-kable(head(translate.table[ , c(language.source, language.target)]))
+kable(head(translate.table))
 ```
  
 # Load results of cleigenwords
  
 ```{r, message=FALSE}
-path.results <- "./../cpp/output.txt"
-window <- 2
-dim <- 40
-n.vocabulary <- 10000
- 
-vocab <- as.vector(csv[ , 1])
-vectors <- as.matrix(csv[ , 2:(dim+1)])
+csv.header <- read.table(path.results, nrow=1)
+n.vocabulary <- csv.header[1, 1] / 2
+dim <- csv.header[1, 2]
+
 csv <- fread(path.results, sep = " ", skip = 1)
+csv.dataframe <- as.data.frame(csv)
+vocab <- as.vector(csv.dataframe[ , 1])
+vectors <- as.matrix(csv.dataframe[ , 2:(dim+1)])
  
 p <- cumsum(c(0, n.vocabulary, 2*window*n.vocabulary, n.vocabulary, 2*window*n.vocabulary))
 index.es.words <- 1:p[2]
@@ -63,7 +68,7 @@ vocab.words <- c(vocab.words.es, vocab.words.en)
 
  
 ## PCA plot for paper
-```{r, eval=(language.source == "es")}
+```{r}
 my.queries.es <- c("italia", "roma",
                    "suecia", "estocolmo",
                    "grecia", "atenas",
@@ -152,10 +157,10 @@ get.index.vocab.answer <- function(x, vocab=vocab){
 vocab.source <- vocab.words.es.raw
 vocab.target <- vocab.words.en.raw
 
-index.translatetable.testset <- 1:1000
-index.vocab.target <- 10001:20000
+index.translatetable.testset <- 1:1000 + 5000
+index.vocab.target <- seq(n.vocabulary) + n.vocabulary
 topn <- 5
-weights <- rep(1, 40)
+weights <- rep(1, dim)
 
 index.vocab.source <- sapply(translate.table[index.translatetable.testset, 1], get.index.vocab.answer, vocab=vocab.source)
 index.vocab.target.answers <- sapply(translate.table[index.translatetable.testset, 2], get.index.vocab.answer, simplify = TRUE, vocab = vocab.target)
@@ -166,16 +171,15 @@ similarities <- V.cleigenwords[index.vocab.source, ] %*% diag(weights) %*% t(V.c
 orders.topn <- t(apply(similarities, 1, order, decreasing=TRUE))[ , seq(topn)]
 
 is.correct.answer.matrix <- orders.topn == index.correct.answers.matrix
-```
 
-P\@1
-```{r}
-mean(is.correct.answer.matrix[ , 1], na.rm=TRUE)
-```
+cat(paste("P@1", min(index.translatetable.testset), max(index.translatetable.testset), "\n"))
+is.correct <- is.correct.answer.matrix[ , 1]
+mean(1 - is.na(is.correct))
+mean(is.correct, na.rm=TRUE)
 
-
-P\@n
-```{r}
-mean(rowSums(is.correct.answer.matrix), na.rm=TRUE)
+cat(paste("P@n", min(index.translatetable.testset), max(index.translatetable.testset), "\n"))
+is.correct <- rowSums(is.correct.answer.matrix)
+mean(1 - is.na(is.correct))
+mean(is.correct, na.rm=TRUE)
 ```
 
