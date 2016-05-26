@@ -10,6 +10,7 @@ install:
     - export CXX=g++-5
     - cd cpp/
     - make CXX="${CXX}" INCLUDES=-I"./../eigen-eigen-07105f7124f9/"
+    - cd -
 addons:
   apt:
     sources:
@@ -20,6 +21,8 @@ addons:
       - g++-5
       - gcc-5
 script:
-    - bash ./../tools/download_text8.sh
-    - gzip -d text8.gz
-    - time ./kadingir_oscca --corpus text8 --output output_text8.txt --vocab 1000 --dim 40 --window 2
+    - mkdir corpora
+    - cd ./../tools/
+    - bash download_text8.sh
+    - cd ./../cpp
+    - time ./kadingir_oscca --corpus ./../corpora/text8/text8 --output output_text8.txt --vocab 1000 --dim 40 --window 2
