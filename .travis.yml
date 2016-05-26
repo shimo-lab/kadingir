@@ -4,6 +4,10 @@ compiler:
 os:
     - osx
     - linux
+before_install:
+    - wget http://bitbucket.org/eigen/eigen/get/3.2.8.tar.gz
+    - tar xzvf 3.2.8.tar.gz
+    - cp -r eigen-eigen-*/Eigen ./
 install:
     - export CXX=g++-5
     - cd cpp/
