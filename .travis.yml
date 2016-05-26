@@ -2,7 +2,6 @@ language: cpp
 compiler:
     - g++
 os:
-    - osx
     - linux
 before_install:
     - wget http://bitbucket.org/eigen/eigen/get/3.2.8.tar.gz
@@ -21,5 +20,6 @@ addons:
       - g++-5
       - gcc-5
 script:
-    - cd ./../tools/
-    - bash download_text8.sh
+    - bash ./../tools/download_text8.sh
+    - gzip -d text8.gz
+    - time ./kadingir_oscca --corpus text8 --output output_text8.txt --vocab 1000 --dim 40 --window 2
