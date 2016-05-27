@@ -1,9 +1,16 @@
-/* 
- * Implement other version of randomized SVD as same way as swell
+/*
+ * Fix bug and implement slightlydifferent version of randomized SVD
+ *  as same way as swell.
+ * See Algorithm 5 in [Dhillon+ 2015].
+ * cf. swell - GitHub : https://github.com/paramveerdhillon/swell
+ *
+ * Copyright (c) 2016 Takamasa Oshikiri
+ *
  * 
  * based on redsvd-h
  * 
  * Copyright (c) 2014 Nicolas Tessore
+ *
  * 
  * based on RedSVD
  * 
