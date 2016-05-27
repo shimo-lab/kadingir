@@ -115,67 +115,12 @@ namespace RedSVD
 		
     RedSVD() {}
 		
-    //   	RedSVD(const MatrixType& A, const int l)
-    //   	{
-    //   		int r = (A.rows() < A.cols()) ? A.rows() : A.cols();
-    //   	compute(A, r);
-    // compute_tropp(A, r, l);
-    //   	}
-		
     RedSVD(const MatrixType& A, const Index rank, const int l)
     {
-      //    	compute(A, rank);
-      compute_tropp(A, rank, l);
+      compute(A, rank, l);
     }
 		
-    void compute(const MatrixType& A, const Index rank)
-    {
-      if(A.cols() == 0 || A.rows() == 0)
-        return;
-			
-      Index r = (rank < A.cols()) ? rank : A.cols();
-			
-      r = (r < A.rows()) ? r : A.rows();
-			
-      // Gaussian Random Matrix for A^T
-      DenseMatrix O(A.rows(), r);
-      sample_gaussian(O);
-			
-      // Compute Sample Matrix of A^T
-      DenseMatrix Y = A.transpose() * O;
-			
-      // Orthonormalize Y
-      gram_schmidt(Y);
-			
-      // Range(B) = Range(A^T)
-      DenseMatrix B = A * Y;
-			
-      // Gaussian Random Matrix
-      DenseMatrix P(B.cols(), r);
-      sample_gaussian(P);
-			
-      // Compute Sample Matrix of B
-      DenseMatrix Z = B * P;
-			
-      // Orthonormalize Z
-      gram_schmidt(Z);
-			
-      // Range(C) = Range(B)
-      DenseMatrix C = Z.transpose() * B; 
-			
-      Eigen::JacobiSVD<DenseMatrix> svdOfC(C, Eigen::ComputeThinU | Eigen::ComputeThinV);
-			
-      // C = USV^T
-      // A = Z * U * S * V^T * Y^T()
-      m_matrixU = Z * svdOfC.matrixU();
-      m_vectorS = svdOfC.singularValues();
-      m_matrixV = Y * svdOfC.matrixV();
-    }
-
-    // Algorithm 5 of [Dhillon+ 2015]
-    // We implement it as same way as swell
-    // (https://github.com/paramveerdhillon/swell)
-    void compute_tropp(const MatrixType& A, const Index rank, const int l)
+    void compute(const MatrixType& A, const Index rank, const int l)
     {
       
       if(A.cols() == 0 || A.rows() == 0)
@@ -243,41 +188,15 @@ namespace RedSVD
     RedSymEigen(const MatrixType& A)
     {
       int r = (A.rows() < A.cols()) ? A.rows() : A.cols();
-      compute_tropp(A, r);
+      compute(A, r);
     }
 		
     RedSymEigen(const MatrixType& A, const Index rank)
     {
-      compute_tropp(A, rank);
+      compute(A, rank);
     }  
-		
+
     void compute(const MatrixType& A, const Index rank)
-    {
-      if(A.cols() == 0 || A.rows() == 0)
-        return;
-			
-      Index r = (rank < A.cols()) ? rank : A.cols();
-			
-      r = (r < A.rows()) ? r : A.rows();
-			
-      // Gaussian Random Matrix
-      DenseMatrix O(A.rows(), r);
-      sample_gaussian(O);
-			
-      // Compute Sample Matrix of A
-      DenseMatrix Y = A.transpose() * O;
-			
-      // Orthonormalize Y
-      gram_schmidt(Y);
-			
-      DenseMatrix B = Y.transpose() * A * Y;
-      Eigen::SelfAdjointEigenSolver<DenseMatrix> eigenOfB(B);
-
-      m_eigenvalues = eigenOfB.eigenvalues();
-      m_eigenvectors = Y * eigenOfB.eigenvectors();
-    }
-
-    void compute_tropp(const MatrixType& A, const Index rank)
     {
       if(A.cols() == 0 || A.rows() == 0)
         return;
@@ -322,53 +241,6 @@ namespace RedSVD
     DenseMatrix m_eigenvectors;
   };
 
-  template<typename _MatrixType>
-  class RedPCA
-  {
-  public:
-    typedef _MatrixType MatrixType;
-    typedef typename MatrixType::Scalar Scalar;
-    typedef typename MatrixType::Index Index;
-    typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> DenseMatrix;
-    typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ScalarVector;
-
-    RedPCA() {}
-
-    // RedPCA(const MatrixType& A)
-    // {
-    // 	int r = (A.rows() < A.cols()) ? A.rows() : A.cols();
-    // 	compute(A, r);
-    // }
-		
-    RedPCA(const MatrixType& A, const Index rank, const int l)
-    {
-      compute(A, rank, l);
-    }  
-		
-    void compute(const MatrixType& A, const Index rank, const int l)
-    {
-      RedSVD<MatrixType> redsvd(A, rank, l);
-			
-      ScalarVector S = redsvd.singularValues();
-			
-      m_components = redsvd.matrixV();
-      m_scores = redsvd.matrixU() * S.asDiagonal();
-    }
-		
-    DenseMatrix components() const
-    {
-      return m_components;
-    }
-		
-    DenseMatrix scores() const
-    {
-      return m_scores;
-    }
-		
-  private:
-    DenseMatrix m_components;
-    DenseMatrix m_scores;
-  };
 }
 
 #endif
