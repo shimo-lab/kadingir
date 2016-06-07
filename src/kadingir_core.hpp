@@ -152,7 +152,6 @@ private:
   std::vector<unsigned long long> id_wordtype_lengths;
   int k;
   bool link_v_c;
-  bool weighting_tf;
   std::vector<double> weight_vsdoc;
   bool debug;
 
@@ -174,7 +173,6 @@ private:
   VectorXd eigenvalues;
   VectorXd eigenvalues_all;
 
-  void construct_inverse_word_count_table();
   void construct_matrices();
 
 public:
@@ -185,7 +183,6 @@ public:
                const std::vector<unsigned long long> _id_wordtype_lengths,
                const int _k,
                const bool _link_v_c,
-               const bool _weighting_tf,
                const std::vector<double> _weight_vsdoc,
                const bool debug
   );
