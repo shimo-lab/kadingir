@@ -8,7 +8,6 @@ output: html_document
 time.begin <- Sys.time()
 
 source("./../src/kadingir.R", chdir = TRUE)
-source("./../src/cleigenwords.R", chdir = TRUE)
 ```
 
 ```{r}
