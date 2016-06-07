@@ -27,7 +27,6 @@ r <- CLEigenwords(paths.corpus,
                   sizes.window = rep(2, length(languages)),
                   aliases.languages=languages,
                   plot = TRUE,
-                  weighting_tf = FALSE,
                   link_v_c = FALSE,
                   weight.vsdoc = rep(1.0, length(languages)))
 

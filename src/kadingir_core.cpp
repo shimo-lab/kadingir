@@ -432,7 +432,6 @@ CLEigenwords::CLEigenwords(
   const std::vector<unsigned long long> _id_wordtype_lengths,
   const int _k,
   const bool _link_v_c,
-  const bool _weighting_tf,
   const std::vector<double> _weight_vsdoc,
   const bool _debug
   ) : id_wordtype_concated(_id_wordtype_concated),
@@ -442,7 +441,6 @@ CLEigenwords::CLEigenwords(
       id_wordtype_lengths(_id_wordtype_lengths),
       k(_k),
       link_v_c(_link_v_c),
-      weighting_tf(_weighting_tf),
       weight_vsdoc(_weight_vsdoc),
       debug(_debug)
 {
@@ -576,11 +574,7 @@ void CLEigenwords::construct_matrices()
       double H_ij_vsdoc;  // J^{(l)}_{i_id_wordtype, docid}
 
       if (docid >= 0) {
-        if (weighting_tf) {
-          H_ij_vsdoc = weight_vsdoc[i_languages] * inverse_word_count_table[i_languages][docid];
-        } else {
-          H_ij_vsdoc = weight_vsdoc[i_languages];
-        }
+        H_ij_vsdoc = weight_vsdoc[i_languages];
       } else {
         H_ij_vsdoc = 0;
       }

@@ -116,7 +116,7 @@ int main(int argc, const char** argv)
 			    window_sizes, vocab_sizes,
 			    sentence_lengths, dim,
 			    true,
-			    false, weight_vsdoc,
+			    weight_vsdoc,
 			    debug);
   cleigenwords.compute(2*dim + 10);
   const MatrixXd vectors = cleigenwords.get_vector_representations();
