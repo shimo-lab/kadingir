@@ -3,6 +3,7 @@
  *
  * memo :
  *  - `0` in id_wordtype indicates `<OOV>` (Out of Vocabulary, tokens that are not included in vocabulary).
+ *  - `id_document[i] < 0` indicates the document i came from monolingual corpus. 
  *  - tWC indicates matrix multiplication (crossprod) of W and C (In R, tWC = t(W) %*% C).
  *  - `_h` in `tWW_h` means "cast, diagonal, cwiseInverse, cwizeSqrt, cwiseSqrt"
  */
