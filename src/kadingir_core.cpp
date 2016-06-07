@@ -486,11 +486,6 @@ void CLEigenwords::compute(int dimension_evd)
 {
   clock_t clock_start = clock();
 
-  if (weighting_tf) {
-    // Reweight matching weights using Term-Frequency
-    construct_inverse_word_count_table();
-  }
-
   // Construct matrices: G, H
   G_diag.resize(p);
   G_diag.setZero();
@@ -529,33 +524,6 @@ void CLEigenwords::compute(int dimension_evd)
 }
 
 
-void CLEigenwords::construct_inverse_word_count_table()
-{
-  // Construct count table of words of each documents
-  VectorXi word_count_table(n_documents);
-  inverse_word_count_table.resize(n_languages);
-  unsigned long long sum_id_wordtype_lengths = 0;
-  
-  for (int i_languages = 0; i_languages < n_languages; i_languages++) {
-    inverse_word_count_table[i_languages].resize(n_documents);
-    
-    for (unsigned long long i = 0; i < n_documents; i++) {
-      // Initialization
-      word_count_table(i) = 0;
-    }
-    
-    for (unsigned long long i = 0; i < id_wordtype_lengths[i_languages]; i++) {
-      word_count_table(id_document_concated[sum_id_wordtype_lengths + i]) += 1;
-    }
-    sum_id_wordtype_lengths += id_wordtype_lengths[i_languages];
-    
-    for (unsigned long long i = 0; i < n_documents; i++) {
-      inverse_word_count_table[i_languages][i] = 1.0 / (double)word_count_table(i);
-    }
-  }
-}
-
-
 void CLEigenwords::construct_matrices()
 {
   unsigned long long sum_id_wordtype_lengths = 0;
@@ -573,11 +541,7 @@ void CLEigenwords::construct_matrices()
       
       if (id_document >= 0) {
         // From bilingual corpus
-        if (weighting_tf) {
-          m_diag_languages[i_languages][i] = weight_v_c + weight_vsdoc[i_languages] * inverse_word_count_table[i_languages][id_document];
-        } else {
-          m_diag_languages[i_languages][i] = weight_v_c + weight_vsdoc[i_languages];
-        }
+        m_diag_languages[i_languages][i] = weight_v_c + weight_vsdoc[i_languages];
       } else {
         // From monolingual corpus
         m_diag_languages[i_languages][i] = weight_v_c;

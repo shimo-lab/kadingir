@@ -174,7 +174,6 @@ private:
   VectorXd eigenvalues;
   VectorXd eigenvalues_all;
 
-  void construct_inverse_word_count_table();
   void construct_matrices();
 
 public:
