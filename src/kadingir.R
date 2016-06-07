@@ -141,6 +141,153 @@ Eigendocs <- function(path.corpus, max.vocabulary = 1000, dim.internal = 200,
 }
 
 
+CLEigenwords <- function(paths.corpus, sizes.vocabulary, dim.common, dim.evd,
+                         sizes.window, aliases.languages, weight.vsdoc,
+                         plot = FALSE,
+                         link_v_c = TRUE)
+{
+  time.start <- Sys.time()
+  
+  ## Preprocess training data
+  id.wordtype <- list()
+  id.document <- list()
+  vocab.words <- list()
+  min.counts <- list()
+  
+  n.languages <- length(aliases.languages)
+  
+  for (i in seq(n.languages)) {
+    language <- aliases.languages[i]
+    path.corpus <- paths.corpus[[language]]
+    
+    if (!exists("parallel", where = path.corpus)) {
+      stop(paste0("Error: No parallel corpus of language ", language, "."))
+    }
+    
+    # Preprocess parallel corpus
+    cat(path.corpus[["parallel"]], "\n")
+    f.parallel <- file(path.corpus[["parallel"]], "r")
+    lines.parallel <- readLines(con = f.parallel, -1)
+    close(f.parallel)
+    
+    # Preprocess monolingual corpus
+    if (exists("monolingual", where = path.corpus)) {
+      cat(path.corpus[["monolingual"]], "\n")
+      f.monolingual <- file(path.corpus[["monolingual"]], "r")
+      lines.monolingual <- readLines(con = f.monolingual, -1)
+      close(f.monolingual)
+    } else {
+      lines.monolingual <- ""
+    }
+    
+    lines.parallel.splited <- strsplit(lines.parallel, " ")
+    lines.monolingual.splited <- strsplit(lines.monolingual, " ")
+    str.wordtype <- unlist(c(lines.parallel.splited, lines.monolingual.splited))
+    lengths.lines.parallel.splited <- sapply(lines.parallel.splited, length)
+    length.lines.monolingual.splited <- sum(sapply(lines.monolingual.splited, length))
+    
+    id.document.parallel <- rep(seq(lines.parallel.splited) - 1L, lengths.lines.parallel.splited)
+    id.document.monolingual <- rep(-1L, length.lines.monolingual.splited)
+    id.document[[i]] <- c(id.document.parallel, id.document.monolingual)
+    
+    if (plot) {
+      hist(lengths.lines.parallel.splited, breaks = 100)
+    }
+    
+    rm(lines.monolingual, lines.parallel, length.lines.monolingual.splited, lengths.lines.parallel.splited)
+    
+    table.wordtype <- table(str.wordtype)
+    table.wordtype.sorted <- sort(table.wordtype, decreasing = TRUE)
+    vocab.words.temp <- names(table.wordtype.sorted[seq(sizes.vocabulary[i] - 1)])  # For out-of-vocabulary word, -1
+    
+    if (length(vocab.words.temp) <= 0) {
+      stop("Invalid vocab.words: length(vocab.words.temp) <= 0")
+    }
+    
+    vocab.words[[i]] <- vocab.words.temp
+    id.wordtype[[i]] <- match(str.wordtype, vocab.words[[i]], nomatch = 0)  # Fill zero for out-of-vocabulary words
+    min.counts[[i]] <- table.wordtype.sorted[[sizes.vocabulary[i] - 1]]
+    
+    if (plot) {
+      plot(table.wordtype.sorted, log="xy", col=rgb(0, 0, 0, 0.1))
+      abline(v = sizes.vocabulary[i])
+    }
+    
+    rm(str.wordtype, table.wordtype, table.wordtype.sorted)
+  }
+  
+  cat("\n\n")
+  
+  cat("Dim of common space:", dim.common, "\n")
+  cat("Dim of EVD         :", dim.evd, "\n")
+  cat("Link: V - C        :", link_v_c, "\n")
+  cat("\n")
+  
+  # Print informations of each languages
+  for (i in seq(n.languages)) {
+    language <- aliases.languages[i]
+    
+    cat("===== Corpus #", i, " =====\n", sep="")
+    cat("Alias              :", language, "\n")
+    cat("Monolingual corpus :", paths.corpus[[language]][["monolingual"]], "\n")
+    cat("Parallel corpus    :", paths.corpus[[language]][["parallel"]], "\n")
+    cat("# of tokens        :", length(id.wordtype[[i]]), "\n")
+    cat("Coverage           :", 100 * mean(id.wordtype[[i]] > 0), "\n")
+    cat("# of documents     :", max(id.document[[i]]) + 1L, "\n")
+    cat("size.window        :", sizes.window[i], "\n")
+    cat("Size of vocabulary :", sizes.vocabulary[i], "\n")
+    cat("Weight (vs doc)    :", weight.vsdoc[i], "\n")
+    cat("min count          :", min.counts[[i]], "\n")
+    cat("% of docid >= 0    :", 100 * mean(id.document[[i]] >= 0), "\n")
+    cat("\n")
+  }
+  
+  id.wordtype.concated <- as.integer(unlist(id.wordtype))
+  id.document.concated <- as.integer(unlist(id.document))
+  sizes.window <- as.integer(sizes.window)
+  sizes.vocabulary <- as.integer(sizes.vocabulary)
+  lengths.corpus <- lengths(id.wordtype)
+  n.languages <- length(paths.corpus)
+  
+  vocab.words.concated <- list()
+  for (i in seq(n.languages)) {
+    vocab.words.concated <- c(vocab.words.concated, list(c("<OOV>", vocab.words[[i]])))
+  }
+  
+  cat("preprocessing time: ")
+  diff.time <- Sys.time() - time.start
+  print(diff.time)
+  cat("\n")
+  time.start <- Sys.time()
+  
+  results.cleigenwords <- CLEigenwordsCpp(id.wordtype.concated, id.document.concated,
+                                          sizes.window, sizes.vocabulary, lengths.corpus,
+                                          dim.common,
+                                          dim.evd,
+                                          link_v_c = link_v_c,
+                                          weight_vsdoc = weight.vsdoc,
+                                          debug = FALSE)
+  diff.time <- Sys.time() - time.start
+  cat("CLEigenwords:")
+  print(diff.time)
+  
+  if (plot) {
+    plot(results.cleigenwords$eigenvalues, log = "y", main = "Eigenvalues")
+  }
+  
+  return.list <- results.cleigenwords
+  return.list$id.wordtype.concated <- id.wordtype.concated
+  return.list$id.document.concated <- id.document.concated
+  return.list$vocab.words <- vocab.words.concated
+  return.list$document_id <- seq(nrow(results.cleigenwords$document_vector))
+  return.list$n.languages <- length(lengths.corpus)
+  return.list$lengths.corpus <- lengths.corpus
+  return.list$sizes.vocabulary <- sizes.vocabulary
+  
+  return(return.list)
+}
+
+
 MostSimilar <- function(U, vocab, positive = NULL, negative = NULL,
                         topn = 10, distance = "euclid", print.error = TRUE,
                         language.search = NULL, weight.vector = NULL) {
