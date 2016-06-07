@@ -11,7 +11,7 @@
 
 #include "kadingir_core.hpp"
 
-const int TRIPLET_VECTOR_SIZE = 10000000;
+const int TRIPLET_VECTOR_SIZE = 10000000;  // TODO: appropriate size?
 
 
 // Update crossprod matrix using triplets
