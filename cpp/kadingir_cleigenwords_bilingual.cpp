@@ -108,7 +108,7 @@ int main(int argc, const char** argv)
   const unsigned long long n_tokens1 = tokens1.size();
   const unsigned long long n_tokens2 = tokens2.size();
   const std::vector<unsigned long long> sentence_lengths = { n_tokens1, n_tokens2 };
-  const std::vector<double> weight_vsdoc = { 1.0, 1.0 };
+  const std::vector<double> weight_vsdoc = { 1000.0, 1000.0 };
   tokens1.insert(tokens1.end(), tokens2.begin(), tokens2.end());
   document_id1.insert(document_id1.end(), document_id2.begin(), document_id2.end());
 
@@ -116,9 +116,9 @@ int main(int argc, const char** argv)
 			    window_sizes, vocab_sizes,
 			    sentence_lengths, dim,
 			    true,
-			    false, weight_vsdoc,
+			    weight_vsdoc,
 			    debug);
-  cleigenwords.compute(2*dim);
+  cleigenwords.compute(2*dim + 10);
   const MatrixXd vectors = cleigenwords.get_vector_representations();
 
   // Output vector representations as a txt file
@@ -132,17 +132,17 @@ int main(int argc, const char** argv)
       const int i_word = i % n_vocab1;
 
       if (i_word == 0) {
-	wordtypes[i] = "<OOV>";
+        wordtypes[i] = "<OOV>";
       } else {
-	wordtypes[i] = count_vector1[i_word - 1].first;
+        wordtypes[i] = count_vector1[i_word - 1].first;
       }
     } else if (i < n_rep_lang1 + n_rep_lang2) {
       const int i_word = (i - n_rep_lang1) % n_vocab2;
 
       if (i_word == 0) {
-	wordtypes[i] = "<OOV>";
+        wordtypes[i] = "<OOV>";
       } else {
-	wordtypes[i] = count_vector2[i_word - 1].first;
+        wordtypes[i] = count_vector2[i_word - 1].first;
       }
     } else {
       const int i_doc = i - n_rep_lang1 - n_rep_lang2;

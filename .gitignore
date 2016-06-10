@@ -10,3 +10,4 @@ output_*.csv
 *.pdf
 *.html
 *.o
+TAGS

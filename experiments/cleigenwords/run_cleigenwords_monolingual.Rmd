@@ -7,15 +7,14 @@ output: html_document
 ```{r}
 time.begin <- Sys.time()
 
-source("./../src/kadingir.R", chdir = TRUE)
-source("./../src/cleigenwords.R", chdir = TRUE)
+source("./../../src/kadingir.R", chdir = TRUE)
 ```
 
 ```{r}
-paths.corpus <- list(en = list(parallel    = "./../data/europarl/europarl-v7.es-en.en.tokenized.10000.parallel",
-                               monolingual = "./../data/europarl/europarl-v7.es-en.en.tokenized.10000.monolingual"))
+paths.corpus <- list(en = list(parallel    = "./../../corpora/europarl/europarl-v7.es-en.en.tokenized.10000",
+                               monolingual = "./../../corpora/europarl/europarl-v7.es-en.en.tokenized.10000"))
 
-res.cleigenwords <- CLEigenwords(paths.corpus, sizes.vocabulary=c(1000), dim.common=50,
+res.cleigenwords <- CLEigenwords(paths.corpus, sizes.vocabulary=c(1000), dim.common=50, dim.evd=110,
                                  sizes.window = c(2), aliases.languages=c("en"), plot = TRUE,
                                  weight.vsdoc = c(1.0))
 

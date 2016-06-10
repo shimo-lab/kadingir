@@ -1,3 +1,6 @@
+#ifndef __KADINGIR_CORE_HPP__
+#define __KADINGIR_CORE_HPP__
+
 
 #include <iostream>
 #include <time.h> 
@@ -45,12 +48,12 @@ public:
                   const int _k,
                   const bool debug);
   void compute();
-  VectorXi get_tww_diag() { return tWW_diag; }
-  VectorXi get_tcc_diag() { return tCC_diag; }
-  dSparseMatrix get_twc() { return tWC.cast <double> (); }
-  MatrixXd get_word_vectors() { return word_vectors; }
-  MatrixXd get_context_vectors() { return context_vectors; }
-  VectorXd get_singular_values() { return singular_values; }
+  const VectorXi get_tww_diag() const { return tWW_diag; }
+  const VectorXi get_tcc_diag() const { return tCC_diag; }
+  dSparseMatrix get_twc() const { return tWC.cast <double> (); }
+  const MatrixXd get_word_vectors() const { return word_vectors; }
+  const MatrixXd get_context_vectors() const { return context_vectors; }
+  const VectorXd get_singular_values() const { return singular_values; }
 };
 
 
@@ -87,11 +90,11 @@ public:
                   const int _k,
                   const bool debug);
   void compute();
-  VectorXi get_tww_diag() { return tWW_diag; }
-  dSparseMatrix get_twc() { return tWC.cast <double> (); }
-  MatrixXd get_word_vectors() { return word_vectors; }
-  MatrixXd get_context_vectors() { return context_vectors; }
-  VectorXd get_singular_values() { return singular_values; }
+  const VectorXi get_tww_diag() const { return tWW_diag; }
+  dSparseMatrix get_twc() const { return tWC.cast <double> (); }
+  const MatrixXd get_word_vectors() const { return word_vectors; }
+  const MatrixXd get_context_vectors() const { return context_vectors; }
+  const VectorXd get_singular_values() const { return singular_values; }
 };
 
 
@@ -135,10 +138,10 @@ public:
             const bool _link_c_d,
             const bool debug);
   void compute();
-  VectorXi get_g_diag() { return G_diag; }
-  dSparseMatrix get_h() { return H.cast <double> (); }
-  MatrixXd get_vector_representations() { return vector_representations; }
-  VectorXd get_eigenvalues() { return eigenvalues; }
+  const VectorXi get_g_diag() const { return G_diag; }
+  dSparseMatrix get_h() const { return H.cast <double> (); }
+  const MatrixXd get_vector_representations() const { return vector_representations; }
+  const VectorXd get_eigenvalues() const { return eigenvalues; }
 };
 
 
@@ -152,7 +155,6 @@ private:
   std::vector<unsigned long long> id_wordtype_lengths;
   int k;
   bool link_v_c;
-  bool weighting_tf;
   std::vector<double> weight_vsdoc;
   bool debug;
 
@@ -174,7 +176,6 @@ private:
   VectorXd eigenvalues;
   VectorXd eigenvalues_all;
 
-  void construct_inverse_word_count_table();
   void construct_matrices();
 
 public:
@@ -185,19 +186,18 @@ public:
                const std::vector<unsigned long long> _id_wordtype_lengths,
                const int _k,
                const bool _link_v_c,
-               const bool _weighting_tf,
                const std::vector<double> _weight_vsdoc,
                const bool debug
   );
   void compute(int dimension_evd);
-  VectorXd get_g_diag() { return G_diag; }
-  dSparseMatrix get_h() { return H; }
-  MatrixXd get_vector_representations() { return vector_representations; }
-  VectorXd get_eigenvalues() { return eigenvalues; }
-  VectorXd get_eigenvalues_all() { return eigenvalues_all; }
-  int get_n_domain() { return n_domain; }
-  unsigned long long get_p() { return p; }
-  unsigned long long get_p_head_domains(int index) { return p_head_domains[index]; }
+  const VectorXd get_g_diag() const { return G_diag; }
+  dSparseMatrix get_h() const { return H; }
+  const MatrixXd get_vector_representations() const { return vector_representations; }
+  const VectorXd get_eigenvalues() const { return eigenvalues; }
+  const VectorXd get_eigenvalues_all() const { return eigenvalues_all; }
+  int get_n_domain() const { return n_domain; }
+  unsigned long long get_p() const { return p; }
+  unsigned long long get_p_head_domains(int index) const { return p_head_domains[index]; }
 };
 
 
@@ -208,3 +208,5 @@ void fill_offset_table (int offsets[], int window_size);
 void construct_h_diag_matrix (VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag);
 void construct_h_diag_matrix_double (VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag);
 
+
+#endif

@@ -1,6 +1,5 @@
 ---
 title: "Test codes of matrices"
-author: "OSHIKIRI Takamasa"
 date: "`r Sys.time()`"
 output: html_document
 ---
@@ -74,7 +73,7 @@ make.matrices <- function(sentence, document.id, window.size) {
 # Test of `EigenwordsCpp`
 ```{r}
 m <- make.matrices(word_id, document_id, window.size)
-res.eigenwords <- EigenwordsCpp(as.integer(word_id), window.size, n.vocab, dim.common, mode_oscca = TRUE, debug = TRUE)
+res.eigenwords <- EigenwordsOSCCACpp(as.integer(word_id), window.size, n.vocab, dim.common, debug = TRUE)
 ```
 
 ```{r}
@@ -89,7 +88,8 @@ check.identical(res.eigenwords$tWC,      t(m$W) %*% m$C)
 # Test of `EigendocsCpp`
 ```{r}
 res.eigendocs <- EigendocsCpp(as.integer(word_id), as.integer(document_id),
-                              window.size, n.vocab, dim.common, 0, 0, TRUE, TRUE, debug = TRUE)
+                              window.size, n.vocab, dim.common, TRUE, TRUE,
+                              debug = TRUE)
 G.diag.rcpp <- res.eigendocs$G_diag
 H.rcpp <- res.eigendocs$H
 
@@ -121,12 +121,11 @@ document.id.concated <- c(document.id.1, document.id.2)
 weight.vsdoc <- c(2, 1)
 
 results.cleigenwords <- CLEigenwordsCpp(word.id.concated, document.id.concated,
-                                        c(window.size, window.size),
-                                        n.vocab,
-                                        n.token,
-                                        dim.common, gamma_G = 0, gamma_H = 0,
-                                        link_w_d = TRUE, link_c_d = TRUE,
-                                        weighting_tf = FALSE,
+                                        window.size * c(1, 1),
+                                        n.vocab * c(1, 1),
+                                        n.token * c(1, 1),
+                                        dim.common, 2*dim.common+10,
+                                        link_v_c = TRUE,
                                         weight_vsdoc = weight.vsdoc,
                                         debug = TRUE)
 G.diag.rcpp <- results.cleigenwords$G_diag

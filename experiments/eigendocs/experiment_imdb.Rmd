@@ -19,7 +19,7 @@ source("./../src/cleigenwords.R", chdir=TRUE)
 ```
 
 ```{r}
-paths.corpus <- list(en = list(parallel    = "./../data/eigendocs_imdb/imdb_reviews.txt"))
+paths.corpus <- list(en = list(parallel    = "./../corpora/eigendocs_imdb/imdb_reviews.txt"))
 res.eigendocs <- CLEigenwords(paths.corpus, sizes.vocabulary=c(10000), dim.common=50,
                               sizes.window = c(4), aliases.languages=c("en"), weight.vsdoc=c(0.01),
                               plot = TRUE, weighting_tf=FALSE)
@@ -55,7 +55,7 @@ TestWordsim353(word_vector, vocab_words)
 ## Sentiment analysis using IMDb dataset 1 : unregularized
 ```{r}
 vectors <- res.eigendocs$V[(pp[3]+1):p, ]
-csv <- read.csv("./../data/eigendocs_imdb/imdb_id_rate.csv")
+csv <- read.csv("./../corpora/eigendocs_imdb/imdb_id_rate.csv")
 
 df <- data.frame(cbind(csv, vectors))
 df <- df[df[ , "rate"] != 0, ]  # Remove unsup

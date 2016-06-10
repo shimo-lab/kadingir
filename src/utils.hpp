@@ -1,3 +1,7 @@
+#ifndef __KADINGIR_UTILS_HPP__
+#define __KADINGIR_UTILS_HPP__
+
+
 #include <iostream>
 #include <fstream>
 #include <map>
@@ -21,3 +25,6 @@ void write_txt(const std::string &path_output,
                const std::vector<std::string> &wordtypes,
                const Eigen::MatrixXd &vectors,
                const unsigned long long n_vocab, const int dim);
+
+
+#endif

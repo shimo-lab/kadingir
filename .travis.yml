@@ -1,0 +1,29 @@
+language: cpp
+compiler:
+    - g++
+os:
+    - linux
+before_install:
+    - wget http://bitbucket.org/eigen/eigen/get/3.2.8.tar.gz
+    - tar xzvf 3.2.8.tar.gz
+install:
+    - export CXX=g++-5
+    - cd cpp/
+    - make CXX="${CXX}" INCLUDES=-I"./../eigen-eigen-07105f7124f9/"
+    - cd ..
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.7
+      - llvm-toolchain-precise
+    packages:
+      - g++-5
+      - gcc-5
+script:
+    - mkdir corpora
+    - cd tools
+    - bash download_text8.sh
+    - cd ..
+    - cd cpp
+    - time ./kadingir_oscca --corpus ./../corpora/text8/text8 --output output_text8.txt --vocab 1000 --dim 40 --window 2
