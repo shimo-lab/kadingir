@@ -7,7 +7,7 @@ output: html_document
 ```{r, include = FALSE}
 time.begin <- Sys.time()
 
-source("./../src/kadingir.R", chdir = TRUE)
+source("./../../src/kadingir.R", chdir = TRUE)
 ```
 
 # Execute CL-Eigenwords
@@ -17,7 +17,7 @@ languages <- strsplit(languages, " ")[[1]]
 
 paths.corpus <- list()
 for(lang in languages){
-  paths.corpus[[lang]] <- list(parallel=paste0("./../corpora/europarl/europarl-v7.merged.", lang, ".tokenized.100000"))
+  paths.corpus[[lang]] <- list(parallel=paste0("./../../corpora/europarl/europarl-v7.merged.", lang, ".tokenized.100000"))
 }
 
 r <- CLEigenwords(paths.corpus,

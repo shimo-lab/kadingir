@@ -46,13 +46,11 @@ MostSimilar(res.eigenwords$word_vector, res.eigenwords$vocab.words,
 
 # Test some tasks for check
 ```{r}
-TestGoogleTasks(res.eigenwords$word_vector, res.eigenwords$vocab.words,
-                path = "./../../corpora/word2vec/questions-words.txt", n.cores = 12)
+TestGoogleTasks(res.eigenwords$word_vector, res.eigenwords$vocab.words, n.cores = 12)
 ```
 
 ```{r}
-TestWordsim353(res.eigenwords$word_vector, res.eigenwords$vocab.words,
-               path = "./../../corpora/wordsim353/combined.csv")
+TestWordsim353(res.eigenwords$word_vector, res.eigenwords$vocab.words)
 ```
 
 ```{r}
