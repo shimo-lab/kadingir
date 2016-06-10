@@ -12,8 +12,8 @@ source("./../../src/kadingir.R", chdir = TRUE)
 
 # Execute CL-Eigenwords
 ```{r}
-languages <- "en bg cs da de el es et fi fr hu it lt lv nl pl pt ro sk sl sv"
-#languages <- "en bg"
+#languages <- "en bg cs da de el es et fi fr hu it lt lv nl pl pt ro sk sl sv"
+languages <- "en es de fr"
 languages <- strsplit(languages, " ")[[1]]
 
 paths.corpus <- list()
@@ -83,7 +83,7 @@ VV <- V
 row.names(VV) <- vocab.words
 vectors <- VV[queries[queries %in% vocab.words], ]
 pr.v2 <- prcomp(vectors)
-plot(pr.v2$x[ , 1:2], pch = 1, col = "grey", xlim=c(-0.001, 0.000), ylim=c(-0.001, 0.001))
+plot(pr.v2$x[ , 1:2], pch = 1, col = "grey")
 text(pr.v2$x[ , 1], pr.v2$x[ , 2], row.names(pr.v2$x), cex = 0.7)
 ```
 
