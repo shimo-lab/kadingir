@@ -62,4 +62,4 @@ if __name__ == '__main__':
 
 
     # Tokenize all text files
-    p = subprocess.call('bash preprocess_merged_corpora.sh', shell=True)
+    p = subprocess.call('bash preprocess_merged_europarl.sh', shell=True)
