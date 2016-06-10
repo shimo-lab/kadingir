@@ -49,7 +49,7 @@ for(i in seq(languages)){
 
 ## Example of vector representation
 ```{r}
-row.sample <- c(p[1], p[2:9]+1)
+row.sample <- c(p[1], p[-1] + 1)
 r$V[row.sample, 1:20]
 ```
 
@@ -108,9 +108,9 @@ MostSimilar(V, vocab.words, positive=c("(en)him", "(es)yo"), negative=c("(en)he"
 ```
 
 # Execute some (monolingual) tasks for vector representation of english words
-```{r, eval=FALSE}
-V.en <- r$V[(p[7]+1):p[8], ]
-vocab.en <- r$vocab.words[[4]]
+```{r}
+V.en <- r$V[seq(p[2]), ]
+vocab.en <- r$vocab.words[[1]]
 
 TestGoogleTasks(V.en, vocab.en, n.cores = 12)
 TestWordsim353(V.en, vocab.en)
