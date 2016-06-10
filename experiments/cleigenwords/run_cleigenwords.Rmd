@@ -13,6 +13,7 @@ source("./../../src/kadingir.R", chdir = TRUE)
 # Execute CL-Eigenwords
 ```{r}
 languages <- "en bg cs da de el es et fi fr hu it lt lv nl pl pt ro sk sl sv"
+#languages <- "en bg"
 languages <- strsplit(languages, " ")[[1]]
 
 paths.corpus <- list()
