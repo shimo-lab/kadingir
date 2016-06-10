@@ -43,3 +43,7 @@ This is an open source implementation of
     * Source code : [paramveerdhillon/swell - GitHub](https://github.com/paramveerdhillon/swell/)
     * Output : [Codes | Paramveer Dhillon](http://www.pdhillon.com/code.html)
 * Littman, M. L., Dumais, S. T., & Landauer, T. K. (1998). Automatic cross-language information retrieval using latent semantic indexing. Cross-Language Information Retrieval, 51–62. 
+
+
+## License
+GPL v3
