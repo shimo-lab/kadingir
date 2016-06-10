@@ -1,3 +1,6 @@
+#ifndef __KADINGIR_CORE_HPP__
+#define __KADINGIR_CORE_HPP__
+
 
 #include <iostream>
 #include <time.h> 
@@ -205,3 +208,5 @@ void fill_offset_table (int offsets[], int window_size);
 void construct_h_diag_matrix (VectorXi &tXX_diag, dSparseMatrix &tXX_h_diag);
 void construct_h_diag_matrix_double (VectorXd &tXX_diag, dSparseMatrix &tXX_h_diag);
 
+
+#endif
