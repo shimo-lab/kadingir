@@ -12,7 +12,7 @@ params:
 ```{r, include=FALSE}
 library(knitr)
 library(data.table)
-source("./../src/kadingir.R", chdir = TRUE)
+source("./../../src/kadingir.R", chdir = TRUE)
 ```
  
 ```{r}
