@@ -7,7 +7,7 @@ static const char USAGE[] =
 R"(Kadingir: Cross-Lingual Eigenwords (bilingual)
 
     Usage:
-      kadingir_cleigenwords_bilingual --corpus1 <corpus1> --corpus2 <corpus2> --output <output> --vocab1 <vocab1> --vocab2 <vocab2> --window1 <window1> --window2 <window2> --dim <dim> [--debug]
+      kadingir_cleigenwords_bilingual --corpus1 <corpus1> --corpus2 <corpus2> --output <output> --vocab1 <vocab1> --vocab2 <vocab2> --window1 <window1> --window2 <window2> --dim <dim> [--debug] --weight_document1 <weight_document1> --weight_document2 <weight_document2>
 
     Options:
       -h --help            Show this screen.
@@ -21,6 +21,8 @@ R"(Kadingir: Cross-Lingual Eigenwords (bilingual)
       --window2=<window2>  Window size of language 2
       --dim=<dim>          Dimension of representation
       --debug              Debug option [default: false]
+      --weight_document1=<weight_document1>  Matching weight between V,C and D [default: 1]
+      --weight_document2=<weight_document2>  Matching weight between V,C and D [default: 1]
 )";
 
 
@@ -91,6 +93,9 @@ int main(int argc, const char** argv)
   const int         window2      = args["--window2"].asLong();
   const int         dim          = args["--dim"    ].asLong();
   const bool        debug        = args["--debug"  ].asBool();
+  const int         weight_document1 = args["--weight_document1"].asLong();  // TODO: docopt.cpp does not support double/float?
+  const int         weight_document2 = args["--weight_document2"].asLong();
+
 
   std::vector<int> tokens1, tokens2, document_id1, document_id2;
   std::vector<PairCounter> count_vector1, count_vector2;
@@ -108,7 +113,7 @@ int main(int argc, const char** argv)
   const unsigned long long n_tokens1 = tokens1.size();
   const unsigned long long n_tokens2 = tokens2.size();
   const std::vector<unsigned long long> sentence_lengths = { n_tokens1, n_tokens2 };
-  const std::vector<double> weight_vsdoc = { 1000.0, 1000.0 };
+  const std::vector<double> weight_vsdoc = { weight_document1, weight_document2 };
   tokens1.insert(tokens1.end(), tokens2.begin(), tokens2.end());
   document_id1.insert(document_id1.end(), document_id2.begin(), document_id2.end());
 

@@ -12,6 +12,8 @@ time ./kadingir_cleigenwords_bilingual \
     --vocab2 10000 \
     --window1 2 \
     --window2 2 \
-    --dim 40
+    --dim 40 \
+    --weight_document1 1 \
+    --weight_document2 1
 
 cd -
