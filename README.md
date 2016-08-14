@@ -1,6 +1,9 @@
 kadingir
 =====================================================
 
+[![Build Status](https://travis-ci.org/shimo-lab/kadingir.svg?branch=develop)](https://travis-ci.org/shimo-lab/kadingir)
+
+
 This is an open source implementation of
 
 >Oshikiri, T., Fukui, K., Shimodaira, H. (2016). Cross-Lingual Word Representations via Spectral Graph Embeddings. In Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers) (pp. 493–498). Berlin, Germany. Association for Computational Linguistics.
